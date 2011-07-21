@@ -24,11 +24,35 @@ RT0__StructDesc _td_OOC_Config_Pragmas__History = { (RT0__Struct[]){&_td_OOC_Con
 RT0__StructDesc _td_OOC_Config_Pragmas__HistoryDesc = { (RT0__Struct[]){&_td_OOC_Config_Pragmas__HistoryDesc}, (void*[]){(void*)OOC_Config_Pragmas__HistoryDesc_GetValue,(void*)OOC_Config_Pragmas__HistoryDesc_SetValue,(void*)OOC_Config_Pragmas__HistoryDesc_Push,(void*)OOC_Config_Pragmas__HistoryDesc_Pop}, NULL, &_mid, "HistoryDesc", 20, 0, 0, RT0__strRecord };
 static RT0__StructDesc _td__qtd0 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd0}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_Dictionary__DictionaryDesc_Equals,(void*)ADT_Dictionary__DictionaryDesc_HashCode,(void*)ADT_Dictionary__DictionaryDesc_Store,(void*)ADT_Dictionary__DictionaryDesc_Load,(void*)ADT_Dictionary__DictionaryDesc_INIT,(void*)ADT_Dictionary__DictionaryDesc_Destroy,(void*)ADT_Dictionary__DictionaryDesc_Lookup,(void*)ADT_Dictionary__DictionaryDesc_Insert,(void*)ADT_Dictionary__DictionaryDesc_Resize,(void*)ADT_Dictionary__DictionaryDesc_HasKey,(void*)ADT_Dictionary__DictionaryDesc_Size,(void*)ADT_Dictionary__DictionaryDesc_Get,(void*)ADT_Dictionary__DictionaryDesc_Set,(void*)ADT_Dictionary__DictionaryDesc_Copy,(void*)ADT_Dictionary__DictionaryDesc_Delete,(void*)ADT_Dictionary__DictionaryDesc_Clear,(void*)ADT_Dictionary__DictionaryDesc_Keys,(void*)ADT_Dictionary__DictionaryDesc_Values,(void*)ADT_Dictionary__DictionaryDesc_Items,(void*)ADT_Dictionary__DictionaryDesc_IterKeys,(void*)ADT_Dictionary__DictionaryDesc_IterValues}, (RT0__Struct[]){&_td_ADT_Dictionary__DictionaryDesc, &_td_Object__String, &_td_Config__Variable, NULL}, &_mid, "ADT:Dictionary.DictionaryDesc(Object.String,Config.Variable)", 20, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd1 = { (RT0__Struct[]){&_td__qtd0}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_Object__String, &_td_Config__Variable, NULL}, &_mid, "ADT:Dictionary.Dictionary(Object.String,Config.Variable)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Config:Pragmas", (RT0__Struct[]) { &_td_OOC_Config_Pragmas__Section, &_td_OOC_Config_Pragmas__SectionDesc, &_td_OOC_Config_Pragmas__Variable, &_td_OOC_Config_Pragmas__ValueArray, &_td_OOC_Config_Pragmas__CharPosArray, &_td_OOC_Config_Pragmas__VariableDesc, &_td_OOC_Config_Pragmas__History, &_td_OOC_Config_Pragmas__HistoryDesc, &_td__qtd0, &_td__qtd1, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Config:Pragmas", (RT0__Struct[]) { &_td_OOC_Config_Pragmas__Section, &_td_OOC_Config_Pragmas__SectionDesc, &_td_OOC_Config_Pragmas__Variable, &_td_OOC_Config_Pragmas__ValueArray, &_td_OOC_Config_Pragmas__CharPosArray, &_td_OOC_Config_Pragmas__VariableDesc, &_td_OOC_Config_Pragmas__History, &_td_OOC_Config_Pragmas__HistoryDesc, &_td__qtd0, &_td__qtd1, NULL }, 0 };
 
-extern void OOC_OOC_Config_Pragmas_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Config_Pragmas_init();
+extern void OOC_OOC_Config_Pragmas_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Config_open(&_mid);
+    OOC_Config_Parser_open(&_mid);
+    OOC_Config_Section_Options_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Config_Pragmas_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Config_Pragmas_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Config_Pragmas_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Config_close(&_mid);
+    OOC_Config_Parser_close(&_mid);
+    OOC_Config_Section_Options_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

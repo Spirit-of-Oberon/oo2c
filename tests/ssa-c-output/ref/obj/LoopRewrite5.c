@@ -68,4 +68,7 @@ void OOC_LoopRewrite5_init(void) {
   ;
 }
 
+void OOC_LoopRewrite5_destroy(void) {
+}
+
 /* --- */

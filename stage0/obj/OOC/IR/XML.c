@@ -1866,4 +1866,7 @@ void OOC_OOC_IR_XML_init(void) {
   ;
 }
 
+void OOC_OOC_IR_XML_destroy(void) {
+}
+
 /* --- */

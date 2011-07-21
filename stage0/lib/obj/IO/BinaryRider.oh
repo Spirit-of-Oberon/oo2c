@@ -138,7 +138,9 @@ extern void IO_BinaryRider__WriterDesc_INIT(IO_BinaryRider__Writer w, IO__ByteCh
 typedef void (*_TBP_IO_BinaryRider__WriterDesc_INIT)(IO_BinaryRider__Writer w, IO__ByteChannel ch, OOC_INT8 byteOrder);
 extern IO_BinaryRider__Writer IO_BinaryRider__ConnectWriter(IO__ByteChannel ch);
 extern void OOC_IO_BinaryRider_init(void);
-extern void OOC_IO_BinaryRider_init0(void);
+extern void OOC_IO_BinaryRider_open(RT0__Module client);
+extern void OOC_IO_BinaryRider_destroy(void);
+extern void OOC_IO_BinaryRider_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_IO_BinaryRider__Reader;

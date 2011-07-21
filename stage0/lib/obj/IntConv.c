@@ -391,4 +391,7 @@ void OOC_IntConv_init(void) {
   ;
 }
 
+void OOC_IntConv_destroy(void) {
+}
+
 /* --- */

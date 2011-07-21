@@ -177,4 +177,7 @@ void OOC_OOC_Scanner_SymList_init(void) {
   ;
 }
 
+void OOC_OOC_Scanner_SymList_destroy(void) {
+}
+
 /* --- */

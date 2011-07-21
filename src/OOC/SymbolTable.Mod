@@ -1,4 +1,4 @@
-(* 	$Id: SymbolTable.Mod,v 1.125 2004/11/21 20:31:43 mva Exp $	 *)
+(* 	$Id: SymbolTable.Mod,v 1.126 2004/12/15 11:27:00 mva Exp $	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
     Copyright (C) 2000-2004  Michael van Acken
@@ -1873,7 +1873,7 @@ PROCEDURE (mod: Module) NoObjectFile*(): BOOLEAN;
       END;
       RETURN (l = NIL);
     ELSE
-      RETURN FALSE;
+      RETURN (mod.class = mcInternal);
     END;
   END NoObjectFile;
 

@@ -27,11 +27,45 @@ RT0__StructDesc _td_OOC_Scanner__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__
 RT0__StructDesc _td_OOC_Scanner__3718 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_Scanner__7823 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_Scanner__22013 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Scanner", (RT0__Struct[]) { &_td_OOC_Scanner__ErrorContext, &_td_OOC_Scanner__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Scanner", (RT0__Struct[]) { &_td_OOC_Scanner__ErrorContext, &_td_OOC_Scanner__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_OOC_Scanner_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Scanner_init();
+extern void OOC_OOC_Scanner_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Ascii_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_Scanner_InputBuffer_open(&_mid);
+    OOC_OOC_Scanner_Symbol_open(&_mid);
+    OOC_OOC_Scanner_Pragma_open(&_mid);
+    OOC_OOC_Scanner_SymList_open(&_mid);
+    OOC_OOC_Config_Pragmas_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Scanner_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Scanner_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Scanner_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Ascii_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_Scanner_InputBuffer_close(&_mid);
+    OOC_OOC_Scanner_Symbol_close(&_mid);
+    OOC_OOC_Scanner_Pragma_close(&_mid);
+    OOC_OOC_Scanner_SymList_close(&_mid);
+    OOC_OOC_Config_Pragmas_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

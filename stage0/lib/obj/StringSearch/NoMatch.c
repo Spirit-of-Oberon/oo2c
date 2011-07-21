@@ -87,4 +87,7 @@ void OOC_StringSearch_NoMatch_init(void) {
   ;
 }
 
+void OOC_StringSearch_NoMatch_destroy(void) {
+}
+
 /* --- */

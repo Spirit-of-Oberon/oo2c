@@ -20,7 +20,9 @@ extern void OOC_Logger__ExplainMake(const OOC_CHAR8 s1__ref[], OOC_LEN s1_0d);
 extern void OOC_Logger__ExplainFileMake(const OOC_CHAR8 s1__ref[], OOC_LEN s1_0d, URI__URI uri1, const OOC_CHAR8 s2__ref[], OOC_LEN s2_0d);
 extern void OOC_Logger__ExplainFilesMake(const OOC_CHAR8 s1__ref[], OOC_LEN s1_0d, URI__URI uri1, const OOC_CHAR8 s2__ref[], OOC_LEN s2_0d, URI__URI uri2, const OOC_CHAR8 s3__ref[], OOC_LEN s3_0d);
 extern void OOC_OOC_Logger_init(void);
-extern void OOC_OOC_Logger_init0(void);
+extern void OOC_OOC_Logger_open(RT0__Module client);
+extern void OOC_OOC_Logger_destroy(void);
+extern void OOC_OOC_Logger_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Logger__1497;

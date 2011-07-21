@@ -36,7 +36,9 @@ extern StringSearch_NoMatch__Matcher StringSearch_NoMatch__FactoryDesc_Compile(S
 #define _TBN_StringSearch_NoMatch__FactoryDesc_Compile 5
 typedef StringSearch_NoMatch__Matcher (*_TBP_StringSearch_NoMatch__FactoryDesc_Compile)(StringSearch_NoMatch__Factory f, Object__String8 pattern, OOC_UINT32 flags);
 extern void OOC_StringSearch_NoMatch_init(void);
-extern void OOC_StringSearch_NoMatch_init0(void);
+extern void OOC_StringSearch_NoMatch_open(RT0__Module client);
+extern void OOC_StringSearch_NoMatch_destroy(void);
+extern void OOC_StringSearch_NoMatch_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_StringSearch_NoMatch__Factory;

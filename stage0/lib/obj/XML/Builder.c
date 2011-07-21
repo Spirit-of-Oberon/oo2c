@@ -278,4 +278,7 @@ void OOC_XML_Builder_init(void) {
   ;
 }
 
+void OOC_XML_Builder_destroy(void) {
+}
+
 /* --- */

@@ -95,7 +95,9 @@ extern void OOC_IR_CheckUses__VisitorDesc_VisitCall(OOC_IR_CheckUses__Visitor v,
 typedef void (*_TBP_OOC_IR_CheckUses__VisitorDesc_VisitCall)(OOC_IR_CheckUses__Visitor v, OOC_IR__Call call);
 extern void OOC_IR_CheckUses__CheckUses(OOC_IR__Module module, OOC_SymbolTable__Module moduleDecl, OOC_Config_Pragmas__History pragmaHistory, OOC_Error__List errList);
 extern void OOC_OOC_IR_CheckUses_init(void);
-extern void OOC_OOC_IR_CheckUses_init0(void);
+extern void OOC_OOC_IR_CheckUses_open(RT0__Module client);
+extern void OOC_OOC_IR_CheckUses_destroy(void);
+extern void OOC_OOC_IR_CheckUses_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_IR_CheckUses__Def;

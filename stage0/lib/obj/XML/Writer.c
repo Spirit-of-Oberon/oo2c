@@ -1028,4 +1028,7 @@ void OOC_XML_Writer_init(void) {
   ;
 }
 
+void OOC_XML_Writer_destroy(void) {
+}
+
 /* --- */

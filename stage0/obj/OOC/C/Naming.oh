@@ -26,7 +26,7 @@ extern void OOC_C_Naming__QualTypeDataDesc_INIT(OOC_C_Naming__QualTypeData qtdDa
 #define _TBN_OOC_C_Naming__QualTypeDataDesc_INIT 0
 typedef void (*_TBP_OOC_C_Naming__QualTypeDataDesc_INIT)(OOC_C_Naming__QualTypeData qtdData);
 extern Object__String OOC_C_Naming__NameOfDeclaration(OOC_SymbolTable__Declaration decl);
-extern Object__String OOC_C_Naming__NameOfModuleInit(OOC_SymbolTable__Module m, OOC_CHAR8 rtWrapper);
+extern Object__String OOC_C_Naming__NameOfModuleInit(OOC_SymbolTable__Module m, OOC_CHAR8 initFunction, OOC_CHAR8 rtWrapper);
 extern Object__String OOC_C_Naming__NameOfLengthParam(OOC_SymbolTable__VarDecl param, OOC_INT32 dim);
 extern Object__String OOC_C_Naming__NameOfTypeTagParam(OOC_SymbolTable__VarDecl param);
 extern Object__String OOC_C_Naming__NameOfType(OOC_SymbolTable__Type type);
@@ -34,7 +34,9 @@ extern Object__String OOC_C_Naming__NameOfTypeDescriptor(OOC_SymbolTable__Type t
 extern Object__String OOC_C_Naming__NameOfTypeBoundIndex(OOC_SymbolTable__ProcDecl proc);
 extern Object__String OOC_C_Naming__NameOfTypeBoundSignature(OOC_SymbolTable__ProcDecl proc);
 extern void OOC_OOC_C_Naming_init(void);
-extern void OOC_OOC_C_Naming_init0(void);
+extern void OOC_OOC_C_Naming_open(RT0__Module client);
+extern void OOC_OOC_C_Naming_destroy(void);
+extern void OOC_OOC_C_Naming_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_C_Naming__Buffer;
@@ -44,9 +46,9 @@ extern RT0__StructDesc _td_OOC_C_Naming__QualTypeData;
 extern RT0__StructDesc _td_OOC_C_Naming__QualTypeDataDesc;
 extern RT0__StructDesc _td_OOC_C_Naming__1605;
 extern RT0__StructDesc _td_OOC_C_Naming__2151;
-extern RT0__StructDesc _td_OOC_C_Naming__5494;
-extern RT0__StructDesc _td_OOC_C_Naming__6490;
-extern RT0__StructDesc _td_OOC_C_Naming__9569;
+extern RT0__StructDesc _td_OOC_C_Naming__5732;
+extern RT0__StructDesc _td_OOC_C_Naming__6728;
+extern RT0__StructDesc _td_OOC_C_Naming__9807;
 #endif /* _MODULE_OOC_C_Naming_ */
 
 /* --- */

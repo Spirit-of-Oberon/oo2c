@@ -1,4 +1,4 @@
-(* 	$Id: RT0.Mod,v 1.49 2004/10/27 07:48:25 mva Exp $	 *)
+(* 	$Id: RT0.Mod,v 1.51 2004/12/15 13:07:21 mva Exp $	 *)
 MODULE RT0 [
   FOREIGN "C";
   LINK
@@ -249,6 +249,11 @@ TYPE
     (**All type descriptors of this module that correspond to named types
        defined on the top level.  Descriptors are listed in no particular
        order.  The last element of the array has the value @code{NIL}.  *)
+
+    openCount-: LONGINT;
+    (**Number of times this module's @code{open()} function has been called
+       from client modules.  At the same time, this is the number of client
+       modules actively using this module.  *)
   END;
 
 TYPE
@@ -360,6 +365,10 @@ PROCEDURE Halt* [NO_RETURN](code: LONGINT);
 
 PROCEDURE RegisterModule* (mid: Module);
 (**Registers the module descriptor with the run-time system.  *)
+
+PROCEDURE UnregisterModule* (mid: Module);
+(**Unregisters the module descriptor from the run-time system.  Currently,
+   this procedure is a noop.  *)
 
 PROCEDURE ThisModule* (name: ARRAY OF CHAR): Module;
 (**Returns the module descriptor for the module @oparam{name}.  Result is

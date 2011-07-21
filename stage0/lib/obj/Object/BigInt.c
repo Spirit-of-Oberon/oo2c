@@ -2265,4 +2265,7 @@ void OOC_Object_BigInt_init(void) {
   ;
 }
 
+void OOC_Object_BigInt_destroy(void) {
+}
+
 /* --- */

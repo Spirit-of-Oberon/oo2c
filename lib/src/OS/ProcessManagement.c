@@ -1,4 +1,4 @@
-/* 	$Id: ProcessManagement.c,v 1.9 2003/05/18 15:58:10 mva Exp $	 */
+/* 	$Id: ProcessManagement.c,v 1.10 2004/12/15 11:27:01 mva Exp $	 */
 #include <stdlib.h>
 #include <stdio.h>
 #include <__oo2c.h>
@@ -176,4 +176,7 @@ int OS_ProcessManagement__TermSignal(int status) {
 }
 
 void OOC_OS_ProcessManagement_init(void) {
+}
+
+void OOC_OS_ProcessManagement_destroy(void) {
 }

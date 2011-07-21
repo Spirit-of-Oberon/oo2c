@@ -515,4 +515,7 @@ void OOC_OOC_Make_LinkProgramC_init(void) {
   ;
 }
 
+void OOC_OOC_Make_LinkProgramC_destroy(void) {
+}
+
 /* --- */

@@ -46,3 +46,6 @@ void Thread_Semaphore__SemaphoreDesc_Destroy(Thread_Semaphore__Semaphore s) {
 
 void OOC_Thread_Semaphore_init() {
 }
+
+void OOC_Thread_Semaphore_destroy() {
+}

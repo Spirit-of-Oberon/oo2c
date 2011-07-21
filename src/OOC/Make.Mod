@@ -1,4 +1,4 @@
-(* 	$Id: Make.Mod,v 1.71 2004/11/24 03:56:09 sgreenhill Exp $	 *)
+(* 	$Id: Make.Mod,v 1.72 2004/12/15 11:27:00 mva Exp $	 *)
 MODULE OOC:Make;
 (*  Builds object files, libraries, binaries, and the like.
     Copyright (C) 2002, 2003, 2004  Michael van Acken
@@ -969,7 +969,7 @@ RAISES IO.Error;
       END;
       
       IF ~isUpToDate THEN
-        WriteMainFileC.WriteFile(module, r.imports^);
+        WriteMainFileC.WriteFile(module);
         success := TRUE;
       END;
     END;

@@ -13,7 +13,9 @@ extern OOC_INT32 OS_ProcessManagement__system(Object__String command);
 extern OOC_INT32 OS_ProcessManagement__ExitStatus(OOC_INT32 status);
 extern OOC_INT32 OS_ProcessManagement__TermSignal(OOC_INT32 status);
 extern void OOC_OS_ProcessManagement_init(void);
-extern void OOC_OS_ProcessManagement_init0(void);
+extern void OOC_OS_ProcessManagement_open(RT0__Module client);
+extern void OOC_OS_ProcessManagement_destroy(void);
+extern void OOC_OS_ProcessManagement_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OS_ProcessManagement_ */

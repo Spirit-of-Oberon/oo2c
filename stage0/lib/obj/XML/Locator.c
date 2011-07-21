@@ -16,4 +16,7 @@ void OOC_XML_Locator_init(void) {
   ;
 }
 
+void OOC_XML_Locator_destroy(void) {
+}
+
 /* --- */

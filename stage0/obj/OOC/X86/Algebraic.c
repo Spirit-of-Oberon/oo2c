@@ -582,4 +582,7 @@ void OOC_OOC_X86_Algebraic_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Algebraic_destroy(void) {
+}
+
 /* --- */

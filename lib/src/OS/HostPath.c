@@ -216,3 +216,6 @@ Object__String OS_HostPath__Denormalize(Object__String path) {
 
 void OOC_OS_HostPath_init(void) {
 }
+
+void OOC_OS_HostPath_destroy(void) {
+}

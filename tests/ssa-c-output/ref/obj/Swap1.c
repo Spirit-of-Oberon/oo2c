@@ -40,4 +40,7 @@ void OOC_Swap1_init(void) {
   ;
 }
 
+void OOC_Swap1_destroy(void) {
+}
+
 /* --- */

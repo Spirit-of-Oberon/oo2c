@@ -2986,4 +2986,7 @@ void OOC_TextRider_init(void) {
   ;
 }
 
+void OOC_TextRider_destroy(void) {
+}
+
 /* --- */

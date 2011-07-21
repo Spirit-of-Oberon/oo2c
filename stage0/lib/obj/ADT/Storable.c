@@ -75,4 +75,7 @@ void OOC_ADT_Storable_init(void) {
   ;
 }
 
+void OOC_ADT_Storable_destroy(void) {
+}
+
 /* --- */

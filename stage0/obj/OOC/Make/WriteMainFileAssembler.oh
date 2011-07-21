@@ -10,7 +10,9 @@
 #include <Exception.oh>
 extern void OOC_Make_WriteMainFileAssembler__WriteFile(OOC_Repository__Module module, const OOC_Repository__Module imports__ref[], OOC_LEN imports_0d);
 extern void OOC_OOC_Make_WriteMainFileAssembler_init(void);
-extern void OOC_OOC_Make_WriteMainFileAssembler_init0(void);
+extern void OOC_OOC_Make_WriteMainFileAssembler_open(RT0__Module client);
+extern void OOC_OOC_Make_WriteMainFileAssembler_destroy(void);
+extern void OOC_OOC_Make_WriteMainFileAssembler_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Make_WriteMainFileAssembler__1085;

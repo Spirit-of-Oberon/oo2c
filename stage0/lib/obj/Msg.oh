@@ -123,7 +123,9 @@ typedef void (*_TBP_Msg__MsgAttributeDesc_ReplacementText)(Msg__MsgAttribute att
 extern Msg__StringPtr Msg__GetStringPtr(const Msg__String str__ref, OOC_LEN str_0d);
 extern Msg__LStringPtr Msg__GetLStringPtr(const Msg__LString str__ref, OOC_LEN str_0d);
 extern void OOC_Msg_init(void);
-extern void OOC_Msg_init0(void);
+extern void OOC_Msg_open(RT0__Module client);
+extern void OOC_Msg_destroy(void);
+extern void OOC_Msg_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Msg__String;

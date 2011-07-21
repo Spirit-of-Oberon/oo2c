@@ -22,4 +22,7 @@ void OOC_Config_Source_init(void) {
   ;
 }
 
+void OOC_Config_Source_destroy(void) {
+}
+
 /* --- */

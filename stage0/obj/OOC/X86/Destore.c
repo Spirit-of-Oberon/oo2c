@@ -1125,4 +1125,7 @@ void OOC_OOC_X86_Destore_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Destore_destroy(void) {
+}
+
 /* --- */

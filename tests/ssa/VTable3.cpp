@@ -27,5 +27,5 @@ extern "C" T * VTable3__NewT(void) {
     return new T();
 }
 
-extern "C" void OOC_VTable3_init0(void) {
+extern "C" void OOC_VTable3_open(void) {
 }

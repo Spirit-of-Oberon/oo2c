@@ -128,4 +128,7 @@ void OOC_RealStr_init(void) {
   ;
 }
 
+void OOC_RealStr_destroy(void) {
+}
+
 /* --- */

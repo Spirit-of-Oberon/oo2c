@@ -715,4 +715,7 @@ void OOC_Strings_init(void) {
   ;
 }
 
+void OOC_Strings_destroy(void) {
+}
+
 /* --- */

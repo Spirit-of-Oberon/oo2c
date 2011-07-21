@@ -114,11 +114,63 @@ RT0__StructDesc _td_XML_Parser__107406 = { (RT0__Struct[]){&RT0__char}, NULL, NU
 RT0__StructDesc _td_XML_Parser__107858 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_XML_Parser__108369 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_XML_Parser__108950 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 128, 128, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:Parser", (RT0__Struct[]) { &_td_XML_Parser__PEInfo, &_td_XML_Parser__NameList, &_td_XML_Parser__PEInfoList, &_td_XML_Parser__ErrorListener, &_td_XML_Parser__Parser, &_td_XML_Parser__ParserDesc, &_td_XML_Parser__ErrorListenerDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:Parser", (RT0__Struct[]) { &_td_XML_Parser__PEInfo, &_td_XML_Parser__NameList, &_td_XML_Parser__PEInfoList, &_td_XML_Parser__ErrorListener, &_td_XML_Parser__Parser, &_td_XML_Parser__ParserDesc, &_td_XML_Parser__ErrorListenerDesc, NULL }, 0 };
 
-extern void OOC_XML_Parser_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_XML_Parser_init();
+extern void OOC_XML_Parser_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Out_open(&_mid);
+    OOC_Ascii_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_URI_Scheme_File_open(&_mid);
+    OOC_XML_UnicodeCodec_open(&_mid);
+    OOC_XML_Locator_open(&_mid);
+    OOC_XML_EntityResolver_open(&_mid);
+    OOC_XML_UnicodeCodec_UTF8_open(&_mid);
+    OOC_XML_UnicodeCodec_UTF16_open(&_mid);
+    OOC_XML_UnicodeBuffer_open(&_mid);
+    OOC_XML_Error_open(&_mid);
+    OOC_XML_DTD_open(&_mid);
+    OOC_XML_Builder_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_XML_Parser_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_XML_Parser_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_XML_Parser_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Out_close(&_mid);
+    OOC_Ascii_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_URI_Scheme_File_close(&_mid);
+    OOC_XML_UnicodeCodec_close(&_mid);
+    OOC_XML_Locator_close(&_mid);
+    OOC_XML_EntityResolver_close(&_mid);
+    OOC_XML_UnicodeCodec_UTF8_close(&_mid);
+    OOC_XML_UnicodeCodec_UTF16_close(&_mid);
+    OOC_XML_UnicodeBuffer_close(&_mid);
+    OOC_XML_Error_close(&_mid);
+    OOC_XML_DTD_close(&_mid);
+    OOC_XML_Builder_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

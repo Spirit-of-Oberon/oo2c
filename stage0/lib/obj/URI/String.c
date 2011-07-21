@@ -246,4 +246,7 @@ void OOC_URI_String_init(void) {
   ;
 }
 
+void OOC_URI_String_destroy(void) {
+}
+
 /* --- */

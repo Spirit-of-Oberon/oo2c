@@ -231,4 +231,7 @@ void OOC_Out_init(void) {
   ;
 }
 
+void OOC_Out_destroy(void) {
+}
+
 /* --- */

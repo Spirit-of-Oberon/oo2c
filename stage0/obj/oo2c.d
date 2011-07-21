@@ -89,11 +89,77 @@ static void oo2c__WriteHelp(void);
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"oo2c", (RT0__Struct[]) { NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"oo2c", (RT0__Struct[]) { NULL }, 0 };
 
-extern void OOC_oo2c_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_oo2c_init();
+extern void OOC_oo2c_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_IO_StdChannels_open(&_mid);
+    OOC_Out_open(&_mid);
+    OOC_Err_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_URI_Scheme_File_open(&_mid);
+    OOC_Config_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_OS_ProcessManagement_open(&_mid);
+    OOC_OS_Path_open(&_mid);
+    OOC_OS_Files_open(&_mid);
+    OOC_Config_Section_Options_open(&_mid);
+    OOC_OOC_Logger_open(&_mid);
+    OOC_OOC_Config_open(&_mid);
+    OOC_OOC_Config_CCompiler_open(&_mid);
+    OOC_OOC_Package_open(&_mid);
+    OOC_OOC_SymbolTable_Builder_open(&_mid);
+    OOC_OOC_Config_StdPragmas_open(&_mid);
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_Repository_open(&_mid);
+    OOC_OOC_Repository_FileSystem_open(&_mid);
+    OOC_OOC_Make_open(&_mid);
+    OOC_OOC_SSA_Stats_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_oo2c_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_oo2c_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_oo2c_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_IO_StdChannels_close(&_mid);
+    OOC_Out_close(&_mid);
+    OOC_Err_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_URI_Scheme_File_close(&_mid);
+    OOC_Config_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_OS_ProcessManagement_close(&_mid);
+    OOC_OS_Path_close(&_mid);
+    OOC_OS_Files_close(&_mid);
+    OOC_Config_Section_Options_close(&_mid);
+    OOC_OOC_Logger_close(&_mid);
+    OOC_OOC_Config_close(&_mid);
+    OOC_OOC_Config_CCompiler_close(&_mid);
+    OOC_OOC_Package_close(&_mid);
+    OOC_OOC_SymbolTable_Builder_close(&_mid);
+    OOC_OOC_Config_StdPragmas_close(&_mid);
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_Repository_close(&_mid);
+    OOC_OOC_Repository_FileSystem_close(&_mid);
+    OOC_OOC_Make_close(&_mid);
+    OOC_OOC_SSA_Stats_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

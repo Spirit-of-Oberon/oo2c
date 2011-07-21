@@ -15,7 +15,9 @@ typedef OOC_INT8 IntStr__ConvResults;
 extern void IntStr__StrToInt(const OOC_CHAR8 str__ref[], OOC_LEN str_0d, OOC_INT32 *_int, OOC_INT8 *res);
 extern void IntStr__IntToStr(OOC_INT32 _int, OOC_CHAR8 str[], OOC_LEN str_0d);
 extern void OOC_IntStr_init(void);
-extern void OOC_IntStr_init0(void);
+extern void OOC_IntStr_open(RT0__Module client);
+extern void OOC_IntStr_destroy(void);
+extern void OOC_IntStr_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_IntStr__1626;

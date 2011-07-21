@@ -210,4 +210,7 @@ void OOC_XML_UnicodeCodec_init(void) {
   ;
 }
 
+void OOC_XML_UnicodeCodec_destroy(void) {
+}
+
 /* --- */

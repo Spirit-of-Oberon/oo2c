@@ -28,11 +28,43 @@ RT0__StructDesc _td_OOC_SSA_Stats__1327 = { (RT0__Struct[]){&_td_OOC_SSA_Stats__
 RT0__StructDesc _td_OOC_SSA_Stats__1376 = { (RT0__Struct[]){&RT0__longint}, NULL, NULL, &_mid, NULL, 4, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_Stats__1365 = { (RT0__Struct[]){&_td_OOC_SSA_Stats__1376}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_Stats__1401 = { (RT0__Struct[]){&RT0__longint}, NULL, NULL, &_mid, NULL, 4272, 1068, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Stats", (RT0__Struct[]) { &_td_OOC_SSA_Stats__Stats, &_td_OOC_SSA_Stats__StatsDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Stats", (RT0__Struct[]) { &_td_OOC_SSA_Stats__Stats, &_td_OOC_SSA_Stats__StatsDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_Stats_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_Stats_init();
+extern void OOC_OOC_SSA_Stats_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Out_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_OOC_SSA_open(&_mid);
+    OOC_OOC_SSA_Opcode_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_Stats_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_Stats_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_Stats_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Out_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_OOC_SSA_close(&_mid);
+    OOC_OOC_SSA_Opcode_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

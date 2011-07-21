@@ -51,12 +51,12 @@ OOC_L1_init:
 	leave 
 	ret 
 	.size OOC_L1_init, .-OOC_L1_init
-.global OOC_L1_init0
-	.type OOC_L1_init0, @function
-OOC_L1_init0:
+.global OOC_L1_open
+	.type OOC_L1_open, @function
+OOC_L1_open:
 	call OOC_L1_init
 	ret
-	.size OOC_L1_init0, .-OOC_L1_init0
+	.size OOC_L1_open, .-OOC_L1_open
 	.data
 	.align 4
 	.type _td_L1__34_base_types, @object

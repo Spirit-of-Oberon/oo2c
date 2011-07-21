@@ -3869,4 +3869,7 @@ void OOC_OOC_X86_SSA_init(void) {
   ;
 }
 
+void OOC_OOC_X86_SSA_destroy(void) {
+}
+
 /* --- */

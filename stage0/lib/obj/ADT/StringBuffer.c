@@ -912,4 +912,7 @@ void OOC_ADT_StringBuffer_init(void) {
   ;
 }
 
+void OOC_ADT_StringBuffer_destroy(void) {
+}
+
 /* --- */

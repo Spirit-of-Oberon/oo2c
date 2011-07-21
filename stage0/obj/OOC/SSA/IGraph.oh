@@ -66,7 +66,9 @@ extern OOC_SSA_IGraph__ColorArray OOC_SSA_IGraph__GraphDesc_ColorGraphCombinator
 #define _TBN_OOC_SSA_IGraph__GraphDesc_ColorGraphCombinatorial 15
 typedef OOC_SSA_IGraph__ColorArray (*_TBP_OOC_SSA_IGraph__GraphDesc_ColorGraphCombinatorial)(OOC_SSA_IGraph__Graph g);
 extern void OOC_OOC_SSA_IGraph_init(void);
-extern void OOC_OOC_SSA_IGraph_init0(void);
+extern void OOC_OOC_SSA_IGraph_open(RT0__Module client);
+extern void OOC_OOC_SSA_IGraph_destroy(void);
+extern void OOC_OOC_SSA_IGraph_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_IGraph__999;

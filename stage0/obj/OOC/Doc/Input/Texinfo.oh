@@ -18,7 +18,9 @@ extern void OOC_Doc_Input_Texinfo__ErrorContextDesc_GetTemplate(OOC_Doc_Input_Te
 typedef void (*_TBP_OOC_Doc_Input_Texinfo__ErrorContextDesc_GetTemplate)(OOC_Doc_Input_Texinfo__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
 extern OOC_Doc__Document OOC_Doc_Input_Texinfo__Parse(OOC_Scanner_SymList__Symbol sym, OOC_CHAR8 removeDecoration, OOC_Error__List errList);
 extern void OOC_OOC_Doc_Input_Texinfo_init(void);
-extern void OOC_OOC_Doc_Input_Texinfo_init0(void);
+extern void OOC_OOC_Doc_Input_Texinfo_open(RT0__Module client);
+extern void OOC_OOC_Doc_Input_Texinfo_destroy(void);
+extern void OOC_OOC_Doc_Input_Texinfo_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Doc_Input_Texinfo__Command;

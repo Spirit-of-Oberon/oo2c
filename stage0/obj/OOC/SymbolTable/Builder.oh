@@ -126,7 +126,9 @@ extern OOC_SymbolTable__Module OOC_SymbolTable_Builder__BuilderDesc_ReadSymbolTa
 #define _TBN_OOC_SymbolTable_Builder__BuilderDesc_ReadSymbolTable 21
 typedef OOC_SymbolTable__Module (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_ReadSymbolTable)(OOC_SymbolTable_Builder__Builder b, IO__ByteChannel ch, IO__ByteChannel chDoc);
 extern void OOC_OOC_SymbolTable_Builder_init(void);
-extern void OOC_OOC_SymbolTable_Builder_init0(void);
+extern void OOC_OOC_SymbolTable_Builder_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_Builder_destroy(void);
+extern void OOC_OOC_SymbolTable_Builder_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_Builder__Builder;

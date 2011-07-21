@@ -1,4 +1,4 @@
-/* 	$Id: ProcessParameters.c,v 1.10 2003/08/22 09:04:34 mva Exp $	 */
+/* 	$Id: ProcessParameters.c,v 1.11 2004/12/15 11:27:01 mva Exp $	 */
 #ifdef WIN32
 #include <io.h>
 #include <direct.h>
@@ -37,4 +37,7 @@ Object__String OS_ProcessParameters__GetEnv(Object__String name) {
 
 
 void OOC_OS_ProcessParameters_init(void) {
+}
+
+void OOC_OS_ProcessParameters_destroy(void) {
 }

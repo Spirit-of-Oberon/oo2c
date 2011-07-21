@@ -327,7 +327,9 @@ extern void OOC_C_DeclWriter__WriterDesc_WriteTypeCast(OOC_C_DeclWriter__Writer 
 #define _TBN_OOC_C_DeclWriter__WriterDesc_WriteTypeCast 27
 typedef void (*_TBP_OOC_C_DeclWriter__WriterDesc_WriteTypeCast)(OOC_C_DeclWriter__Writer w, OOC_C_DeclWriter__Type t);
 extern void OOC_OOC_C_DeclWriter_init(void);
-extern void OOC_OOC_C_DeclWriter_init0(void);
+extern void OOC_OOC_C_DeclWriter_open(RT0__Module client);
+extern void OOC_OOC_C_DeclWriter_destroy(void);
+extern void OOC_OOC_C_DeclWriter_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_C_DeclWriter__Type;

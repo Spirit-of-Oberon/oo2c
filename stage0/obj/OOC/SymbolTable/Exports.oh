@@ -9,7 +9,9 @@
 #include <Exception.oh>
 extern ADT_Dictionary_AddressKey__Dictionary OOC_SymbolTable_Exports__GetExports(OOC_SymbolTable__Module module, OOC_CHAR8 forSymbolFile);
 extern void OOC_OOC_SymbolTable_Exports_init(void);
-extern void OOC_OOC_SymbolTable_Exports_init0(void);
+extern void OOC_OOC_SymbolTable_Exports_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_Exports_destroy(void);
+extern void OOC_OOC_SymbolTable_Exports_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_SymbolTable_Exports_ */

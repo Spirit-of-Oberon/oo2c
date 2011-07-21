@@ -11,7 +11,9 @@
 extern OOC_SSA__Result OOC_SSA_IRtoSSA__StatmSeq(OOC_SSA__ProcBlock pb, OOC_SSA__Result s, OOC_IR__StatementSeq statmSeq);
 extern void OOC_SSA_IRtoSSA__DiscardGets(OOC_SSA__ProcBlock pb);
 extern void OOC_OOC_SSA_IRtoSSA_init(void);
-extern void OOC_OOC_SSA_IRtoSSA_init0(void);
+extern void OOC_OOC_SSA_IRtoSSA_open(RT0__Module client);
+extern void OOC_OOC_SSA_IRtoSSA_destroy(void);
+extern void OOC_OOC_SSA_IRtoSSA_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__39289;

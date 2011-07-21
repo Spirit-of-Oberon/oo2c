@@ -47,7 +47,9 @@ extern void OOC_Scanner_SymList__BuilderDesc_SetPragmaHistory(OOC_Scanner_SymLis
 #define _TBN_OOC_Scanner_SymList__BuilderDesc_SetPragmaHistory 2
 typedef void (*_TBP_OOC_Scanner_SymList__BuilderDesc_SetPragmaHistory)(OOC_Scanner_SymList__Builder b, OOC_Config_Pragmas__History pragmaHistory);
 extern void OOC_OOC_Scanner_SymList_init(void);
-extern void OOC_OOC_Scanner_SymList_init0(void);
+extern void OOC_OOC_Scanner_SymList_open(RT0__Module client);
+extern void OOC_OOC_Scanner_SymList_destroy(void);
+extern void OOC_OOC_Scanner_SymList_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Scanner_SymList__Symbol;

@@ -28,11 +28,63 @@ RT0__StructDesc _td_OOC_Repository_FileSystem__ModuleDesc = { (RT0__Struct[]){&_
 RT0__StructDesc _td_OOC_Repository_FileSystem__2660 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_Repository_FileSystem__2961 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_Repository_FileSystem__4661 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Repository:FileSystem", (RT0__Struct[]) { &_td_OOC_Repository_FileSystem__Repository, &_td_OOC_Repository_FileSystem__RepositoryDesc, &_td_OOC_Repository_FileSystem__Module, &_td_OOC_Repository_FileSystem__ModuleDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Repository:FileSystem", (RT0__Struct[]) { &_td_OOC_Repository_FileSystem__Repository, &_td_OOC_Repository_FileSystem__RepositoryDesc, &_td_OOC_Repository_FileSystem__Module, &_td_OOC_Repository_FileSystem__ModuleDesc, NULL }, 0 };
 
-extern void OOC_OOC_Repository_FileSystem_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Repository_FileSystem_init();
+extern void OOC_OOC_Repository_FileSystem_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Msg_open(&_mid);
+    OOC_Files_open(&_mid);
+    OOC_TextRider_open(&_mid);
+    OOC_Time_open(&_mid);
+    OOC_OS_Files_open(&_mid);
+    OOC_OS_Path_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_URI_Parser_open(&_mid);
+    OOC_URI_Scheme_File_open(&_mid);
+    OOC_OOC_Logger_open(&_mid);
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_Scanner_InputBuffer_open(&_mid);
+    OOC_OOC_Repository_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Repository_FileSystem_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Repository_FileSystem_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Repository_FileSystem_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Msg_close(&_mid);
+    OOC_Files_close(&_mid);
+    OOC_TextRider_close(&_mid);
+    OOC_Time_close(&_mid);
+    OOC_OS_Files_close(&_mid);
+    OOC_OS_Path_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_URI_Parser_close(&_mid);
+    OOC_URI_Scheme_File_close(&_mid);
+    OOC_OOC_Logger_close(&_mid);
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_Scanner_InputBuffer_close(&_mid);
+    OOC_OOC_Repository_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

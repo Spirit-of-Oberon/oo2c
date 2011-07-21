@@ -18,7 +18,9 @@ extern void LRealStr__RealToEng(OOC_REAL64 real, OOC_INT16 sigFigs, OOC_CHAR8 st
 extern void LRealStr__RealToFixed(OOC_REAL64 real, OOC_INT16 place, OOC_CHAR8 str[], OOC_LEN str_0d);
 extern void LRealStr__RealToStr(OOC_REAL64 real, OOC_CHAR8 str[], OOC_LEN str_0d);
 extern void OOC_LRealStr_init(void);
-extern void OOC_LRealStr_init0(void);
+extern void OOC_LRealStr_open(RT0__Module client);
+extern void OOC_LRealStr_destroy(void);
+extern void OOC_LRealStr_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_LRealStr__1572;

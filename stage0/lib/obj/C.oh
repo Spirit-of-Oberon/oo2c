@@ -29,7 +29,9 @@ typedef OOC_INT32 *C__intPtr1d;
 typedef OOC_CHAR8 *C__string;
 typedef void (*C__Proc)(void);
 extern void OOC_C_init(void);
-extern void OOC_C_init0(void);
+extern void OOC_C_open(RT0__Module client);
+extern void OOC_C_destroy(void);
+extern void OOC_C_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_C_ */

@@ -25,7 +25,9 @@ extern Msg__Msg XML_Locator__ErrorListenerDesc_Error(XML_Locator__ErrorListener 
 #define _TBN_XML_Locator__ErrorListenerDesc_Error 0
 typedef Msg__Msg (*_TBP_XML_Locator__ErrorListenerDesc_Error)(XML_Locator__ErrorListener el, XML_Error__Context context, OOC_INT32 code, OOC_CHAR8 fatalError, const struct XML_Locator__Position *pos__ref);
 extern void OOC_XML_Locator_init(void);
-extern void OOC_XML_Locator_init0(void);
+extern void OOC_XML_Locator_open(RT0__Module client);
+extern void OOC_XML_Locator_destroy(void);
+extern void OOC_XML_Locator_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_Locator__Locator;

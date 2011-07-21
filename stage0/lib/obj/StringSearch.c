@@ -115,4 +115,7 @@ void OOC_StringSearch_init(void) {
   ;
 }
 
+void OOC_StringSearch_destroy(void) {
+}
+
 /* --- */

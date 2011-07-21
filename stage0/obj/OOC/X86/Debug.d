@@ -151,11 +151,49 @@ static RT0__StructDesc _td__qtd0 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_O
 static RT0__StructDesc _td__qtd1 = { (RT0__Struct[]){&_td__qtd0}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_OOC_X86_SSA__Instr, &_td_Object__String, NULL}, &_mid, "ADT:Dictionary.Dictionary(OOC:X86:SSA.Instr,Object.String)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd2 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd2}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_Dictionary__DictionaryDesc_Equals,(void*)ADT_Dictionary__DictionaryDesc_HashCode,(void*)ADT_Dictionary__DictionaryDesc_Store,(void*)ADT_Dictionary__DictionaryDesc_Load,(void*)ADT_Dictionary__DictionaryDesc_INIT,(void*)ADT_Dictionary__DictionaryDesc_Destroy,(void*)ADT_Dictionary__DictionaryDesc_Lookup,(void*)ADT_Dictionary__DictionaryDesc_Insert,(void*)ADT_Dictionary__DictionaryDesc_Resize,(void*)ADT_Dictionary__DictionaryDesc_HasKey,(void*)ADT_Dictionary__DictionaryDesc_Size,(void*)ADT_Dictionary__DictionaryDesc_Get,(void*)ADT_Dictionary__DictionaryDesc_Set,(void*)ADT_Dictionary__DictionaryDesc_Copy,(void*)ADT_Dictionary__DictionaryDesc_Delete,(void*)ADT_Dictionary__DictionaryDesc_Clear,(void*)ADT_Dictionary__DictionaryDesc_Keys,(void*)ADT_Dictionary__DictionaryDesc_Values,(void*)ADT_Dictionary__DictionaryDesc_Items,(void*)ADT_Dictionary__DictionaryDesc_IterKeys,(void*)ADT_Dictionary__DictionaryDesc_IterValues}, (RT0__Struct[]){&_td_ADT_Dictionary__DictionaryDesc, &_td_OOC_X86_SSA__Instr, &_td_OOC_X86_Debug__State, NULL}, &_mid, "ADT:Dictionary.DictionaryDesc(OOC:X86:SSA.Instr,OOC:X86:Debug.State)", 20, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd3 = { (RT0__Struct[]){&_td__qtd2}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_OOC_X86_SSA__Instr, &_td_OOC_X86_Debug__State, NULL}, &_mid, "ADT:Dictionary.Dictionary(OOC:X86:SSA.Instr,OOC:X86:Debug.State)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:Debug", (RT0__Struct[]) { &_td_OOC_X86_Debug__Output, &_td_OOC_X86_Debug__OutputDesc, &_td_OOC_X86_Debug__State, &_td_OOC_X86_Debug__StateDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:Debug", (RT0__Struct[]) { &_td_OOC_X86_Debug__Output, &_td_OOC_X86_Debug__OutputDesc, &_td_OOC_X86_Debug__State, &_td_OOC_X86_Debug__StateDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, NULL }, 0 };
 
-extern void OOC_OOC_X86_Debug_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_X86_Debug_init();
+extern void OOC_OOC_X86_Debug_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_IO_TextRider_open(&_mid);
+    OOC_IO_StdChannels_open(&_mid);
+    OOC_Out_open(&_mid);
+    OOC_Log_open(&_mid);
+    OOC_OOC_C_Naming_open(&_mid);
+    OOC_OOC_X86_SSA_open(&_mid);
+    OOC_OOC_X86_Machine_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_X86_Debug_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_X86_Debug_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_X86_Debug_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_IO_TextRider_close(&_mid);
+    OOC_IO_StdChannels_close(&_mid);
+    OOC_Out_close(&_mid);
+    OOC_Log_close(&_mid);
+    OOC_OOC_C_Naming_close(&_mid);
+    OOC_OOC_X86_SSA_close(&_mid);
+    OOC_OOC_X86_Machine_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

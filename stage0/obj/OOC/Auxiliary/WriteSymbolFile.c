@@ -81,4 +81,7 @@ void OOC_OOC_Auxiliary_WriteSymbolFile_init(void) {
   ;
 }
 
+void OOC_OOC_Auxiliary_WriteSymbolFile_destroy(void) {
+}
+
 /* --- */

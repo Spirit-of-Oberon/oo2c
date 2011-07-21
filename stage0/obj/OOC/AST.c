@@ -2035,4 +2035,7 @@ void OOC_OOC_AST_init(void) {
   ;
 }
 
+void OOC_OOC_AST_destroy(void) {
+}
+
 /* --- */

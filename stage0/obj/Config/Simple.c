@@ -273,4 +273,7 @@ void OOC_Config_Simple_init(void) {
   ;
 }
 
+void OOC_Config_Simple_destroy(void) {
+}
+
 /* --- */

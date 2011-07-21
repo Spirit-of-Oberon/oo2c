@@ -52,4 +52,7 @@ void OOC_Var6_init(void) {
   ;
 }
 
+void OOC_Var6_destroy(void) {
+}
+
 /* --- */

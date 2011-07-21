@@ -14,11 +14,37 @@ static RT0__StructDesc _td__qtd2 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_O
 static RT0__StructDesc _td__qtd3 = { (RT0__Struct[]){&_td__qtd2}, NULL, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayList, &_td_Object__Object, NULL}, &_mid, "ADT:ArrayList.ArrayList(ADT:ArrayList.E)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd4 = { (RT0__Struct[]){&_td__qtd4}, (void*[]){(void*)ADT_ArrayList__IterElementsDesc_INIT,(void*)ADT_ArrayList__IterElementsDesc_Next}, (RT0__Struct[]){&_td_ADT_ArrayList__IterElementsDesc, &_td_Object__Object, NULL}, &_mid, "ADT:ArrayList.IterElementsDesc(ADT:ArrayList.E)", 8, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd5 = { (RT0__Struct[]){&_td__qtd4}, NULL, (RT0__Struct[]){&_td_ADT_ArrayList__IterElements, &_td_Object__Object, NULL}, &_mid, "ADT:ArrayList.IterElements(ADT:ArrayList.E)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"ADT:ArrayList", (RT0__Struct[]) { &_td_ADT_ArrayList__Array, &_td_ADT_ArrayList__ArrayList, &_td_ADT_ArrayList__ArrayListDesc, &_td_ADT_ArrayList__IterElements, &_td_ADT_ArrayList__IterElementsDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"ADT:ArrayList", (RT0__Struct[]) { &_td_ADT_ArrayList__Array, &_td_ADT_ArrayList__ArrayList, &_td_ADT_ArrayList__ArrayListDesc, &_td_ADT_ArrayList__IterElements, &_td_ADT_ArrayList__IterElementsDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, NULL }, 0 };
 
-extern void OOC_ADT_ArrayList_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_ADT_ArrayList_init();
+extern void OOC_ADT_ArrayList_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_ADT_Storable_open(&_mid);
+    OOC_ADT_Comparator_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_ADT_ArrayList_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_ADT_ArrayList_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_ADT_ArrayList_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_ADT_Storable_close(&_mid);
+    OOC_ADT_Comparator_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

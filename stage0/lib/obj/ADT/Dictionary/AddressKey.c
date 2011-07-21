@@ -811,4 +811,7 @@ void OOC_ADT_Dictionary_AddressKey_init(void) {
   ;
 }
 
+void OOC_ADT_Dictionary_AddressKey_destroy(void) {
+}
+
 /* --- */

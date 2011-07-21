@@ -10,7 +10,9 @@
 extern OOC_X86_SSA__Opnd OOC_X86_Machine__InOutOpnd(OOC_X86_SSA__Instr instr);
 extern void OOC_X86_Machine__ApplyMachineModel(OOC_X86_SSA__FunctionBlock b);
 extern void OOC_OOC_X86_Machine_init(void);
-extern void OOC_OOC_X86_Machine_init0(void);
+extern void OOC_OOC_X86_Machine_open(RT0__Module client);
+extern void OOC_OOC_X86_Machine_destroy(void);
+extern void OOC_OOC_X86_Machine_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_X86_Machine_ */

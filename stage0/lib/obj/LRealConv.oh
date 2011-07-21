@@ -19,7 +19,9 @@ extern OOC_INT16 NORETURN LRealConv__LengthFloatReal(OOC_REAL64 real, OOC_INT16 
 extern OOC_INT16 NORETURN LRealConv__LengthEngReal(OOC_REAL64 real, OOC_INT16 sigFigs) NORETURN2;
 extern OOC_INT16 NORETURN LRealConv__LengthFixedReal(OOC_REAL64 real, OOC_INT16 place) NORETURN2;
 extern void OOC_LRealConv_init(void);
-extern void OOC_LRealConv_init0(void);
+extern void OOC_LRealConv_open(RT0__Module client);
+extern void OOC_LRealConv_destroy(void);
+extern void OOC_LRealConv_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_LRealConv__2120;

@@ -31,11 +31,35 @@ static RT0__StructDesc _td__qtd4 = { (RT0__Struct[]){&_td__qtd4}, (void*[]){(voi
 static RT0__StructDesc _td__qtd5 = { (RT0__Struct[]){&_td__qtd4}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__IterKeys, &_td_Object__Object, &_td_Object__Object, NULL}, &_mid, "ADT:Dictionary.IterKeys(ADT:Dictionary.K,ADT:Dictionary.V)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd6 = { (RT0__Struct[]){&_td__qtd6}, (void*[]){(void*)ADT_Dictionary__IterValuesDesc_INIT,(void*)ADT_Dictionary__IterValuesDesc_Next}, (RT0__Struct[]){&_td_ADT_Dictionary__IterValuesDesc, &_td_Object__Object, &_td_Object__Object, NULL}, &_mid, "ADT:Dictionary.IterValuesDesc(ADT:Dictionary.K,ADT:Dictionary.V)", 8, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd7 = { (RT0__Struct[]){&_td__qtd6}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__IterValues, &_td_Object__Object, &_td_Object__Object, NULL}, &_mid, "ADT:Dictionary.IterValues(ADT:Dictionary.K,ADT:Dictionary.V)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"ADT:Dictionary", (RT0__Struct[]) { &_td_ADT_Dictionary__Entry, &_td_ADT_Dictionary__Table, &_td_ADT_Dictionary__Item, &_td_ADT_Dictionary__ItemArrayPtr, &_td_ADT_Dictionary__Dictionary, &_td_ADT_Dictionary__DictionaryDesc, &_td_ADT_Dictionary__IterKeys, &_td_ADT_Dictionary__IterKeysDesc, &_td_ADT_Dictionary__IterValues, &_td_ADT_Dictionary__IterValuesDesc, &_td_ADT_Dictionary__Dummy, &_td_ADT_Dictionary__DummyDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, &_td__qtd6, &_td__qtd7, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"ADT:Dictionary", (RT0__Struct[]) { &_td_ADT_Dictionary__Entry, &_td_ADT_Dictionary__Table, &_td_ADT_Dictionary__Item, &_td_ADT_Dictionary__ItemArrayPtr, &_td_ADT_Dictionary__Dictionary, &_td_ADT_Dictionary__DictionaryDesc, &_td_ADT_Dictionary__IterKeys, &_td_ADT_Dictionary__IterKeysDesc, &_td_ADT_Dictionary__IterValues, &_td_ADT_Dictionary__IterValuesDesc, &_td_ADT_Dictionary__Dummy, &_td_ADT_Dictionary__DummyDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, &_td__qtd6, &_td__qtd7, NULL }, 0 };
 
-extern void OOC_ADT_Dictionary_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_ADT_Dictionary_init();
+extern void OOC_ADT_Dictionary_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_ADT_Storable_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_ADT_Dictionary_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_ADT_Dictionary_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_ADT_Dictionary_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_ADT_Storable_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

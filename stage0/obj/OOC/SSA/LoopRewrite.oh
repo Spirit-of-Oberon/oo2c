@@ -10,7 +10,9 @@
 extern void OOC_SSA_LoopRewrite__Flatten(OOC_SSA__Result res);
 extern void OOC_SSA_LoopRewrite__Transform(OOC_SSA__ProcBlock pb);
 extern void OOC_OOC_SSA_LoopRewrite_init(void);
-extern void OOC_OOC_SSA_LoopRewrite_init0(void);
+extern void OOC_OOC_SSA_LoopRewrite_open(RT0__Module client);
+extern void OOC_OOC_SSA_LoopRewrite_destroy(void);
+extern void OOC_OOC_SSA_LoopRewrite_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__Worklist;

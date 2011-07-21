@@ -84,7 +84,9 @@ extern OOC_SymbolTable__Type OOC_SymbolTable_Predef__SmallestIntType(Object_BigI
 extern OOC_CHAR8 OOC_SymbolTable_Predef__IsStaticMethod(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
 extern OOC_CHAR8 OOC_SymbolTable_Predef__ImplementsFinalize(OOC_SymbolTable__Record t);
 extern void OOC_OOC_SymbolTable_Predef_init(void);
-extern void OOC_OOC_SymbolTable_Predef_init0(void);
+extern void OOC_OOC_SymbolTable_Predef_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_Predef_destroy(void);
+extern void OOC_OOC_SymbolTable_Predef_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_Predef__3834;

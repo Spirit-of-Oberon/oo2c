@@ -43,7 +43,9 @@
 #define Ascii__xon (OOC_CHAR8)'\021'
 #define Ascii__xoff (OOC_CHAR8)'\023'
 extern void OOC_Ascii_init(void);
-extern void OOC_Ascii_init0(void);
+extern void OOC_Ascii_open(RT0__Module client);
+extern void OOC_Ascii_destroy(void);
+extern void OOC_Ascii_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_Ascii_ */

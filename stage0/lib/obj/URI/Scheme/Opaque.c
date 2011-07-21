@@ -160,4 +160,7 @@ void OOC_URI_Scheme_Opaque_init(void) {
   ;
 }
 
+void OOC_URI_Scheme_Opaque_destroy(void) {
+}
+
 /* --- */

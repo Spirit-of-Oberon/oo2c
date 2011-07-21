@@ -1897,4 +1897,7 @@ void OOC_OOC_AST_CreateSymTab_init(void) {
   ;
 }
 
+void OOC_OOC_AST_CreateSymTab_destroy(void) {
+}
+
 /* --- */

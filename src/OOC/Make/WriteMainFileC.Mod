@@ -1,7 +1,7 @@
-(* 	$Id: WriteMainFileC.Mod,v 1.10 2003/02/02 19:10:06 mva Exp $	 *)
+(* 	$Id: WriteMainFileC.Mod,v 1.12 2004/12/15 13:07:20 mva Exp $	 *)
 MODULE OOC:Make:WriteMainFileC;
 (*  Generates the main file of a program.
-    Copyright (C) 2001, 2002, 2003  Michael van Acken
+    Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -24,8 +24,7 @@ IMPORT
   IO, IO:TextRider, OOC:Config, OOC:Repository;
 
   
-PROCEDURE WriteFile*(module: Repository.Module;
-                     imports: ARRAY OF Repository.Module)
+PROCEDURE WriteFile*(module: Repository.Module)
 RAISES IO.Error;
   VAR
     ch: IO.ByteChannel;
@@ -51,31 +50,18 @@ RAISES IO.Error;
       w. WriteLn;
     END WriteModuleName;
   
-  PROCEDURE WriteModules (w: TextRider.Writer; prefix, suffix: ARRAY OF CHAR);
-    VAR
-      i: LONGINT;
-    BEGIN
-      FOR i := 0 TO LEN(imports)-1 DO
-        IF ~imports[i].ifData.NoObjectFile() THEN
-          WriteModuleName (w, prefix, imports[i], suffix);
-        END;
-      END;
-    END WriteModules;
-  
   BEGIN
     ch := module. GetOutputChannel (Repository.modMainFileC, TRUE);
     w := TextRider.ConnectWriter (ch);
     w. WriteString ('#include <'+Config.runtimeModule+
                     Repository.headerSuffix+'>');
     w. WriteLn;
-    WriteModules (w, "extern void OOC_", "_init0(void);");
-    w. WriteLn;
     
     w. WriteString ("int main (int argc, char *argv[]) {");
     w. WriteLn; w. WriteString ("  RT0__argc = (OOC_INT32)argc;");
     w. WriteLn; w. WriteString ("  RT0__argv = (OOC_CHAR8**)argv;");
     w. WriteLn;
-    WriteModules (w, "  OOC_", "_init0();");
+    WriteModuleName (w, "  OOC_", module, "_open(NULL);");
     w. WriteString ("  return 0;  /* _program_exit_code */");
     w. WriteLn;
     w. WriteString ("}");

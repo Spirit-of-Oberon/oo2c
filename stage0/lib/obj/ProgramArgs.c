@@ -448,4 +448,7 @@ void OOC_ProgramArgs_init(void) {
   ;
 }
 
+void OOC_ProgramArgs_destroy(void) {
+}
+
 /* --- */

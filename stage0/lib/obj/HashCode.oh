@@ -16,7 +16,9 @@ extern OOC_INT32 HashCode__LongCharRegion(const OOC_CHAR16 data__ref[], OOC_LEN 
 extern OOC_INT32 HashCode__UCS4CharRegion(const OOC_CHAR32 data__ref[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
 extern void HashCode__Append(OOC_INT32 x, OOC_INT32 *hash);
 extern void OOC_HashCode_init(void);
-extern void OOC_HashCode_init0(void);
+extern void OOC_HashCode_open(RT0__Module client);
+extern void OOC_HashCode_destroy(void);
+extern void OOC_HashCode_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_HashCode__1534;

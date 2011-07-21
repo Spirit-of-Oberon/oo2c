@@ -21,7 +21,9 @@ extern void OS_Files__Remove(Object__String path);
 extern OOC_CHAR8 OS_Files__Exists(Object__String path);
 extern OOC_REAL64 OS_Files__MTime(Object__String path);
 extern void OOC_OS_Files_init(void);
-extern void OOC_OS_Files_init0(void);
+extern void OOC_OS_Files_open(RT0__Module client);
+extern void OOC_OS_Files_destroy(void);
+extern void OOC_OS_Files_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OS_Files__1348;

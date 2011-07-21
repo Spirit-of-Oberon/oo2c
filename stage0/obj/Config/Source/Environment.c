@@ -530,4 +530,7 @@ void OOC_Config_Source_Environment_init(void) {
   ;
 }
 
+void OOC_Config_Source_Environment_destroy(void) {
+}
+
 /* --- */

@@ -22,7 +22,9 @@ extern OOC_INT32 ADT_Comparator__StringDesc_Compare(ADT_Comparator__String cmp, 
 #define _TBN_ADT_Comparator__StringDesc_Compare 4
 typedef OOC_INT32 (*_TBP_ADT_Comparator__StringDesc_Compare)(ADT_Comparator__String cmp, Object__Object o1, Object__Object o2);
 extern void OOC_ADT_Comparator_init(void);
-extern void OOC_ADT_Comparator_init0(void);
+extern void OOC_ADT_Comparator_open(RT0__Module client);
+extern void OOC_ADT_Comparator_destroy(void);
+extern void OOC_ADT_Comparator_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_Comparator__Comparator;

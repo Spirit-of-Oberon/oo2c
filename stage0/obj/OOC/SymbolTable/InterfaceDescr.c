@@ -1349,4 +1349,7 @@ void OOC_OOC_SymbolTable_InterfaceDescr_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_InterfaceDescr_destroy(void) {
+}
+
 /* --- */

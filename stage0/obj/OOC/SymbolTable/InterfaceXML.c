@@ -573,4 +573,7 @@ void OOC_OOC_SymbolTable_InterfaceXML_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_InterfaceXML_destroy(void) {
+}
+
 /* --- */

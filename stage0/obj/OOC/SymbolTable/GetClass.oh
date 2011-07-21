@@ -9,7 +9,9 @@
 #include <Exception.oh>
 extern OOC_SymbolTable__Name OOC_SymbolTable_GetClass__GetClass(OOC_SymbolTable__Item item);
 extern void OOC_OOC_SymbolTable_GetClass_init(void);
-extern void OOC_OOC_SymbolTable_GetClass_init0(void);
+extern void OOC_OOC_SymbolTable_GetClass_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_GetClass_destroy(void);
+extern void OOC_OOC_SymbolTable_GetClass_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_SymbolTable_GetClass_ */

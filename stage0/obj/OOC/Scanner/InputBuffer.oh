@@ -33,7 +33,9 @@ extern void OOC_Scanner_InputBuffer__BufferDesc_Close(OOC_Scanner_InputBuffer__B
 typedef void (*_TBP_OOC_Scanner_InputBuffer__BufferDesc_Close)(OOC_Scanner_InputBuffer__Buffer b);
 extern OOC_Scanner_InputBuffer__Buffer OOC_Scanner_InputBuffer__New(IO__ByteChannel ch, OOC_Error__List errList);
 extern void OOC_OOC_Scanner_InputBuffer_init(void);
-extern void OOC_OOC_Scanner_InputBuffer_init0(void);
+extern void OOC_OOC_Scanner_InputBuffer_open(RT0__Module client);
+extern void OOC_OOC_Scanner_InputBuffer_destroy(void);
+extern void OOC_OOC_Scanner_InputBuffer_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Scanner_InputBuffer__1296;

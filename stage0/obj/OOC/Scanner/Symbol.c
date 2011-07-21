@@ -249,4 +249,7 @@ l5:
   ;
 }
 
+void OOC_OOC_Scanner_Symbol_destroy(void) {
+}
+
 /* --- */

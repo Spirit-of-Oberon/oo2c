@@ -81,4 +81,7 @@ void OOC_IntStr_init(void) {
   ;
 }
 
+void OOC_IntStr_destroy(void) {
+}
+
 /* --- */

@@ -33,7 +33,9 @@ extern void URI_Authority_Unparsed__AuthorityDesc_Append(URI_Authority_Unparsed_
 #define _TBN_URI_Authority_Unparsed__AuthorityDesc_Append 4
 typedef void (*_TBP_URI_Authority_Unparsed__AuthorityDesc_Append)(URI_Authority_Unparsed__Authority auth, ADT_StringBuffer__StringBuffer sb);
 extern void OOC_URI_Authority_Unparsed_init(void);
-extern void OOC_URI_Authority_Unparsed_init0(void);
+extern void OOC_URI_Authority_Unparsed_open(RT0__Module client);
+extern void OOC_URI_Authority_Unparsed_destroy(void);
+extern void OOC_URI_Authority_Unparsed_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_URI_Authority_Unparsed__Authority;

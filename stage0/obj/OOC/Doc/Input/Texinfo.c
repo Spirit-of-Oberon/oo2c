@@ -2663,4 +2663,7 @@ void OOC_OOC_Doc_Input_Texinfo_init(void) {
   ;
 }
 
+void OOC_OOC_Doc_Input_Texinfo_destroy(void) {
+}
+
 /* --- */

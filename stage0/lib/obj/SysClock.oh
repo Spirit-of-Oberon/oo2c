@@ -33,7 +33,9 @@ extern void SysClock__SetClock(const struct SysClock__DateTime *userData__ref);
 extern void SysClock__MakeLocalTime(struct SysClock__DateTime *c, RT0__Struct c__tag);
 extern OOC_INT32 SysClock__GetTimeOfDay(OOC_INT32 *sec, OOC_INT32 *usec);
 extern void OOC_SysClock_init(void);
-extern void OOC_SysClock_init0(void);
+extern void OOC_SysClock_open(RT0__Module client);
+extern void OOC_SysClock_destroy(void);
+extern void OOC_SysClock_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_SysClock__DateTime;

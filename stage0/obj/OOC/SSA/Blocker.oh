@@ -149,7 +149,9 @@ extern void OOC_SSA_Blocker__Write(IO__ByteChannel c, OOC_SSA__ProcBlock pb);
 extern void OOC_SSA_Blocker__WriteMarker(IO__ByteChannel c, OOC_SSA__ProcBlock pb, ADT_Dictionary__Dictionary marker);
 extern void OOC_SSA_Blocker__ToStderr(OOC_SSA__ProcBlock pb);
 extern void OOC_OOC_SSA_Blocker_init(void);
-extern void OOC_OOC_SSA_Blocker_init0(void);
+extern void OOC_OOC_SSA_Blocker_open(RT0__Module client);
+extern void OOC_OOC_SSA_Blocker_destroy(void);
+extern void OOC_OOC_SSA_Blocker_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_Blocker__Proxy;

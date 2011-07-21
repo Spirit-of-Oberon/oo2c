@@ -19,11 +19,47 @@ RT0__StructDesc _td_Config_Section_Arguments__ErrorContext = { (RT0__Struct[]){&
 RT0__StructDesc _td_Config_Section_Arguments__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_XML_Error__ContextDesc,&_td_Config_Section__ErrorContextDesc,&_td_Config_Section_Arguments__ErrorContextDesc}, (void*[]){(void*)Config_Section_Arguments__ErrorContextDesc_GetTemplate,(void*)XML_Error__ContextDesc_WriteTemplate,(void*)XML_Error__ContextDesc_SetString}, NULL, &_mid, "ErrorContextDesc", 8, 3, 0, RT0__strRecord };
 RT0__StructDesc _td_Config_Section_Arguments__720 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_Config_Section_Arguments__3559 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 2048, 2048, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Config:Section:Arguments", (RT0__Struct[]) { &_td_Config_Section_Arguments__Section, &_td_Config_Section_Arguments__ArgumentArray, &_td_Config_Section_Arguments__SectionDesc, &_td_Config_Section_Arguments__ErrorContext, &_td_Config_Section_Arguments__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Config:Section:Arguments", (RT0__Struct[]) { &_td_Config_Section_Arguments__Section, &_td_Config_Section_Arguments__ArgumentArray, &_td_Config_Section_Arguments__SectionDesc, &_td_Config_Section_Arguments__ErrorContext, &_td_Config_Section_Arguments__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_Config_Section_Arguments_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_Config_Section_Arguments_init();
+extern void OOC_Config_Section_Arguments_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_Channel_open(&_mid);
+    OOC_TextRider_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_XML_Builder_open(&_mid);
+    OOC_XML_Locator_open(&_mid);
+    OOC_Config_Parser_open(&_mid);
+    OOC_Config_Section_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_Config_Section_Arguments_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_Config_Section_Arguments_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_Config_Section_Arguments_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_Channel_close(&_mid);
+    OOC_TextRider_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_XML_Builder_close(&_mid);
+    OOC_XML_Locator_close(&_mid);
+    OOC_Config_Parser_close(&_mid);
+    OOC_Config_Section_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

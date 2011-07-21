@@ -61,11 +61,103 @@ RT0__StructDesc _td_OOC_SSA_WriteC__25837 = { (RT0__Struct[]){&RT0__char}, NULL,
 RT0__StructDesc _td_OOC_SSA_WriteC__26130 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_WriteC__41042 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_SSA_WriteC__53760 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:WriteC", (RT0__Struct[]) { &_td_OOC_SSA_WriteC__RegisterSwap, &_td_OOC_SSA_WriteC__SwapArray, &_td_OOC_SSA_WriteC__Translator, &_td_OOC_SSA_WriteC__TranslatorDesc, &_td_OOC_SSA_WriteC__Writer, &_td_OOC_SSA_WriteC__WriterDesc, &_td_OOC_SSA_WriteC__Visitor, &_td_OOC_SSA_WriteC__VisitorDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:WriteC", (RT0__Struct[]) { &_td_OOC_SSA_WriteC__RegisterSwap, &_td_OOC_SSA_WriteC__SwapArray, &_td_OOC_SSA_WriteC__Translator, &_td_OOC_SSA_WriteC__TranslatorDesc, &_td_OOC_SSA_WriteC__Writer, &_td_OOC_SSA_WriteC__WriterDesc, &_td_OOC_SSA_WriteC__Visitor, &_td_OOC_SSA_WriteC__VisitorDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_WriteC_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_WriteC_init();
+extern void OOC_OOC_SSA_WriteC_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_IntStr_open(&_mid);
+    OOC_Err_open(&_mid);
+    OOC_Out_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_StringSearch_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_IO_StdChannels_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_ADT_Dictionary_IntValue_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_OOC_SymbolTable_Builder_open(&_mid);
+    OOC_OOC_IR_open(&_mid);
+    OOC_OOC_IR_VisitAll_open(&_mid);
+    OOC_OOC_SSA_Opcode_open(&_mid);
+    OOC_OOC_SSA_Opnd_open(&_mid);
+    OOC_OOC_SSA_open(&_mid);
+    OOC_OOC_SSA_IRtoSSA_open(&_mid);
+    OOC_OOC_SSA_Schedule_open(&_mid);
+    OOC_OOC_SSA_XML_open(&_mid);
+    OOC_OOC_SSA_DeadCodeElimination_open(&_mid);
+    OOC_OOC_SSA_Destore_open(&_mid);
+    OOC_OOC_SSA_CSE_open(&_mid);
+    OOC_OOC_SSA_Algebraic_open(&_mid);
+    OOC_OOC_SSA_ConstProp_open(&_mid);
+    OOC_OOC_SSA_LoopRewrite_open(&_mid);
+    OOC_OOC_SSA_PRE_open(&_mid);
+    OOC_OOC_SSA_Stats_open(&_mid);
+    OOC_OOC_SSA_Allocator_open(&_mid);
+    OOC_OOC_C_ConvertDecl_open(&_mid);
+    OOC_OOC_C_Naming_open(&_mid);
+    OOC_OOC_C_DeclWriter_open(&_mid);
+    OOC_OOC_Make_TranslateToC_open(&_mid);
+    OOC_OOC_SSA_Blocker_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_WriteC_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_WriteC_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_WriteC_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_IntStr_close(&_mid);
+    OOC_Err_close(&_mid);
+    OOC_Out_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_StringSearch_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_IO_StdChannels_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_ADT_Dictionary_IntValue_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_OOC_SymbolTable_Builder_close(&_mid);
+    OOC_OOC_IR_close(&_mid);
+    OOC_OOC_IR_VisitAll_close(&_mid);
+    OOC_OOC_SSA_Opcode_close(&_mid);
+    OOC_OOC_SSA_Opnd_close(&_mid);
+    OOC_OOC_SSA_close(&_mid);
+    OOC_OOC_SSA_IRtoSSA_close(&_mid);
+    OOC_OOC_SSA_Schedule_close(&_mid);
+    OOC_OOC_SSA_XML_close(&_mid);
+    OOC_OOC_SSA_DeadCodeElimination_close(&_mid);
+    OOC_OOC_SSA_Destore_close(&_mid);
+    OOC_OOC_SSA_CSE_close(&_mid);
+    OOC_OOC_SSA_Algebraic_close(&_mid);
+    OOC_OOC_SSA_ConstProp_close(&_mid);
+    OOC_OOC_SSA_LoopRewrite_close(&_mid);
+    OOC_OOC_SSA_PRE_close(&_mid);
+    OOC_OOC_SSA_Stats_close(&_mid);
+    OOC_OOC_SSA_Allocator_close(&_mid);
+    OOC_OOC_C_ConvertDecl_close(&_mid);
+    OOC_OOC_C_Naming_close(&_mid);
+    OOC_OOC_C_DeclWriter_close(&_mid);
+    OOC_OOC_Make_TranslateToC_close(&_mid);
+    OOC_OOC_SSA_Blocker_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

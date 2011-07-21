@@ -1902,4 +1902,7 @@ void OOC_OOC_C_DeclWriter_init(void) {
   ;
 }
 
+void OOC_OOC_C_DeclWriter_destroy(void) {
+}
+
 /* --- */

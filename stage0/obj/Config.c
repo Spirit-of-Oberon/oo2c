@@ -405,4 +405,7 @@ void OOC_Config_init(void) {
   ;
 }
 
+void OOC_Config_destroy(void) {
+}
+
 /* --- */

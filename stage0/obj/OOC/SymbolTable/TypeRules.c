@@ -2287,4 +2287,7 @@ void OOC_OOC_SymbolTable_TypeRules_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_TypeRules_destroy(void) {
+}
+
 /* --- */

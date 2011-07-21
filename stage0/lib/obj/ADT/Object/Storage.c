@@ -728,4 +728,7 @@ void OOC_ADT_Object_Storage_init(void) {
   ;
 }
 
+void OOC_ADT_Object_Storage_destroy(void) {
+}
+
 /* --- */

@@ -340,8 +340,8 @@ PROCEDURE (w: Writer) EndFile*();
     name0, name: STRING;
     
   BEGIN
-    name0 := Naming.NameOfModuleInit(w.module, TRUE);
-    name := Naming.NameOfModuleInit(w.module, FALSE);
+    name0 := Naming.NameOfModuleInit(w.module, TRUE, TRUE);
+    name := Naming.NameOfModuleInit(w.module, TRUE, FALSE);
     w.w.WriteObject(nl+".global "+name0);
     w.w.WriteObject(nlTab+".type "+name0+", @function");
     w.w.WriteObject(nl+name0+":");
@@ -1166,7 +1166,7 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
       w.blocks := NEW(ArrayList.ArrayList(Block), 16);
       w.fctBlock := fctBlock;
       IF (fctBlock.procDecl.procAST = NIL) THEN
-        w.name := Naming.NameOfModuleInit(w.module, FALSE);
+        w.name := Naming.NameOfModuleInit(w.module, TRUE, FALSE);
       ELSE        
         w.name := Naming.NameOfDeclaration(fctBlock.procDecl);
       END;

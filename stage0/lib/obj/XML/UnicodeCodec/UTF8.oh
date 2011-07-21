@@ -33,7 +33,9 @@ extern void XML_UnicodeCodec_UTF8__FactoryDesc_GetEncodingName(XML_UnicodeCodec_
 #define _TBN_XML_UnicodeCodec_UTF8__FactoryDesc_GetEncodingName 2
 typedef void (*_TBP_XML_UnicodeCodec_UTF8__FactoryDesc_GetEncodingName)(XML_UnicodeCodec_UTF8__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d);
 extern void OOC_XML_UnicodeCodec_UTF8_init(void);
-extern void OOC_XML_UnicodeCodec_UTF8_init0(void);
+extern void OOC_XML_UnicodeCodec_UTF8_open(RT0__Module client);
+extern void OOC_XML_UnicodeCodec_UTF8_destroy(void);
+extern void OOC_XML_UnicodeCodec_UTF8_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_UnicodeCodec_UTF8__Codec;

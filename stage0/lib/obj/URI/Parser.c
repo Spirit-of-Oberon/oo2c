@@ -653,4 +653,7 @@ void OOC_URI_Parser_init(void) {
   ;
 }
 
+void OOC_URI_Parser_destroy(void) {
+}
+
 /* --- */

@@ -46,11 +46,39 @@ RT0__StructDesc _td_OOC_SSA_Schedule__5453 = { (RT0__Struct[]){&_td_OOC_SSA_Sche
 RT0__StructDesc _td_OOC_SSA_Schedule__5512 = { (RT0__Struct[]){&_td_OOC_SSA__Opnd}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_Schedule__5501 = { (RT0__Struct[]){&_td_OOC_SSA_Schedule__5512}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_Schedule__InstrProxyDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_SSA__NodeDesc,&_td_OOC_SSA_Schedule__InstrProxyDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode}, NULL, &_mid, "InstrProxyDesc", 16, 3, 0, RT0__strRecord };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Schedule", (RT0__Struct[]) { &_td_OOC_SSA_Schedule__Block, &_td_OOC_SSA_Schedule__InstrProxy, &_td_OOC_SSA_Schedule__BranchBlock, &_td_OOC_SSA_Schedule__JumpBlock, &_td_OOC_SSA_Schedule__DeadEndBlock, &_td_OOC_SSA_Schedule__SwitchBlock, &_td_OOC_SSA_Schedule__Info, &_td_OOC_SSA_Schedule__InfoDesc, &_td_OOC_SSA_Schedule__Dependent, &_td_OOC_SSA_Schedule__DependentDesc, &_td_OOC_SSA_Schedule__Jump, &_td_OOC_SSA_Schedule__JumpDesc, &_td_OOC_SSA_Schedule__BlockDesc, &_td_OOC_SSA_Schedule__BranchBlockDesc, &_td_OOC_SSA_Schedule__JumpBlockDesc, &_td_OOC_SSA_Schedule__DeadEndBlockDesc, &_td_OOC_SSA_Schedule__SwitchBlockDesc, &_td_OOC_SSA_Schedule__InstrProxyDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Schedule", (RT0__Struct[]) { &_td_OOC_SSA_Schedule__Block, &_td_OOC_SSA_Schedule__InstrProxy, &_td_OOC_SSA_Schedule__BranchBlock, &_td_OOC_SSA_Schedule__JumpBlock, &_td_OOC_SSA_Schedule__DeadEndBlock, &_td_OOC_SSA_Schedule__SwitchBlock, &_td_OOC_SSA_Schedule__Info, &_td_OOC_SSA_Schedule__InfoDesc, &_td_OOC_SSA_Schedule__Dependent, &_td_OOC_SSA_Schedule__DependentDesc, &_td_OOC_SSA_Schedule__Jump, &_td_OOC_SSA_Schedule__JumpDesc, &_td_OOC_SSA_Schedule__BlockDesc, &_td_OOC_SSA_Schedule__BranchBlockDesc, &_td_OOC_SSA_Schedule__JumpBlockDesc, &_td_OOC_SSA_Schedule__DeadEndBlockDesc, &_td_OOC_SSA_Schedule__SwitchBlockDesc, &_td_OOC_SSA_Schedule__InstrProxyDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_Schedule_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_Schedule_init();
+extern void OOC_OOC_SSA_Schedule_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_OOC_SSA_open(&_mid);
+    OOC_OOC_SSA_Opcode_open(&_mid);
+    OOC_OOC_SSA_Opnd_open(&_mid);
+    OOC_OOC_SSA_Blocker_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_Schedule_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_Schedule_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_Schedule_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_OOC_SSA_close(&_mid);
+    OOC_OOC_SSA_Opcode_close(&_mid);
+    OOC_OOC_SSA_Opnd_close(&_mid);
+    OOC_OOC_SSA_Blocker_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

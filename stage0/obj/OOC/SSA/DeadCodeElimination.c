@@ -512,4 +512,7 @@ void OOC_OOC_SSA_DeadCodeElimination_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_DeadCodeElimination_destroy(void) {
+}
+
 /* --- */

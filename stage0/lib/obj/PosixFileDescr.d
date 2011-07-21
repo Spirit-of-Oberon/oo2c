@@ -13,11 +13,39 @@ RT0__StructDesc _td_PosixFileDescr__ErrorContext = { (RT0__Struct[]){&_td_PosixF
 RT0__StructDesc _td_PosixFileDescr__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_Channel__ErrorContextDesc,&_td_PosixFileDescr__ErrorContextDesc}, (void*[]){(void*)PosixFileDescr__ErrorContextDesc_GetTemplate}, NULL, &_mid, "ErrorContextDesc", 4, 2, 0, RT0__strRecord };
 RT0__StructDesc _td_PosixFileDescr__5406 = { (RT0__Struct[]){&RT0__byte}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_PosixFileDescr__5760 = { (RT0__Struct[]){&RT0__byte}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"PosixFileDescr", (RT0__Struct[]) { &_td_PosixFileDescr__Channel, &_td_PosixFileDescr__Reader, &_td_PosixFileDescr__Writer, &_td_PosixFileDescr__ChannelDesc, &_td_PosixFileDescr__ReaderDesc, &_td_PosixFileDescr__WriterDesc, &_td_PosixFileDescr__ErrorContext, &_td_PosixFileDescr__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"PosixFileDescr", (RT0__Struct[]) { &_td_PosixFileDescr__Channel, &_td_PosixFileDescr__Reader, &_td_PosixFileDescr__Writer, &_td_PosixFileDescr__ChannelDesc, &_td_PosixFileDescr__ReaderDesc, &_td_PosixFileDescr__WriterDesc, &_td_PosixFileDescr__ErrorContext, &_td_PosixFileDescr__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_PosixFileDescr_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_PosixFileDescr_init();
+extern void OOC_PosixFileDescr_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Time_open(&_mid);
+    OOC_CharClass_open(&_mid);
+    OOC_Channel_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_PosixFileDescr_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_PosixFileDescr_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_PosixFileDescr_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Time_close(&_mid);
+    OOC_CharClass_close(&_mid);
+    OOC_Channel_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

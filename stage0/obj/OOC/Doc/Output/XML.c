@@ -534,4 +534,7 @@ void OOC_OOC_Doc_Output_XML_init(void) {
   ;
 }
 
+void OOC_OOC_Doc_Output_XML_destroy(void) {
+}
+
 /* --- */

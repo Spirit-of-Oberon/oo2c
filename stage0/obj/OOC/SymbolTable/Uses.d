@@ -24,11 +24,39 @@ RT0__StructDesc _td_OOC_SymbolTable_Uses__1756 = { (RT0__Struct[]){&RT0__longcha
 RT0__StructDesc _td_OOC_SymbolTable_Uses__2691 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SymbolTable_Uses__2988 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SymbolTable_Uses__3102 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1024, 1024, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Uses", (RT0__Struct[]) { &_td_OOC_SymbolTable_Uses__Uses, &_td_OOC_SymbolTable_Uses__Selector, &_td_OOC_SymbolTable_Uses__StoredUses, &_td_OOC_SymbolTable_Uses__UsesDesc, &_td_OOC_SymbolTable_Uses__ErrorContext, &_td_OOC_SymbolTable_Uses__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Uses", (RT0__Struct[]) { &_td_OOC_SymbolTable_Uses__Uses, &_td_OOC_SymbolTable_Uses__Selector, &_td_OOC_SymbolTable_Uses__StoredUses, &_td_OOC_SymbolTable_Uses__UsesDesc, &_td_OOC_SymbolTable_Uses__ErrorContext, &_td_OOC_SymbolTable_Uses__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_OOC_SymbolTable_Uses_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SymbolTable_Uses_init();
+extern void OOC_OOC_SymbolTable_Uses_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_Err_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SymbolTable_Uses_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SymbolTable_Uses_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SymbolTable_Uses_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_Err_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

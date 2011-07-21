@@ -47,7 +47,9 @@ extern void OOC_SymbolTable_Uses__UsesDesc_RegisterSymTab(OOC_SymbolTable_Uses__
 typedef void (*_TBP_OOC_SymbolTable_Uses__UsesDesc_RegisterSymTab)(OOC_SymbolTable_Uses__Uses u, OOC_SymbolTable__Module symTab);
 extern void OOC_SymbolTable_Uses__Mark(OOC_SymbolTable__Declaration decl, OOC_SymbolTable_Uses__Uses uses, OOC_SymbolTable__Name ident);
 extern void OOC_OOC_SymbolTable_Uses_init(void);
-extern void OOC_OOC_SymbolTable_Uses_init0(void);
+extern void OOC_OOC_SymbolTable_Uses_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_Uses_destroy(void);
+extern void OOC_OOC_SymbolTable_Uses_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_Uses__Uses;

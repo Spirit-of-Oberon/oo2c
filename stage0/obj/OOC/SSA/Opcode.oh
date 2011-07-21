@@ -121,7 +121,9 @@ extern void OOC_SSA_Opcode__GetSubclassName(OOC_INT8 subclass, OOC_CHAR8 name[],
 extern void OOC_SSA_Opcode__GetName(OOC_INT8 _class, OOC_INT8 subclass, OOC_CHAR8 name[], OOC_LEN name_0d);
 extern OOC_INT8 OOC_SSA_Opcode__TypeToSubclass(OOC_SymbolTable__Type type);
 extern void OOC_OOC_SSA_Opcode_init(void);
-extern void OOC_OOC_SSA_Opcode_init0(void);
+extern void OOC_OOC_SSA_Opcode_open(RT0__Module client);
+extern void OOC_OOC_SSA_Opcode_destroy(void);
+extern void OOC_OOC_SSA_Opcode_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_Opcode__34347;

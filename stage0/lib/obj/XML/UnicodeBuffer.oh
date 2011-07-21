@@ -77,7 +77,9 @@ typedef void (*_TBP_XML_UnicodeBuffer__OutputDesc_Flush)(XML_UnicodeBuffer__Outp
 extern void XML_UnicodeBuffer__InitOutput(XML_UnicodeBuffer__Output out, OOC_CHAR8 _new, IO__ByteChannel writer, XML_UnicodeCodec__Factory codecFactory, OOC_CHAR8 createBOM);
 extern XML_UnicodeBuffer__Output XML_UnicodeBuffer__NewOutput(IO__ByteChannel writer, XML_UnicodeCodec__Factory codecFactory, OOC_CHAR8 createBOM);
 extern void OOC_XML_UnicodeBuffer_init(void);
-extern void OOC_XML_UnicodeBuffer_init0(void);
+extern void OOC_XML_UnicodeBuffer_open(RT0__Module client);
+extern void OOC_XML_UnicodeBuffer_destroy(void);
+extern void OOC_XML_UnicodeBuffer_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_UnicodeBuffer__268;

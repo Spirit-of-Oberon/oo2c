@@ -27,7 +27,9 @@ extern OOC_INT8 OOC_SSA_Allocator__SubclassToBasicType(OOC_INT8 subclass);
 extern OOC_INT8 OOC_SSA_Allocator__RegisterType(OOC_INT8 ctype);
 extern ADT_Dictionary__Dictionary OOC_SSA_Allocator__AssignRegisters(OOC_SSA__ProcBlock pb, OOC_SSA_Schedule__Block domRoot, OOC_C_DeclWriter__Writer w);
 extern void OOC_OOC_SSA_Allocator_init(void);
-extern void OOC_OOC_SSA_Allocator_init0(void);
+extern void OOC_OOC_SSA_Allocator_open(RT0__Module client);
+extern void OOC_OOC_SSA_Allocator_destroy(void);
+extern void OOC_OOC_SSA_Allocator_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_Allocator__1233;

@@ -190,4 +190,7 @@ void OOC_XML_InputBuffer_init(void) {
   ;
 }
 
+void OOC_XML_InputBuffer_destroy(void) {
+}
+
 /* --- */

@@ -239,7 +239,9 @@ extern TextRider__Writer TextRider__ConnectWriter(Channel__Channel ch);
 extern void TextRider__InitScanner(TextRider__Scanner s, Channel__Channel ch);
 extern TextRider__Scanner TextRider__ConnectScanner(Channel__Channel ch);
 extern void OOC_TextRider_init(void);
-extern void OOC_TextRider_init0(void);
+extern void OOC_TextRider_open(RT0__Module client);
+extern void OOC_TextRider_destroy(void);
+extern void OOC_TextRider_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_TextRider__Reader;

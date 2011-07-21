@@ -10,7 +10,9 @@ typedef void (*Termination__Proc)(void);
 extern void Termination__RegisterProc(Termination__Proc proc);
 extern void Termination__UnregisterProc(Termination__Proc proc);
 extern void OOC_Termination_init(void);
-extern void OOC_Termination_init0(void);
+extern void OOC_Termination_open(RT0__Module client);
+extern void OOC_Termination_destroy(void);
+extern void OOC_Termination_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_Termination_ */

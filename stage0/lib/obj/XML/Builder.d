@@ -10,11 +10,35 @@ RT0__StructDesc _td_XML_Builder__AttributeList = { (RT0__Struct[]){&_td_XML_Buil
 RT0__StructDesc _td_XML_Builder__3787 = { (RT0__Struct[]){&_td_XML_Builder__Attribute}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
 RT0__StructDesc _td_XML_Builder__AttributeArray = { (RT0__Struct[]){&_td_XML_Builder__3787}, NULL, NULL, &_mid, "AttributeArray", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_XML_Builder__AttributeListDesc = { (RT0__Struct[]){&_td_XML_Builder__AttributeListDesc}, (void*[]){(void*)XML_Builder__AttributeListDesc_Clear,(void*)XML_Builder__AttributeListDesc_Append}, NULL, &_mid, "AttributeListDesc", 8, 0, 0, RT0__strRecord };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:Builder", (RT0__Struct[]) { &_td_XML_Builder__Builder, &_td_XML_Builder__BuilderDesc, &_td_XML_Builder__Attribute, &_td_XML_Builder__AttributeDesc, &_td_XML_Builder__AttributeList, &_td_XML_Builder__AttributeArray, &_td_XML_Builder__AttributeListDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:Builder", (RT0__Struct[]) { &_td_XML_Builder__Builder, &_td_XML_Builder__BuilderDesc, &_td_XML_Builder__Attribute, &_td_XML_Builder__AttributeDesc, &_td_XML_Builder__AttributeList, &_td_XML_Builder__AttributeArray, &_td_XML_Builder__AttributeListDesc, NULL }, 0 };
 
-extern void OOC_XML_Builder_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_XML_Builder_init();
+extern void OOC_XML_Builder_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_URI_open(&_mid);
+    OOC_XML_DTD_open(&_mid);
+    OOC_XML_Locator_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_XML_Builder_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_XML_Builder_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_XML_Builder_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_URI_close(&_mid);
+    OOC_XML_DTD_close(&_mid);
+    OOC_XML_Locator_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

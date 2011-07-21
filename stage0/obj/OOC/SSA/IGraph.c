@@ -1045,4 +1045,7 @@ void OOC_OOC_SSA_IGraph_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_IGraph_destroy(void) {
+}
+
 /* --- */

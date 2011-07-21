@@ -9,7 +9,9 @@
 #include <Exception.oh>
 extern void OOC_X86_Algebraic__Transform(OOC_X86_SSA__FunctionBlock pb, OOC_CHAR8 enableSubstitution);
 extern void OOC_OOC_X86_Algebraic_init(void);
-extern void OOC_OOC_X86_Algebraic_init0(void);
+extern void OOC_OOC_X86_Algebraic_open(RT0__Module client);
+extern void OOC_OOC_X86_Algebraic_destroy(void);
+extern void OOC_OOC_X86_Algebraic_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_Algebraic__Worklist;

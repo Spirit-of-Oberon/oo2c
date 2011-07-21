@@ -373,4 +373,7 @@ void OOC_OOC_SymbolTable_Exports_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_Exports_destroy(void) {
+}
+
 /* --- */

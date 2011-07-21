@@ -757,4 +757,7 @@ void OOC_OOC_SSA_PRE_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_PRE_destroy(void) {
+}
+
 /* --- */

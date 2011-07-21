@@ -34,11 +34,35 @@ RT0__StructDesc _td_IO_BinaryRider__8402 = { (RT0__Struct[]){&RT0__byte}, NULL, 
 RT0__StructDesc _td_IO_BinaryRider__9257 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_IO_BinaryRider__9498 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_IO_BinaryRider__13046 = { (RT0__Struct[]){&RT0__byte}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"IO:BinaryRider", (RT0__Struct[]) { &_td_IO_BinaryRider__Reader, &_td_IO_BinaryRider__ReaderDesc, &_td_IO_BinaryRider__Writer, &_td_IO_BinaryRider__WriterDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"IO:BinaryRider", (RT0__Struct[]) { &_td_IO_BinaryRider__Reader, &_td_IO_BinaryRider__ReaderDesc, &_td_IO_BinaryRider__Writer, &_td_IO_BinaryRider__WriterDesc, NULL }, 0 };
 
-extern void OOC_IO_BinaryRider_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_IO_BinaryRider_init();
+extern void OOC_IO_BinaryRider_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Strings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_IO_BinaryRider_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_IO_BinaryRider_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_IO_BinaryRider_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Strings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

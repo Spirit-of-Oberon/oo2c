@@ -326,11 +326,71 @@ RT0__StructDesc _td_OOC_IR__49323 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &
 RT0__StructDesc _td_OOC_IR__52287 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_IR__62405 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_IR__62770 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:IR", (RT0__Struct[]) { &_td_OOC_IR__Node, &_td_OOC_IR__NodeDesc, &_td_OOC_IR__GuardedVar, &_td_OOC_IR__GuardedVarDesc, &_td_OOC_IR__Expression, &_td_OOC_IR__ExpressionList, &_td_OOC_IR__ExpressionDesc, &_td_OOC_IR__Const, &_td_OOC_IR__ConstDesc, &_td_OOC_IR__Operator, &_td_OOC_IR__OperatorDesc, &_td_OOC_IR__Abs, &_td_OOC_IR__AbsDesc, &_td_OOC_IR__Adr, &_td_OOC_IR__AdrDesc, &_td_OOC_IR__Ash, &_td_OOC_IR__AshDesc, &_td_OOC_IR__BinaryArith, &_td_OOC_IR__BinaryArithDesc, &_td_OOC_IR__BooleanOp, &_td_OOC_IR__BooleanOpDesc, &_td_OOC_IR__Cap, &_td_OOC_IR__CapDesc, &_td_OOC_IR__Compare, &_td_OOC_IR__CompareDesc, &_td_OOC_IR__Concat, &_td_OOC_IR__ConcatDesc, &_td_OOC_IR__ChangeElement, &_td_OOC_IR__ChangeElementDesc, &_td_OOC_IR__Constructor, &_td_OOC_IR__NewObject, &_td_OOC_IR__Call, &_td_OOC_IR__ConstructorDesc, &_td_OOC_IR__CurrentException, &_td_OOC_IR__TryStatm, &_td_OOC_IR__CurrentExceptionDesc, &_td_OOC_IR__Deref, &_td_OOC_IR__DerefDesc, &_td_OOC_IR__Entier, &_td_OOC_IR__EntierDesc, &_td_OOC_IR__Index, &_td_OOC_IR__IndexDesc, &_td_OOC_IR__Len, &_td_OOC_IR__LenDesc, &_td_OOC_IR__Negate, &_td_OOC_IR__NegateDesc, &_td_OOC_IR__NewBlock, &_td_OOC_IR__NewBlockDesc, &_td_OOC_IR__NewObjectDesc, &_td_OOC_IR__Not, &_td_OOC_IR__NotDesc, &_td_OOC_IR__Odd, &_td_OOC_IR__OddDesc, &_td_OOC_IR__SelectField, &_td_OOC_IR__SelectFieldDesc, &_td_OOC_IR__SelectProc, &_td_OOC_IR__SelectProcDesc, &_td_OOC_IR__SetMember, &_td_OOC_IR__SetMemberDesc, &_td_OOC_IR__SetOp, &_td_OOC_IR__SetOpDesc, &_td_OOC_IR__SetRange, &_td_OOC_IR__SetRangeDesc, &_td_OOC_IR__Shift, &_td_OOC_IR__ShiftDesc, &_td_OOC_IR__TypeCast, &_td_OOC_IR__TypeCastDesc, &_td_OOC_IR__TypeConv, &_td_OOC_IR__TypeConvDesc, &_td_OOC_IR__TypeTag, &_td_OOC_IR__TypeRef, &_td_OOC_IR__TypeTagDesc, &_td_OOC_IR__TypeTest, &_td_OOC_IR__TypeTestDesc, &_td_OOC_IR__TypeGuard, &_td_OOC_IR__TypeGuardDesc, &_td_OOC_IR__Reference, &_td_OOC_IR__ReferenceDesc, &_td_OOC_IR__ModuleRef, &_td_OOC_IR__ModuleRefDesc, &_td_OOC_IR__PredefProc, &_td_OOC_IR__PredefProcDesc, &_td_OOC_IR__ProcedureRef, &_td_OOC_IR__ProcedureRefDesc, &_td_OOC_IR__TypeRefDesc, &_td_OOC_IR__Var, &_td_OOC_IR__VarDesc, &_td_OOC_IR__Statement, &_td_OOC_IR__LoopStatm, &_td_OOC_IR__StatementSeq, &_td_OOC_IR__StatementDesc, &_td_OOC_IR__Assert, &_td_OOC_IR__AssertDesc, &_td_OOC_IR__Assignment, &_td_OOC_IR__AssignmentDesc, &_td_OOC_IR__AssignOp, &_td_OOC_IR__AssignOpDesc, &_td_OOC_IR__CallDesc, &_td_OOC_IR__Copy, &_td_OOC_IR__CopyDesc, &_td_OOC_IR__CopyParameter, &_td_OOC_IR__CopyParameterDesc, &_td_OOC_IR__CopyString, &_td_OOC_IR__CopyStringDesc, &_td_OOC_IR__Exit, &_td_OOC_IR__ExitDesc, &_td_OOC_IR__ForStatm, &_td_OOC_IR__ForStatmDesc, &_td_OOC_IR__IterateArrayStatm, &_td_OOC_IR__IterateArrayStatmDesc, &_td_OOC_IR__IterateObjectStatm, &_td_OOC_IR__IterateObjectStatmDesc, &_td_OOC_IR__IfStatm, &_td_OOC_IR__IfStatmDesc, &_td_OOC_IR__Case, &_td_OOC_IR__CaseLabels, &_td_OOC_IR__CaseDesc, &_td_OOC_IR__CaseStatm, &_td_OOC_IR__CaseList, &_td_OOC_IR__CaseStatmDesc, &_td_OOC_IR__LoopStatmDesc, &_td_OOC_IR__MoveBlock, &_td_OOC_IR__MoveBlockDesc, &_td_OOC_IR__Raise, &_td_OOC_IR__RaiseDesc, &_td_OOC_IR__RepeatStatm, &_td_OOC_IR__RepeatStatmDesc, &_td_OOC_IR__Return, &_td_OOC_IR__ReturnDesc, &_td_OOC_IR__CatchClause, &_td_OOC_IR__CatchList, &_td_OOC_IR__CatchClauseDesc, &_td_OOC_IR__TryStatmDesc, &_td_OOC_IR__WhileStatm, &_td_OOC_IR__WhileStatmDesc, &_td_OOC_IR__WithStatm, &_td_OOC_IR__WithStatmDesc, &_td_OOC_IR__Procedure, &_td_OOC_IR__ProcedureList, &_td_OOC_IR__ProcedureDesc, &_td_OOC_IR__Module, &_td_OOC_IR__ModuleDesc, &_td_OOC_IR__TypeType, &_td_OOC_IR__TypeTypeDesc, &_td_OOC_IR__ModuleType, &_td_OOC_IR__ModuleTypeDesc, &_td_OOC_IR__Builder, &_td_OOC_IR__ConstFold, &_td_OOC_IR__BuilderDesc, &_td_OOC_IR__Visitor, &_td_OOC_IR__VisitorDesc, &_td_OOC_IR__ConstFoldDesc, &_td_OOC_IR__ErrorContext, &_td_OOC_IR__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:IR", (RT0__Struct[]) { &_td_OOC_IR__Node, &_td_OOC_IR__NodeDesc, &_td_OOC_IR__GuardedVar, &_td_OOC_IR__GuardedVarDesc, &_td_OOC_IR__Expression, &_td_OOC_IR__ExpressionList, &_td_OOC_IR__ExpressionDesc, &_td_OOC_IR__Const, &_td_OOC_IR__ConstDesc, &_td_OOC_IR__Operator, &_td_OOC_IR__OperatorDesc, &_td_OOC_IR__Abs, &_td_OOC_IR__AbsDesc, &_td_OOC_IR__Adr, &_td_OOC_IR__AdrDesc, &_td_OOC_IR__Ash, &_td_OOC_IR__AshDesc, &_td_OOC_IR__BinaryArith, &_td_OOC_IR__BinaryArithDesc, &_td_OOC_IR__BooleanOp, &_td_OOC_IR__BooleanOpDesc, &_td_OOC_IR__Cap, &_td_OOC_IR__CapDesc, &_td_OOC_IR__Compare, &_td_OOC_IR__CompareDesc, &_td_OOC_IR__Concat, &_td_OOC_IR__ConcatDesc, &_td_OOC_IR__ChangeElement, &_td_OOC_IR__ChangeElementDesc, &_td_OOC_IR__Constructor, &_td_OOC_IR__NewObject, &_td_OOC_IR__Call, &_td_OOC_IR__ConstructorDesc, &_td_OOC_IR__CurrentException, &_td_OOC_IR__TryStatm, &_td_OOC_IR__CurrentExceptionDesc, &_td_OOC_IR__Deref, &_td_OOC_IR__DerefDesc, &_td_OOC_IR__Entier, &_td_OOC_IR__EntierDesc, &_td_OOC_IR__Index, &_td_OOC_IR__IndexDesc, &_td_OOC_IR__Len, &_td_OOC_IR__LenDesc, &_td_OOC_IR__Negate, &_td_OOC_IR__NegateDesc, &_td_OOC_IR__NewBlock, &_td_OOC_IR__NewBlockDesc, &_td_OOC_IR__NewObjectDesc, &_td_OOC_IR__Not, &_td_OOC_IR__NotDesc, &_td_OOC_IR__Odd, &_td_OOC_IR__OddDesc, &_td_OOC_IR__SelectField, &_td_OOC_IR__SelectFieldDesc, &_td_OOC_IR__SelectProc, &_td_OOC_IR__SelectProcDesc, &_td_OOC_IR__SetMember, &_td_OOC_IR__SetMemberDesc, &_td_OOC_IR__SetOp, &_td_OOC_IR__SetOpDesc, &_td_OOC_IR__SetRange, &_td_OOC_IR__SetRangeDesc, &_td_OOC_IR__Shift, &_td_OOC_IR__ShiftDesc, &_td_OOC_IR__TypeCast, &_td_OOC_IR__TypeCastDesc, &_td_OOC_IR__TypeConv, &_td_OOC_IR__TypeConvDesc, &_td_OOC_IR__TypeTag, &_td_OOC_IR__TypeRef, &_td_OOC_IR__TypeTagDesc, &_td_OOC_IR__TypeTest, &_td_OOC_IR__TypeTestDesc, &_td_OOC_IR__TypeGuard, &_td_OOC_IR__TypeGuardDesc, &_td_OOC_IR__Reference, &_td_OOC_IR__ReferenceDesc, &_td_OOC_IR__ModuleRef, &_td_OOC_IR__ModuleRefDesc, &_td_OOC_IR__PredefProc, &_td_OOC_IR__PredefProcDesc, &_td_OOC_IR__ProcedureRef, &_td_OOC_IR__ProcedureRefDesc, &_td_OOC_IR__TypeRefDesc, &_td_OOC_IR__Var, &_td_OOC_IR__VarDesc, &_td_OOC_IR__Statement, &_td_OOC_IR__LoopStatm, &_td_OOC_IR__StatementSeq, &_td_OOC_IR__StatementDesc, &_td_OOC_IR__Assert, &_td_OOC_IR__AssertDesc, &_td_OOC_IR__Assignment, &_td_OOC_IR__AssignmentDesc, &_td_OOC_IR__AssignOp, &_td_OOC_IR__AssignOpDesc, &_td_OOC_IR__CallDesc, &_td_OOC_IR__Copy, &_td_OOC_IR__CopyDesc, &_td_OOC_IR__CopyParameter, &_td_OOC_IR__CopyParameterDesc, &_td_OOC_IR__CopyString, &_td_OOC_IR__CopyStringDesc, &_td_OOC_IR__Exit, &_td_OOC_IR__ExitDesc, &_td_OOC_IR__ForStatm, &_td_OOC_IR__ForStatmDesc, &_td_OOC_IR__IterateArrayStatm, &_td_OOC_IR__IterateArrayStatmDesc, &_td_OOC_IR__IterateObjectStatm, &_td_OOC_IR__IterateObjectStatmDesc, &_td_OOC_IR__IfStatm, &_td_OOC_IR__IfStatmDesc, &_td_OOC_IR__Case, &_td_OOC_IR__CaseLabels, &_td_OOC_IR__CaseDesc, &_td_OOC_IR__CaseStatm, &_td_OOC_IR__CaseList, &_td_OOC_IR__CaseStatmDesc, &_td_OOC_IR__LoopStatmDesc, &_td_OOC_IR__MoveBlock, &_td_OOC_IR__MoveBlockDesc, &_td_OOC_IR__Raise, &_td_OOC_IR__RaiseDesc, &_td_OOC_IR__RepeatStatm, &_td_OOC_IR__RepeatStatmDesc, &_td_OOC_IR__Return, &_td_OOC_IR__ReturnDesc, &_td_OOC_IR__CatchClause, &_td_OOC_IR__CatchList, &_td_OOC_IR__CatchClauseDesc, &_td_OOC_IR__TryStatmDesc, &_td_OOC_IR__WhileStatm, &_td_OOC_IR__WhileStatmDesc, &_td_OOC_IR__WithStatm, &_td_OOC_IR__WithStatmDesc, &_td_OOC_IR__Procedure, &_td_OOC_IR__ProcedureList, &_td_OOC_IR__ProcedureDesc, &_td_OOC_IR__Module, &_td_OOC_IR__ModuleDesc, &_td_OOC_IR__TypeType, &_td_OOC_IR__TypeTypeDesc, &_td_OOC_IR__ModuleType, &_td_OOC_IR__ModuleTypeDesc, &_td_OOC_IR__Builder, &_td_OOC_IR__ConstFold, &_td_OOC_IR__BuilderDesc, &_td_OOC_IR__Visitor, &_td_OOC_IR__VisitorDesc, &_td_OOC_IR__ConstFoldDesc, &_td_OOC_IR__ErrorContext, &_td_OOC_IR__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_OOC_IR_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_IR_init();
+extern void OOC_OOC_IR_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Log_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_Object_BigInt_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_Config_open(&_mid);
+    OOC_OOC_Scanner_Symbol_open(&_mid);
+    OOC_OOC_Scanner_SymList_open(&_mid);
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_Config_Pragmas_open(&_mid);
+    OOC_OOC_Config_StdPragmas_open(&_mid);
+    OOC_OOC_AST_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_open(&_mid);
+    OOC_OOC_SymbolTable_Namespace_open(&_mid);
+    OOC_OOC_SymbolTable_CreateNamespace_open(&_mid);
+    OOC_OOC_SymbolTable_Uses_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_IR_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_IR_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_IR_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Log_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_Object_BigInt_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_Config_close(&_mid);
+    OOC_OOC_Scanner_Symbol_close(&_mid);
+    OOC_OOC_Scanner_SymList_close(&_mid);
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_Config_Pragmas_close(&_mid);
+    OOC_OOC_Config_StdPragmas_close(&_mid);
+    OOC_OOC_AST_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_close(&_mid);
+    OOC_OOC_SymbolTable_Namespace_close(&_mid);
+    OOC_OOC_SymbolTable_CreateNamespace_close(&_mid);
+    OOC_OOC_SymbolTable_Uses_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

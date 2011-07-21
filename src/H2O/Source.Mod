@@ -1,8 +1,8 @@
 MODULE H2O:Source [OOC_EXTENSIONS];
 
 IMPORT
-  H2O:Module,
-  Object, Err, Log, ADT:ArrayList,
+  H2O:Module, H2O:Option,
+  Object, Err, Log, ADT:Dictionary,
   IO, IO:FileChannel, OS:Files, OS:Path, Exception;
 
 CONST
@@ -22,21 +22,32 @@ TYPE
 
   Input* = POINTER TO InputDesc;
   InputDesc = RECORD
-    module- : Module.Module;
     lines, files : LONGINT;
     src : Source;
-    path : ArrayList.ArrayList;
-    frameworks : ArrayList.ArrayList;
+
+    options- : Option.Options;
+    path : Option.StringList;
+    exclude : Option.StringList;
+    frameworks : Option.StringList;
+
+(* frameworkMap associates each framework with the path to its Headers
+   directory. *)
+    frameworkMap : Dictionary.Dictionary(STRING,STRING);
+
+(* frameworkLength is the number of options elements currently incorporated
+   into the frameworkMap. The map is generated on demand when an include is
+   required and unprocessed options elements exist. *)
+    frameworkLength : LONGINT;
   END;
 
 PROCEDURE (i : Input) AppendPath* (path : STRING);
 BEGIN
-  i.path.Append(path);
+  i.path.value.Append(path);
 END AppendPath;
 
 PROCEDURE (i : Input) AppendFrameworkPath* (path : STRING);
 BEGIN
-  i.frameworks.Append(path);
+  i.frameworks.value.Append(path);
 END AppendFrameworkPath;
 
 PROCEDURE (i : Input) ShowContext*;
@@ -124,7 +135,7 @@ BEGIN
   END;
 END SearchFile;
 
-PROCEDURE (i : Input) SearchFramework(base : STRING; fileName : STRING; frameworkName : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
+PROCEDURE (i : Input) FindFramework(base : STRING);
 VAR 
   pos : LONGINT;
   list : Files.NameArray;
@@ -133,31 +144,42 @@ BEGIN
   frameworksDir := base + "/Frameworks";
   IF Files.Exists(frameworksDir) THEN
     (* how to check if this is a file or directory *)
-  TRY
-    list := Files.ListDir(frameworksDir);
-    IF (list # NIL) THEN
-      FOR pos := 0 TO LEN(list^)-1 DO
-        element := frameworksDir + "/" + list[pos];
-        Path.SplitExt(Path.BaseName(element), root, ext);
-        IF ext.Equals(".framework") THEN
-          includeDir := element + "/Headers/";
-          IF root.Equals(frameworkName) THEN
-            path := includeDir + fileName;
-            IF i.SearchFile(path, channel) THEN RETURN TRUE END;
-          END;
-          path := includeDir + frameworkName + "/" + fileName;
-          IF i.SearchFile(path, channel) THEN RETURN TRUE END;
-          IF i.SearchFramework(element, fileName, frameworkName, path, channel) THEN
-            RETURN TRUE;
-          END;
+    TRY
+      list := Files.ListDir(frameworksDir);
+      IF (list # NIL) THEN
+        FOR pos := 0 TO LEN(list^)-1 DO
+          element := frameworksDir + "/" + list[pos];
+          Path.SplitExt(Path.BaseName(element), root, ext);
+          IF ext.Equals(".framework") THEN
+            includeDir := element + "/Headers/";
+            i.frameworkMap.Set(root, includeDir);
+            Log.Object("Framework", root + " at " + includeDir);
+            i.FindFramework(element);
+          END
         END
       END
+    CATCH IO.Error:
     END
-  CATCH IO.Error:
+  END
+END FindFramework;
+
+(* Locate a file using Apple "framework" packages. 
+Note: this implementation is a little slow. Rather than searching the
+entire pacakge tree for every file, a package directory should be build
+using just one search at the start. *)
+
+PROCEDURE (i : Input) FindFrameworks;
+VAR
+  pos, length : LONGINT;
+  obj : STRING;
+BEGIN
+  length := i.frameworks.value.Size();
+  FOR pos := i.frameworkLength TO length - 1 DO
+    obj := i.frameworks.value.Get(pos);
+    i.FindFramework(obj)
   END;
-  END;
-  RETURN FALSE
-END SearchFramework;
+  i.frameworkLength := length;
+END FindFrameworks;
 
 (* Locate a file using Apple "framework" packages. 
 Note: this implementation is a little slow. Rather than searching the
@@ -166,19 +188,21 @@ using just one search at the start. *)
 
 PROCEDURE (i : Input) SearchFrameworks(name : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
 VAR
-  pos : LONGINT;
-  obj : Object.Object;
+  directory : STRING;
   fileName, frameworkName : STRING;
 BEGIN
   fileName := Path.BaseName(name);
   frameworkName := Path.DirName(name);
-  FOR pos := 0 TO i.frameworks.Size() - 1 DO
-    obj := i.frameworks.Get(pos);
-    IF i.SearchFramework(obj(STRING), fileName, frameworkName, path, channel) THEN 
-      RETURN TRUE
-    END;
+
+  i.FindFrameworks;
+  IF i.frameworkMap.HasKey(frameworkName) THEN
+    directory := i.frameworkMap.Get(frameworkName);
+    path := directory + fileName;
+    RETURN i.SearchFile(path, channel);
+  ELSE
+    Log.Object("Unknown framework", frameworkName);
+    RETURN FALSE;    
   END;
-  RETURN FALSE;
 END SearchFrameworks;
 
 PROCEDURE (i : Input) SearchPath(fileName : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
@@ -186,8 +210,8 @@ VAR
   pos : LONGINT;
   obj : Object.Object;
 BEGIN
-  FOR pos := 0 TO i.path.Size() - 1 DO
-    obj := i.path.Get(pos);
+  FOR pos := 0 TO i.path.value.Size() - 1 DO
+    obj := i.path.value.Get(pos);
     path := obj(STRING) + "/" + fileName;
     IF i.SearchFile(path, channel) THEN 
       RETURN TRUE
@@ -198,25 +222,34 @@ END SearchPath;
 
 PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
 VAR
+  found : BOOLEAN;
   realFileName : STRING;
   moduleName : STRING;
   module : Module.Module;
   s : Source;
   channel : IO.ByteChannel;
 BEGIN
+  IF i.exclude.Contains(fileName) THEN 
+    RETURN;
+  END;
   TRY
     IF search THEN
-      IF ~i.SearchPath(fileName, realFileName, channel) &
-         ~i.SearchFrameworks(fileName, realFileName, channel) THEN
-        Err.String ("Error: Cannot locate module ");
-        Err.Object (fileName);
-        Err.Ln;
-        HALT (1)
-      END;    
+      found := i.SearchPath(fileName, realFileName, channel) OR
+        i.SearchFrameworks(fileName, realFileName, channel);
     ELSE
-      realFileName := fileName;
-      channel := FileChannel.Open(fileName, {FileChannel.read});
+      IF i.src = NIL THEN
+        realFileName := fileName;
+      ELSE
+        realFileName := Path.DirName(i.src.name) + "/" + fileName;
+      END;
+      found := i.SearchFile(realFileName, channel);
     END;
+    IF ~found THEN
+      Err.String ("Error: Cannot locate module ");
+      Err.Object (fileName);
+      Err.Ln;
+      HALT (1)
+    END;    
   CATCH IO.Error:
 	i.Exception(Exception.Current());
   END;
@@ -240,10 +273,13 @@ BEGIN
   Err.String("MODULE "); Err.Object(moduleName); 
   Err.String(" for "); Err.Object(realFileName);
   Err.Ln;
-  i.module := module;
   s.module := module;
 END Include;
 
+PROCEDURE (i : Input) GetModule*() : Module.Module;
+BEGIN
+  RETURN i.src.module;
+END GetModule;
 PROCEDURE (i : Input) Summary*();
 BEGIN
   Err.String("Processed "); Err.LongInt(i.lines,0); 
@@ -258,8 +294,13 @@ BEGIN
   i.src := NIL;
   i.lines := 0;
   i.files := 0;
-  i.path := ArrayList.New(10);
-  i.frameworks := ArrayList.New(10);
+
+  i.options := NEW(Option.Options);
+  i.path := i.options.StringList("Include");
+  i.exclude := i.options.StringList("Exclude");
+  i.frameworks := i.options.StringList("Framework");
+  i.frameworkMap := NEW(Dictionary.Dictionary(STRING,STRING));
+  i.frameworkLength := 0;
   RETURN i;
 END New;
 

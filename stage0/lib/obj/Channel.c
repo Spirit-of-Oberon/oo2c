@@ -219,4 +219,7 @@ void OOC_Channel_init(void) {
   ;
 }
 
+void OOC_Channel_destroy(void) {
+}
+
 /* --- */

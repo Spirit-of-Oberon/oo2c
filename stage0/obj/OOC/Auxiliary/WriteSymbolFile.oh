@@ -12,7 +12,9 @@
 #include <Exception.oh>
 extern void OOC_Auxiliary_WriteSymbolFile__WriteSymbolFile(OOC_Repository__Module m, OOC_SymbolTable__Module symTab, OOC_Error__List errList);
 extern void OOC_OOC_Auxiliary_WriteSymbolFile_init(void);
-extern void OOC_OOC_Auxiliary_WriteSymbolFile_init0(void);
+extern void OOC_OOC_Auxiliary_WriteSymbolFile_open(RT0__Module client);
+extern void OOC_OOC_Auxiliary_WriteSymbolFile_destroy(void);
+extern void OOC_OOC_Auxiliary_WriteSymbolFile_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_Auxiliary_WriteSymbolFile_ */

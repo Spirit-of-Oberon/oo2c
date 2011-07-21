@@ -14,7 +14,9 @@ typedef OOC_INT8 OOC_SSA_Aliasing__Id;
 #define OOC_SSA_Aliasing__mayAlias 3
 extern OOC_INT8 OOC_SSA_Aliasing__DesignatorAlias(OOC_SSA__Opnd instr, OOC_SSA__Opnd reference);
 extern void OOC_OOC_SSA_Aliasing_init(void);
-extern void OOC_OOC_SSA_Aliasing_init0(void);
+extern void OOC_OOC_SSA_Aliasing_open(RT0__Module client);
+extern void OOC_OOC_SSA_Aliasing_destroy(void);
+extern void OOC_OOC_SSA_Aliasing_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_SSA_Aliasing_ */

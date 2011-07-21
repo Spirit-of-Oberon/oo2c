@@ -157,7 +157,8 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): STRING;
     END;
   END NameOfDeclaration;
 
-PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): STRING;
+PROCEDURE NameOfModuleInit* (m: Sym.Module; initFunction: BOOLEAN;
+                             rtWrapper: BOOLEAN): STRING;
   VAR
     str: Buffer;
     i: LONGINT;
@@ -169,10 +170,18 @@ PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): STRING;
       INC (i)
     END;
     Strings.Insert("OOC_", 0, str);
-    IF rtWrapper THEN
-      Strings.Append ("_init0", str);
-    ELSE      
-      Strings.Append ("_init", str);
+    IF initFunction THEN
+      IF rtWrapper THEN
+        Strings.Append ("_open", str);
+      ELSE      
+        Strings.Append ("_init", str);
+      END;
+    ELSE
+      IF rtWrapper THEN
+        Strings.Append ("_close", str);
+      ELSE      
+        Strings.Append ("_destroy", str);
+      END;
     END;
     RETURN Object.NewLatin1(str)
   END NameOfModuleInit;

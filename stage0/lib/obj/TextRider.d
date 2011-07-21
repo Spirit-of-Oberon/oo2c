@@ -54,11 +54,51 @@ RT0__StructDesc _td_TextRider__44278 = { (RT0__Struct[]){&RT0__char}, NULL, NULL
 RT0__StructDesc _td_TextRider__44663 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 128, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_TextRider__45111 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 128, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_TextRider__45494 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 128, 128, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"TextRider", (RT0__Struct[]) { &_td_TextRider__Reader, &_td_TextRider__ReaderDesc, &_td_TextRider__Writer, &_td_TextRider__WriterDesc, &_td_TextRider__String, &_td_TextRider__Scanner, &_td_TextRider__ScannerDesc, &_td_TextRider__ErrorContext, &_td_TextRider__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"TextRider", (RT0__Struct[]) { &_td_TextRider__Reader, &_td_TextRider__ReaderDesc, &_td_TextRider__Writer, &_td_TextRider__WriterDesc, &_td_TextRider__String, &_td_TextRider__Scanner, &_td_TextRider__ScannerDesc, &_td_TextRider__ErrorContext, &_td_TextRider__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_TextRider_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_TextRider_init();
+extern void OOC_TextRider_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Ascii_open(&_mid);
+    OOC_Channel_open(&_mid);
+    OOC_CharClass_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_LRealStr_open(&_mid);
+    OOC_RealStr_open(&_mid);
+    OOC_IntStr_open(&_mid);
+    OOC_LRealConv_open(&_mid);
+    OOC_ConvTypes_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_TextRider_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_TextRider_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_TextRider_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Ascii_close(&_mid);
+    OOC_Channel_close(&_mid);
+    OOC_CharClass_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_LRealStr_close(&_mid);
+    OOC_RealStr_close(&_mid);
+    OOC_IntStr_close(&_mid);
+    OOC_LRealConv_close(&_mid);
+    OOC_ConvTypes_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

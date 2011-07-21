@@ -861,7 +861,9 @@ extern void OOC_AST__LinkLibFlagDesc_Accept(OOC_AST__LinkLibFlag linkLibFlag, OO
 #define _TBN_OOC_AST__LinkLibFlagDesc_Accept 0
 typedef void (*_TBP_OOC_AST__LinkLibFlagDesc_Accept)(OOC_AST__LinkLibFlag linkLibFlag, OOC_AST__Visitor v);
 extern void OOC_OOC_AST_init(void);
-extern void OOC_OOC_AST_init0(void);
+extern void OOC_OOC_AST_open(RT0__Module client);
+extern void OOC_OOC_AST_destroy(void);
+extern void OOC_OOC_AST_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_AST__Node;

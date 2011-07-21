@@ -133,7 +133,7 @@ l11:
   OOC_Make_WriteMainFileAssembler__WriteFile_Instr("movl 12(%ebp),%eax", 19);
   OOC_Make_WriteMainFileAssembler__WriteFile_Instr("movl %eax,RT0__argv", 20);
   i0 = (OOC_INT32)w;
-  OOC_Make_WriteMainFileAssembler__WriteFile_WriteModules((IO_TextRider__Writer)i0, "\011call OOC_", 11, "_init0", 7);
+  OOC_Make_WriteMainFileAssembler__WriteFile_WriteModules((IO_TextRider__Writer)i0, "\011call OOC_", 11, "_open", 6);
   OOC_Make_WriteMainFileAssembler__WriteFile_Instr("xorl %eax,%eax", 15);
   OOC_Make_WriteMainFileAssembler__WriteFile_Instr("leave", 6);
   OOC_Make_WriteMainFileAssembler__WriteFile_Instr("ret", 4);
@@ -144,7 +144,7 @@ l11:
   OOC_Make_WriteMainFileAssembler__WriteFile_Directive("Letext:", 8);
   OOC_Make_WriteMainFileAssembler__WriteFile_Instr(".ident\011\"OOC: 0.1\"", 18);
   i0 = (OOC_INT32)ch;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3345)))), IO__ChannelDesc_CloseAndRegister)),IO__ChannelDesc_CloseAndRegister)((IO__Channel)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3344)))), IO__ChannelDesc_CloseAndRegister)),IO__ChannelDesc_CloseAndRegister)((IO__Channel)i0);
   return;
   ;
 }
@@ -153,6 +153,9 @@ void OOC_OOC_Make_WriteMainFileAssembler_init(void) {
 
   return;
   ;
+}
+
+void OOC_OOC_Make_WriteMainFileAssembler_destroy(void) {
 }
 
 /* --- */

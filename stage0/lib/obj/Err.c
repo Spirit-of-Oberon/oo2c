@@ -233,4 +233,7 @@ void OOC_Err_init(void) {
   ;
 }
 
+void OOC_Err_destroy(void) {
+}
+
 /* --- */

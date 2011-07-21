@@ -7,7 +7,7 @@
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-#define OOC_Config_StdPragmas__defaultCompilerVersion "2.1.6"
+#define OOC_Config_StdPragmas__defaultCompilerVersion "2.1.7"
 #define OOC_Config_StdPragmas__defaultTargetArch "gcc"
 extern Config_Section_Options__Option OOC_Config_StdPragmas__warnings;
 extern Config_Section_Options__Option OOC_Config_StdPragmas__assertions;
@@ -32,7 +32,9 @@ extern Config_Section_Options__Option OOC_Config_StdPragmas__targetAddress;
 extern Config_Section_Options__Option OOC_Config_StdPragmas__targetByteOrder;
 extern void OOC_Config_StdPragmas__CreateVariables(OOC_Config_Pragmas__Section s);
 extern void OOC_OOC_Config_StdPragmas_init(void);
-extern void OOC_OOC_Config_StdPragmas_init0(void);
+extern void OOC_OOC_Config_StdPragmas_open(RT0__Module client);
+extern void OOC_OOC_Config_StdPragmas_destroy(void);
+extern void OOC_OOC_Config_StdPragmas_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_Config_StdPragmas_ */

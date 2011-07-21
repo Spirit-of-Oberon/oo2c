@@ -65,7 +65,9 @@ extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsReadOnlyType(OOC_SymbolTable__Modu
 extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsAtomicType(OOC_SymbolTable__Type type);
 extern void OOC_SymbolTable_TypeRules__AllocateType(OOC_SymbolTable__Type type);
 extern void OOC_OOC_SymbolTable_TypeRules_init(void);
-extern void OOC_OOC_SymbolTable_TypeRules_init0(void);
+extern void OOC_OOC_SymbolTable_TypeRules_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_TypeRules_destroy(void);
+extern void OOC_OOC_SymbolTable_TypeRules_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_TypeRules__3257;

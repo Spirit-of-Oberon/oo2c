@@ -9,11 +9,20 @@ Requirements:
     installation failures with 3.2.x)
   GNU make
 
+Optional dependencies:
+
+  xsltproc (from the GNOME XML library)
+
+    (If xsltproc is present, then installation will also create a set
+    of HTML files at <prefix>/lib/oo2c/oocdoc/html/.  The files
+    contain descriptions of the public interfaces of the library
+    modules.  Without xsltproc, or if it is manually disabled (see
+    PROBLEMS), then this step is skipped.)
+
 Additional requirements for "make test":
 
   GNU tar
   perl
-  xsltproc (from the GNOME XML library)
 
 
 Optional Packages

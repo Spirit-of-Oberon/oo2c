@@ -594,4 +594,7 @@ void OOC_OOC_Config_Repositories_init(void) {
   ;
 }
 
+void OOC_OOC_Config_Repositories_destroy(void) {
+}
+
 /* --- */

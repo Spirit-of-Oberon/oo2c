@@ -280,4 +280,7 @@ void OOC_Time_init(void) {
   ;
 }
 
+void OOC_Time_destroy(void) {
+}
+
 /* --- */

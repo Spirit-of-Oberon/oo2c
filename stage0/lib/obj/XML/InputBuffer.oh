@@ -33,7 +33,9 @@ extern void XML_InputBuffer__BufferDesc_Close(XML_InputBuffer__Buffer b);
 typedef void (*_TBP_XML_InputBuffer__BufferDesc_Close)(XML_InputBuffer__Buffer b);
 extern XML_InputBuffer__Buffer XML_InputBuffer__New(IO__ByteChannel reader, Msg__MsgList errList);
 extern void OOC_XML_InputBuffer_init(void);
-extern void OOC_XML_InputBuffer_init0(void);
+extern void OOC_XML_InputBuffer_open(RT0__Module client);
+extern void OOC_XML_InputBuffer_destroy(void);
+extern void OOC_XML_InputBuffer_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_InputBuffer__317;

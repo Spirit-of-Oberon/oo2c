@@ -243,4 +243,7 @@ void OOC_XML_UnicodeCodec_Latin1_init(void) {
   ;
 }
 
+void OOC_XML_UnicodeCodec_Latin1_destroy(void) {
+}
+
 /* --- */

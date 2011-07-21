@@ -40,7 +40,9 @@ extern void Config_Simple__ConfigDesc_Read(Config_Simple__Config config, Msg__Ms
 #define _TBN_Config_Simple__ConfigDesc_Read 2
 typedef void (*_TBP_Config_Simple__ConfigDesc_Read)(Config_Simple__Config config, Msg__MsgList errList);
 extern void OOC_Config_Simple_init(void);
-extern void OOC_Config_Simple_init0(void);
+extern void OOC_Config_Simple_open(RT0__Module client);
+extern void OOC_Config_Simple_destroy(void);
+extern void OOC_Config_Simple_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Config_Simple__Config;

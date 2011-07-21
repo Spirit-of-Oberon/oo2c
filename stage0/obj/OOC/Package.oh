@@ -100,7 +100,9 @@ extern OOC_Package__Package OOC_Package__GetPkgInfo(Object__String targetDir, Ob
 extern OOC_Package__Repository OOC_Package__GetRepository(Object__String targetDir, OOC_Error__List *errList);
 extern OOC_CHAR8 OOC_Package__UpdateRepository(Object__String targetDir);
 extern void OOC_OOC_Package_init(void);
-extern void OOC_OOC_Package_init0(void);
+extern void OOC_OOC_Package_open(RT0__Module client);
+extern void OOC_OOC_Package_destroy(void);
+extern void OOC_OOC_Package_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Package__Version;

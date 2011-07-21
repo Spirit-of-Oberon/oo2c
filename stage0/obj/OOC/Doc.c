@@ -2480,4 +2480,7 @@ void OOC_OOC_Doc_init(void) {
   ;
 }
 
+void OOC_OOC_Doc_destroy(void) {
+}
+
 /* --- */

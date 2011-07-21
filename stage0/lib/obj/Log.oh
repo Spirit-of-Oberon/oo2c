@@ -34,7 +34,9 @@ extern void Log__Ptr(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_PTR ptr);
 extern void Log__Adr(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_CHAR8 x[], OOC_LEN x_0d);
 extern void Log__Type(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_PTR ptr);
 extern void OOC_Log_init(void);
-extern void OOC_Log_init0(void);
+extern void OOC_Log_open(RT0__Module client);
+extern void OOC_Log_destroy(void);
+extern void OOC_Log_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Log__1999;

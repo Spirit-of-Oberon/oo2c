@@ -201,7 +201,9 @@ extern void OOC_IR_XML__VisitorDesc_VisitModule(OOC_IR_XML__Visitor v, OOC_IR__M
 typedef void (*_TBP_OOC_IR_XML__VisitorDesc_VisitModule)(OOC_IR_XML__Visitor v, OOC_IR__Module module);
 extern void OOC_IR_XML__Write(IO__ByteChannel cw, OOC_IR__Module module);
 extern void OOC_OOC_IR_XML_init(void);
-extern void OOC_OOC_IR_XML_init0(void);
+extern void OOC_OOC_IR_XML_open(RT0__Module client);
+extern void OOC_OOC_IR_XML_destroy(void);
+extern void OOC_OOC_IR_XML_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_IR_XML__Visitor;

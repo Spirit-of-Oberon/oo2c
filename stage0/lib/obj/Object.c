@@ -2378,4 +2378,7 @@ void OOC_Object_init(void) {
   ;
 }
 
+void OOC_Object_destroy(void) {
+}
+
 /* --- */

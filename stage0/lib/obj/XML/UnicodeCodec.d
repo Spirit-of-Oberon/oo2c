@@ -29,11 +29,31 @@ RT0__StructDesc _td_XML_UnicodeCodec__14104 = { (RT0__Struct[]){&RT0__char}, NUL
 RT0__StructDesc _td_XML_UnicodeCodec__14239 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_XML_UnicodeCodec__14953 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_XML_UnicodeCodec__15477 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:UnicodeCodec", (RT0__Struct[]) { &_td_XML_UnicodeCodec__Factory, &_td_XML_UnicodeCodec__FactoryDesc, &_td_XML_UnicodeCodec__Codec, &_td_XML_UnicodeCodec__CodecDesc, &_td_XML_UnicodeCodec__Node, &_td_XML_UnicodeCodec__NodeDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:UnicodeCodec", (RT0__Struct[]) { &_td_XML_UnicodeCodec__Factory, &_td_XML_UnicodeCodec__FactoryDesc, &_td_XML_UnicodeCodec__Codec, &_td_XML_UnicodeCodec__CodecDesc, &_td_XML_UnicodeCodec__Node, &_td_XML_UnicodeCodec__NodeDesc, NULL }, 0 };
 
-extern void OOC_XML_UnicodeCodec_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_XML_UnicodeCodec_init();
+extern void OOC_XML_UnicodeCodec_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Strings_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_XML_UnicodeCodec_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_XML_UnicodeCodec_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_XML_UnicodeCodec_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Strings_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

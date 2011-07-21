@@ -13,7 +13,9 @@
 extern Object__String OS_ProcessParameters__GetCwd(void);
 extern Object__String OS_ProcessParameters__GetEnv(Object__String name);
 extern void OOC_OS_ProcessParameters_init(void);
-extern void OOC_OS_ProcessParameters_init0(void);
+extern void OOC_OS_ProcessParameters_open(RT0__Module client);
+extern void OOC_OS_ProcessParameters_destroy(void);
+extern void OOC_OS_ProcessParameters_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OS_ProcessParameters_ */

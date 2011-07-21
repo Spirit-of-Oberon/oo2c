@@ -2260,4 +2260,7 @@ void OOC_OOC_SSA_Allocator_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Allocator_destroy(void) {
+}
+
 /* --- */

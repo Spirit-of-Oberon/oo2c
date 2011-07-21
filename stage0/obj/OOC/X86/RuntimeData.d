@@ -51,11 +51,45 @@ static void* _c31;
 static RT0__ModuleDesc _mid;
 RT0__StructDesc _td_OOC_X86_RuntimeData__DataWriter = { (RT0__Struct[]){&_td_OOC_X86_RuntimeData__DataWriterDesc}, NULL, NULL, &_mid, "DataWriter", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_X86_RuntimeData__DataWriterDesc = { (RT0__Struct[]){&_td_OOC_X86_RuntimeData__DataWriterDesc}, (void*[]){(void*)OOC_X86_RuntimeData__DataWriterDesc_INIT,(void*)OOC_X86_RuntimeData__DataWriterDesc_Align,(void*)OOC_X86_RuntimeData__DataWriterDesc_Object,(void*)OOC_X86_RuntimeData__DataWriterDesc_Pad,(void*)OOC_X86_RuntimeData__DataWriterDesc_PadTo,(void*)OOC_X86_RuntimeData__DataWriterDesc_FixAlign,(void*)OOC_X86_RuntimeData__DataWriterDesc_Adr,(void*)OOC_X86_RuntimeData__DataWriterDesc_Null,(void*)OOC_X86_RuntimeData__DataWriterDesc_LongInt,(void*)OOC_X86_RuntimeData__DataWriterDesc_ShortInt,(void*)OOC_X86_RuntimeData__DataWriterDesc_StringObject,(void*)OOC_X86_RuntimeData__DataWriterDesc_TypeFlags}, NULL, &_mid, "DataWriterDesc", 12, 0, 0, RT0__strRecord };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:RuntimeData", (RT0__Struct[]) { &_td_OOC_X86_RuntimeData__DataWriter, &_td_OOC_X86_RuntimeData__DataWriterDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:RuntimeData", (RT0__Struct[]) { &_td_OOC_X86_RuntimeData__DataWriter, &_td_OOC_X86_RuntimeData__DataWriterDesc, NULL }, 0 };
 
-extern void OOC_OOC_X86_RuntimeData_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_X86_RuntimeData_init();
+extern void OOC_OOC_X86_RuntimeData_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Ascii_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_OOC_C_Naming_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_X86_RuntimeData_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_X86_RuntimeData_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_X86_RuntimeData_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Ascii_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_OOC_C_Naming_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

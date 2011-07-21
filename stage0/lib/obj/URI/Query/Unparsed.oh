@@ -33,7 +33,9 @@ extern void URI_Query_Unparsed__QueryDesc_Append(URI_Query_Unparsed__Query query
 #define _TBN_URI_Query_Unparsed__QueryDesc_Append 4
 typedef void (*_TBP_URI_Query_Unparsed__QueryDesc_Append)(URI_Query_Unparsed__Query query, ADT_StringBuffer__StringBuffer sb);
 extern void OOC_URI_Query_Unparsed_init(void);
-extern void OOC_URI_Query_Unparsed_init0(void);
+extern void OOC_URI_Query_Unparsed_open(RT0__Module client);
+extern void OOC_URI_Query_Unparsed_destroy(void);
+extern void OOC_URI_Query_Unparsed_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_URI_Query_Unparsed__Query;

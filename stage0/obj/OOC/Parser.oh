@@ -25,7 +25,9 @@ extern void OOC_Parser__ErrorContextDesc_GetTemplate(OOC_Parser__ErrorContext co
 typedef void (*_TBP_OOC_Parser__ErrorContextDesc_GetTemplate)(OOC_Parser__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
 extern OOC_AST__Node OOC_Parser__Module(OOC_Scanner_SymList__Symbol sym, OOC_AST__Builder ast, OOC_Error__List errList, OOC_UINT32 parseOptions);
 extern void OOC_OOC_Parser_init(void);
-extern void OOC_OOC_Parser_init0(void);
+extern void OOC_OOC_Parser_open(RT0__Module client);
+extern void OOC_OOC_Parser_destroy(void);
+extern void OOC_OOC_Parser_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Parser__ErrorContext;

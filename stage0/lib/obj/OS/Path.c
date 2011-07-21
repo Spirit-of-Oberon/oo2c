@@ -211,4 +211,7 @@ void OOC_OS_Path_init(void) {
   ;
 }
 
+void OOC_OS_Path_destroy(void) {
+}
+
 /* --- */

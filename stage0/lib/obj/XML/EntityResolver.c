@@ -215,4 +215,7 @@ void OOC_XML_EntityResolver_init(void) {
   ;
 }
 
+void OOC_XML_EntityResolver_destroy(void) {
+}
+
 /* --- */

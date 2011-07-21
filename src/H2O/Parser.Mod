@@ -2,8 +2,9 @@ MODULE H2O:Parser [OOC_EXTENSIONS];
 
 IMPORT
   SYSTEM, Out, Log,
-  Object, Object:Boxed, ADT:StringBuffer, ADT:ArrayList,
-  H2O:Error, H2O:Scanner, H2O:Process, H2O:Module, T := H2O:Type;
+  Object, ADT:StringBuffer, ADT:ArrayList, ADT:Dictionary,
+  H2O:Emitter, H2O:Option,
+  H2O:Error, H2O:Scanner, H2O:Process, H2O:Module, H2O:Value, T := H2O:Type;
 
 CONST
   (* 800: C keywords *)
@@ -37,6 +38,10 @@ CONST
 
   defined* = 860;
   sizeof* = 861;
+
+  configH2O = 10000;
+  configModule = 10001;
+  configOption = 10002;
 
 CONST
   varargs = 0;
@@ -72,15 +77,16 @@ VAR
   operators : Operator;
 
   keyWords : Scanner.KeyWord;
+  configKeyWords : Scanner.KeyWord;
   process : Process.Process;
   err : Error.Error;
   token : Scanner.Token;
   options : SET;
   parser : Parser;
-  scope, types : T.Object;
-  depend : ArrayList.ArrayList;
+  depend : ArrayList.ArrayList(Module.Module);
+  configOptions : Option.Options;
 
-PROCEDURE FindType(name : STRING) : T.Type;
+PROCEDURE FindType(types : T.Object; name : STRING) : T.Type;
 VAR obj : T.Object;
 BEGIN
   IF T.FindObject(types, name, obj) THEN
@@ -90,38 +96,44 @@ BEGIN
   END;
 END FindType;
 
-PROCEDURE ShowDepend(name : STRING; depend : ArrayList.ArrayList);
-VAR b : StringBuffer.StringBuffer; i : LONGINT;
+PROCEDURE ShowDepend(name : STRING; depend : ArrayList.ArrayList(Module.Module));
+VAR b : StringBuffer.StringBuffer; i : LONGINT; module : Module.Module;
 BEGIN
   b := StringBuffer.New("");
   b.Append(name);
   b.Append(" depends on [");
   FOR i := 0 TO depend.size-1 DO
     IF i # 0 THEN b.AppendLatin1Char(",") END;
-    b.Append(depend.array[i](Module.Module).name);
+    module := depend.Get(i);
+    b.Append(module.name);
   END;
   b.Append("]");
   Out.Object(b); Out.Ln;
 END ShowDepend;
 
-PROCEDURE Install* (VAR scope : T.Object; tag : STRING; name : STRING; new : T.Type);
+PROCEDURE Install* (VAR scope : T.Object; tag : STRING; name : STRING; new : T.Type; mod : Module.Module);
 VAR 
   obj : T.Object;
 BEGIN
   IF T.FindObject(scope, name, obj) THEN
-    err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type);
+    IF T.AllowedRedefinition(new, obj.type) THEN
+      obj.type := new;
+    ELSE
+      err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type);
+    END
   ELSE
-    new.Depend(depend);
-    IF depend.size > 0 THEN ShowDepend(name, depend) END;
-    process.in.module.AddImports(depend);
-    T.Bind(scope, name, 0, new);
+    T.Bind(scope, name, 0, new, mod);
   END;
+  new.Depend(depend);
+  IF depend.size > 0 THEN ShowDepend(name, depend) END;
+  mod.AddImports(depend);
+  mod.AddDefinition();
 END Install;
 
-PROCEDURE InstallType(name : STRING; new : T.Type);
+PROCEDURE InstallType(VAR types : T.Object; name : STRING; new : T.Type; mod : Module.Module);
 BEGIN
-  Install(types, "Type", name, new);
-  new.module := process.in.module;
+  Install(types, "Type", name, new, mod);
+  new.module := process.in.GetModule();
 END InstallType;
 
 PROCEDURE NewNamedType* (class : SHORTINT; name : STRING) : T.Type;
@@ -132,7 +144,7 @@ BEGIN
   new.name := name;
 
   IF name # NIL THEN
-    InstallType(name, new);
+    InstallType(T.types, name, new, process.in.GetModule());
   END;
   RETURN new;
 END NewNamedType;
@@ -163,14 +175,14 @@ BEGIN
     enum, void, struct, union:
     RETURN TRUE;
   | Scanner.ident:
-    RETURN FindType(token.name) # NIL;
+    RETURN FindType(T.typedefs, token.name) # NIL;
   ELSE
     RETURN FALSE;
   END;
 END StartsTypeSpecifier;
 
 PROCEDURE ^Declarator(VAR name : STRING; base : T.Type) : T.Type;
-PROCEDURE ^EvalExpr (VAR result : Boxed.Object);
+PROCEDURE ^EvalExpr (VAR result : Value.Object);
 PROCEDURE ^EvalIntExpr (VAR result : LONGINT);
 
 PROCEDURE StorageClass (VAR class : INTEGER);
@@ -247,7 +259,7 @@ VAR
       ELSE
         INC(id);
       END;
-      T.Bind(t.link, name, id, NIL);
+      T.Bind(t.link, name, id, NIL, NIL);
      END Element;
 
   BEGIN
@@ -269,7 +281,7 @@ VAR
       END;
       Expect(Scanner.rbrace);
     ELSIF tag # NIL THEN
-      t := FindType(tag);
+      t := FindType(T.types, tag);
       IF t = NIL THEN
         (* probably didn't mean to omit the declaration *)
         err.ErrorParam("Unknown enumeration `$0'", tag, NIL, NIL);
@@ -312,7 +324,7 @@ VAR
         LOOP
           name := NIL;
           t2 := Declarator(name, t1);
-          T.Bind(t.link, name, id, t2);
+          T.Bind(t.link, name, id, t2, NIL);
           IF token.sym = Scanner.colon THEN
             GetSym;
             EvalIntExpr(width);
@@ -340,7 +352,7 @@ VAR
       FieldList(t);
       Expect(Scanner.rbrace);
     ELSIF tag # NIL THEN
-      t := FindType(tag);
+      t := FindType(T.types, tag);
       IF t = NIL THEN
         t := NewNamedType(class, tag);
       ELSIF t.class # class THEN
@@ -383,11 +395,11 @@ compiler, but it doesn't strictly follow the language definition. *)
     | enum:
       type := enum; t := EnumDecl();
     | struct:
-      type := struct; t := StructDecl(T.tStruct);
+      type := struct; t := StructDecl(T.tStruct); EXIT;
     | union:
-      type := union; t := StructDecl(T.tUnion);
+      type := union; t := StructDecl(T.tUnion); EXIT;
     | Scanner.ident:
-      s := FindType(token.name);
+      s := FindType(T.typedefs, token.name);
       IF s # NIL THEN 
         t := s; GetSym; type := typedef;
       END;
@@ -490,7 +502,7 @@ VAR
             END;
             void := TRUE;
           ELSE
-            T.Bind(func.link, name, id, t);
+            T.Bind(func.link, name, id, t, NIL);
             INC(id);
           END;
           IF token.sym = Scanner.comma THEN 
@@ -591,12 +603,12 @@ BEGIN
   IF b THEN RETURN 1 ELSE RETURN 0 END
 END BoolInt;
 
-PROCEDURE TypeOf(arg : Boxed.Object; VAR i : LONGINT; VAR r : LONGREAL) : INTEGER;
+PROCEDURE TypeOf(arg : Value.Object; VAR i : LONGINT; VAR r : LONGREAL) : INTEGER;
 BEGIN
-  WITH arg: Boxed.LongInt DO
+  WITH arg: Value.LongInt DO
     i := arg.value; r := i; 
     RETURN typeInteger;
-  | arg: Boxed.LongReal DO
+  | arg: Value.LongReal DO
     r := arg.value;
     RETURN typeReal;
   END;
@@ -607,19 +619,27 @@ BEGIN
   IF a > b THEN RETURN a ELSE RETURN b END;
 END Max;
 
-PROCEDURE TypeError(op : Scanner.Token) : Boxed.Object;
+PROCEDURE TypeError(op : Scanner.Token) : Value.Object;
 BEGIN
   err.ErrorParam("Invalid types for operator `$0'", op.name, NIL, NIL);
-  RETURN Boxed.zeroLongInt;
+  RETURN Value.zeroLongInt;
 END TypeError;
 
+PROCEDURE AdjustSize(arg : Value.Object; VAR radix, size : INTEGER);
+BEGIN
+  WITH arg : Value.LongInt DO
+    radix := Max(radix, arg.radix);
+    size := Max(size, arg.size);
+  END;
+END AdjustSize;
+
 (* Ternary operators *)
-PROCEDURE Operate3(op : Scanner.Token; arg1, arg2, arg3 : Boxed.Object) : Boxed.Object;
+PROCEDURE Operate3(op : Scanner.Token; arg1, arg2, arg3 : Value.Object) : Value.Object;
 VAR 
   ai, bi, ci : LONGINT;
   ar, br, cr : LONGREAL;
   opType : INTEGER;
-
+  radix, size : INTEGER;
 BEGIN
   ai := 0; bi := 0; ci := 0;
   ar := 0; br := 0; cr := 0;
@@ -629,25 +649,29 @@ BEGIN
   
   CASE opType OF
   | typeInteger:
+    radix := -1; size := -1; 
+    AdjustSize(arg1, radix, size); 
+    AdjustSize(arg2, radix, size); 
+    AdjustSize(arg3, radix, size); 
     CASE op.sym OF
     | Scanner.condIf:
       IF ai # 0 THEN ai := bi ELSE ai := ci END;
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN NEW(Boxed.LongInt, ai);
+    RETURN Value.NewLongIntSize(ai, radix, size);
   ELSE
     RETURN TypeError(op);
   END;
 END Operate3;
 
 (* Binary operators *)
-PROCEDURE Operate2(op : Scanner.Token; arg1, arg2 : Boxed.Object) : Boxed.Object;
+PROCEDURE Operate2(op : Scanner.Token; arg1, arg2 : Value.Object) : Value.Object;
 VAR 
   ai, bi : LONGINT;
   ar, br : LONGREAL;
   opType : INTEGER;
-
+  radix, size : INTEGER;
 BEGIN
   ai := 0; bi := 0;
   ar := 0; br := 0;
@@ -655,6 +679,8 @@ BEGIN
   opType := Max(opType, TypeOf(arg2, bi, br));
   CASE opType OF
   | typeInteger:
+    radix := -1; size := -1;
+    AdjustSize(arg1, radix, size); AdjustSize(arg2, radix, size);
     CASE op.sym OF
     | Scanner.add:    ai := ai + bi;
     | Scanner.sub:    ai := ai - bi;
@@ -678,7 +704,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN NEW(Boxed.LongInt, ai);
+    RETURN Value.NewLongIntSize(ai, radix, size);
 
   | typeReal:
     CASE op.sym OF
@@ -696,7 +722,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN NEW(Boxed.LongReal, ar);
+    RETURN Value.NewLongReal(ar);
 
   ELSE
     RETURN TypeError(op);
@@ -704,17 +730,19 @@ BEGIN
 END Operate2;
 
 (* Unary operators *)
-PROCEDURE Operate1(op : Scanner.Token; arg1 : Boxed.Object) : Boxed.Object;
+PROCEDURE Operate1(op : Scanner.Token; arg1 : Value.Object) : Value.Object;
 VAR 
   ai : LONGINT;
   ar : LONGREAL;
   opType : INTEGER;
-
+  radix, size : INTEGER;
 BEGIN
   ai := 0; ar := 0;
   opType := TypeOf(arg1, ai, ar);
   CASE opType OF
   | typeInteger:
+    radix := -1; size := -1;
+    AdjustSize(arg1, radix, size);
     CASE op.sym OF
     | Scanner.add:
     | Scanner.sub:    ai := -ai;
@@ -723,7 +751,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN NEW(Boxed.LongInt, ai);
+    RETURN Value.NewLongIntSize(ai, radix, size);
 
   | typeReal:
     CASE op.sym OF
@@ -732,7 +760,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN NEW(Boxed.LongReal, ar);
+    RETURN Value.NewLongReal(ar);
 
   ELSE
     RETURN TypeError(op);
@@ -800,27 +828,27 @@ precedence levels.
 > AbstractDeclarator ::= Declarator.
 *)
  
-PROCEDURE Expr(priority : INTEGER) : Boxed.Object;
+PROCEDURE Expr(priority : INTEGER) : Value.Object;
 VAR 
-  result, arg2, arg3 : Boxed.Object;
+  result, arg2, arg3 : Value.Object;
   q : INTEGER;
   op : Operator;
   t2 : Scanner.Token;
 
-  PROCEDURE Term() : Boxed.Object;
+  PROCEDURE Term() : Value.Object;
   VAR
-    result : Boxed.Object;
+    result : Value.Object;
     q : INTEGER;
     op : Operator;
     t2 : Scanner.Token;
      
  
-    PROCEDURE Factor() : Boxed.Object;
+    PROCEDURE Factor() : Value.Object;
     CONST
       optPreprocessor = {Scanner.optDontExpand, Scanner.optReturnEndLine};
     VAR 
       t : T.Type; name : STRING;
-      result : Boxed.Object; 
+      result : Value.Object; 
       size : LONGINT;
       needClose : BOOLEAN;
       t2 : Scanner.Token;
@@ -851,15 +879,21 @@ VAR
 
       ELSIF token.sym = Scanner.number THEN
         (* constant integer *)
-        result := NEW(Boxed.LongInt, token.value); GetSym;
+        result := Value.NewLongIntSize(token.value, token.base, token.len); GetSym;
 
       ELSIF token.sym = Scanner.realNumber THEN
         (* constant real *)
-        result := NEW(Boxed.LongReal, token.rvalue); GetSym;
+        result := Value.NewLongReal(token.rvalue); GetSym;
 
-      ELSIF (token.sym = Scanner.string) & (token.name.length = 3) THEN
-        (* constant character *)
-        result := NEW(Boxed.LongInt, ORD(token.name.CharAt(1))); GetSym;
+      ELSIF (token.sym = Scanner.string) THEN
+        IF (token.name.length = 3) THEN
+          (* constant character *)
+          result := Value.NewLongInt(ORD(token.name.CharAt(1)));
+        ELSE
+          (* string *)
+          result := Value.NewString(token.name.Substring(1, token.name.length-1)); 
+        END;
+        GetSym;
 
       ELSIF token.sym = Scanner.lbracket THEN
         (* bracket indicates either a nested expression OR a type cast *)
@@ -886,10 +920,10 @@ VAR
           needClose := FALSE
         END;
         IF token.sym = Scanner.ident THEN
-          result := NEW(Boxed.LongInt, BoolInt(process.IsDefined(token.name)));
+          result := Value.NewLongInt(BoolInt(process.IsDefined(token.name)));
         ELSE 
           err.MsgParam("Warning: defined() applied to non-identifier '$0'. Returning 0", token.name, NIL, NIL, FALSE);
-          result := Boxed.zeroLongInt
+          result := Value.zeroLongInt
         END;
         GetSym0;
         IF needClose THEN Expect0(Scanner.rbracket); END;
@@ -907,10 +941,10 @@ VAR
             size := 0;
             err.ErrorParam("Size of type `$0' is unknown", t, NIL, NIL);
           END;
-          result := NEW(Boxed.LongInt, size)
+          result := Value.NewLongInt(size)
         ELSE
           err.ErrorParam("Token `$0' is not a type specifier", token.name, NIL, NIL);
-          result := Boxed.zeroLongInt
+          result := Value.zeroLongInt
         END;
         Expect(Scanner.rbracket); 
 
@@ -924,11 +958,11 @@ VAR
         ELSE
           err.ErrorParam("Identifier `$0' is undefined", token.name, NIL, NIL);
         END;
-        result := Boxed.zeroLongInt;
+        result := Value.zeroLongInt;
         GetSym
       ELSE 
         err.UnexpectedToken(token);
-        result := Boxed.zeroLongInt
+        result := Value.zeroLongInt
       END;
       RETURN result
     END Factor;
@@ -966,17 +1000,17 @@ BEGIN
   RETURN result;
 END Expr;
 
-PROCEDURE EvalExpr* (VAR result : Boxed.Object);
+PROCEDURE EvalExpr* (VAR result : Value.Object);
 BEGIN
   result := Expr(0);
 END EvalExpr;
 
 PROCEDURE EvalIntExpr(VAR result : LONGINT);
 VAR 
-  obj : Boxed.Object;
+  obj : Value.Object;
 BEGIN
   EvalExpr(obj);
-  WITH obj : Boxed.LongInt DO
+  WITH obj : Value.LongInt DO
     result := obj.value
   ELSE
     result := 0;
@@ -1063,6 +1097,7 @@ VAR
   name : STRING;
   class : INTEGER;
   spec, type, t : T.Type;
+  mod : Module.Module;
 
   PROCEDURE ShowBinding(name : STRING; type : T.Type);
   VAR
@@ -1090,25 +1125,28 @@ VAR
     END;
     GetSym;
   END SkipBody;
-  
+
 BEGIN
   StorageClass(class);
   spec := TypeSpecifier();
 
   LOOP
     name := NIL;
+    mod := process.in.GetModule();
     type := Declarator(name, spec);
     IF name = NIL THEN
-      err.Error("Declaration must specify a name");
-      name := Object.NewLatin1("error");
-    END;
-    IF class = T.scTypedef THEN
-      t := T.NewType(T.tName, type, type.size, {}); t.name := name;
-      InstallType(name, t);
+      IF T.TypeNeedsName(type) THEN
+        err.MsgString("Declaration should specify a name", FALSE);
+      END
     ELSE
-      Install(scope, "Object", name, type);
+      IF class = T.scTypedef THEN
+        t := T.NewType(T.tName, type, type.size, {}); t.name := name;
+        InstallType(T.typedefs, name, t, mod);
+      ELSE
+        Install(T.vars, "Object", name, type, mod);
+      END;
+      ShowBinding(name, type)
     END;
-    ShowBinding(name, type);
     IF type.class = T.tFunction THEN
       IF token.sym = Scanner.lbrace THEN
         SkipBody;
@@ -1124,20 +1162,111 @@ BEGIN
 END Declaration;
 
 (*
-> Body ::= { Declaration ";" }.
+> H2OConfig ::= "H2O" "{" { Config } "}".
+*)
+
+PROCEDURE OptionValue(opt : Option.Option);
+VAR 
+  value : Value.Object;
+BEGIN
+  EvalExpr(value);
+  IF ~opt.Set(value) THEN
+    err.ErrorParam("Illegal value for option '$0': $1", opt.name, value, NIL);
+  END
+END OptionValue;
+
+PROCEDURE OptionClause(set : Option.Options);
+VAR 
+  opt : Option.Option;
+  value : Value.Object;
+  name : STRING;
+BEGIN
+  name := token.name;
+  Expect(Scanner.ident);
+  Expect(Scanner.assign);
+  opt := set.Find(name);
+  IF opt = NIL THEN
+    err.ErrorParam("Option '$0' is not defined", name, NIL, NIL)
+  ELSE
+    OptionValue(opt);
+    IF Option.IsList(opt) THEN
+      WHILE token.sym = Scanner.comma DO
+        GetSym;
+        OptionValue(opt)
+      END
+    END
+  END;
+  Expect(Scanner.semicolon);
+END OptionClause;
+
+PROCEDURE Options(set : Option.Options);
+BEGIN
+  Expect(Scanner.lbrace);
+  WHILE token.sym # Scanner.rbrace DO
+    OptionClause(set);
+  END;
+  Expect(Scanner.rbrace);
+  set.Write(Out.writer);
+END Options;
+
+PROCEDURE ModuleClause;
+VAR 
+  name : STRING;
+  module : Module.Module;
+BEGIN
+  GetSym;
+  name := token.name;
+  Expect(Scanner.string);
+  name := name.Substring(1, name.length-1); 
+  module := Module.FindModule(name);
+  IF module = NIL THEN
+    module := Module.NewModule(name);
+  END;
+
+  Options(module.options);
+END ModuleClause;
+
+PROCEDURE ConfigClause;
+BEGIN
+  Scanner.CheckKeyWord(configKeyWords, token);
+  CASE token.sym OF
+  | configModule: ModuleClause;
+  | configOption: 
+    GetSym; Options(configOptions);
+  ELSE
+    err.ErrorParam("Unexpected symbol $0", token, NIL, NIL);
+  END;
+END ConfigClause;
+
+PROCEDURE H2OConfig;
+BEGIN
+  Expect(Scanner.lbrace);
+  WHILE token.sym # Scanner.rbrace DO
+    ConfigClause();
+  END;
+  Expect(Scanner.rbrace);
+END H2OConfig;
+
+(*
+> Body ::= { (Declaration | H2OConfig) ";" }.
 *)
 
 PROCEDURE Body*;
 BEGIN
   GetSym;
   WHILE token.sym # Scanner.endFile DO
-    Declaration();
-    Expect(Scanner.semicolon);
+    IF (token.sym = Scanner.ident) & (token.name.Equals("H2O")) THEN
+      GetSym;
+      H2OConfig();
+    ELSE
+      Declaration();
+      Expect(Scanner.semicolon);
+    END;
   END;
 END Body;
 
 PROCEDURE Evaluate*;
-VAR result : Boxed.Object;
+VAR result : Value.Object;
 BEGIN
   GetSym;
   WHILE token.sym # Scanner.endFile DO
@@ -1147,10 +1276,58 @@ BEGIN
   END;
 END Evaluate;
 
-PROCEDURE Init* (proc: Process.Process);
+PROCEDURE ParseMacro(e : Emitter.Emitter; m : Process.Macro);
+VAR 
+  result : Value.Object;
+  options : SET;
+BEGIN
+  ASSERT(token.sym = Scanner.endFile);
+  IF m.function THEN RETURN END;
+
+  options := err.options;
+  err.options := {};
+  err.count := 0;
+
+  process.PushMacro(m); GetSym;
+  EvalExpr(result);
+  IF err.count = 0 THEN
+    e.DeclType(Emitter.dtConst);
+    e.Indent(1);
+    e.WriteObject(m.module.MapName(m.name));
+    e.WriteString("* = ");
+    e.WriteObject(result);
+    e.WriteString(";");
+    e.WriteLn;
+  END;
+
+  WHILE token.sym # Scanner.endFile DO
+    GetSym;
+  END;
+  err.options := options;
+END ParseMacro;
+
+PROCEDURE ParseMacros* (e : Emitter.Emitter; mod : Module.Module);
+VAR 
+  items : ArrayList.ArrayList(Process.Macro);
+  i : LONGINT;
+  macro : Process.Macro;
+BEGIN
+  Log.Msg("Parsing macros");
+  items := process.macroDecl;
+  Log.Int("Macro count", items.Size());
+  FOR i := 0 TO items.Size()-1 DO
+    macro := items.Get(i);
+    IF macro.module = mod THEN
+      ParseMacro(e, items.Get(i));
+    END;
+  END;
+END ParseMacros;
+
+PROCEDURE Init* (proc: Process.Process; opt : Option.Options);
 BEGIN
   process := proc;
   err := process.err;
+  configOptions := opt;
 END Init;
 
 PROCEDURE New* () : Parser;
@@ -1159,6 +1336,13 @@ BEGIN
   NEW(p);
   RETURN p;
 END New;
+
+PROCEDURE AddConfigKeyWords;
+BEGIN
+  Scanner.AddKeyWord(configKeyWords, "H2O", configH2O);
+  Scanner.AddKeyWord(configKeyWords, "MODULE", configModule);
+  Scanner.AddKeyWord(configKeyWords, "OPTIONS", configOption);
+END AddConfigKeyWords;
 
 PROCEDURE AddKeyWords;
 BEGIN
@@ -1240,9 +1424,9 @@ BEGIN
   NEW(parser);
   keyWords := NIL;
   AddKeyWords;
+  AddConfigKeyWords;
   AddOperators;
   options := {}; token := Scanner.NewToken(Scanner.endFile);
-  types := NIL; scope := NIL;
-  depend := ArrayList.New(10);
+  depend := NEW(ArrayList.ArrayList(Module.Module), 10);
 END H2O:Parser.
 

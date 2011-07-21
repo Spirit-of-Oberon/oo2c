@@ -12,7 +12,9 @@ typedef OOC_INT16 URI_String__Offset;
 extern Object__String URI_String__Unescape(Object__String x);
 extern void URI_String__AppendEscaped(Object__String source, const OOC_CHAR8 unreserved__ref[], OOC_LEN unreserved_0d, ADT_StringBuffer__StringBuffer dest);
 extern void OOC_URI_String_init(void);
-extern void OOC_URI_String_init0(void);
+extern void OOC_URI_String_open(RT0__Module client);
+extern void OOC_URI_String_destroy(void);
+extern void OOC_URI_String_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_URI_String__1420;

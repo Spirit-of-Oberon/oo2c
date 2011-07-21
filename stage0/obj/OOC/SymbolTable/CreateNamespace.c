@@ -3421,4 +3421,7 @@ void OOC_OOC_SymbolTable_CreateNamespace_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_CreateNamespace_destroy(void) {
+}
+
 /* --- */

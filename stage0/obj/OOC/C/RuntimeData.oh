@@ -11,11 +11,13 @@
 #include <Exception.oh>
 extern void OOC_C_RuntimeData__Write(OOC_C_DeclWriter__Writer declWriter, OOC_SymbolTable__Module symTab, OOC_C_Naming__QualTypeData qtdData, OOC_CHAR8 writeHeader);
 extern void OOC_OOC_C_RuntimeData_init(void);
-extern void OOC_OOC_C_RuntimeData_init0(void);
+extern void OOC_OOC_C_RuntimeData_open(RT0__Module client);
+extern void OOC_OOC_C_RuntimeData_destroy(void);
+extern void OOC_OOC_C_RuntimeData_close(RT0__Module client);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_C_RuntimeData__2006;
-extern RT0__StructDesc _td_OOC_C_RuntimeData__2883;
+extern RT0__StructDesc _td_OOC_C_RuntimeData__2012;
+extern RT0__StructDesc _td_OOC_C_RuntimeData__2889;
 #endif /* _MODULE_OOC_C_RuntimeData_ */
 
 /* --- */

@@ -16,11 +16,35 @@ RT0__StructDesc _td_Channel__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__Cont
 RT0__StructDesc _td_Channel__12140 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 128, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_Channel__16681 = { (RT0__Struct[]){&RT0__byte}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Channel__20326 = { (RT0__Struct[]){&RT0__byte}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Channel", (RT0__Struct[]) { &_td_Channel__Channel, &_td_Channel__ChannelDesc, &_td_Channel__Reader, &_td_Channel__ReaderDesc, &_td_Channel__Writer, &_td_Channel__WriterDesc, &_td_Channel__ErrorContext, &_td_Channel__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Channel", (RT0__Struct[]) { &_td_Channel__Channel, &_td_Channel__ChannelDesc, &_td_Channel__Reader, &_td_Channel__ReaderDesc, &_td_Channel__Writer, &_td_Channel__WriterDesc, &_td_Channel__ErrorContext, &_td_Channel__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_Channel_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_Channel_init();
+extern void OOC_Channel_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Strings_open(&_mid);
+    OOC_Time_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_Channel_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_Channel_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_Channel_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Strings_close(&_mid);
+    OOC_Time_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

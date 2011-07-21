@@ -782,4 +782,7 @@ void OOC_OOC_SSA_ConstProp_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_ConstProp_destroy(void) {
+}
+
 /* --- */

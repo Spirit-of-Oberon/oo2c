@@ -992,4 +992,7 @@ void OOC_XML_UnicodeBuffer_init(void) {
   ;
 }
 
+void OOC_XML_UnicodeBuffer_destroy(void) {
+}
+
 /* --- */

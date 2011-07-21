@@ -510,7 +510,9 @@ extern void OOC_Doc__DocumentDesc_Merge(OOC_Doc__Document doc, OOC_Doc__Document
 #define _TBN_OOC_Doc__DocumentDesc_Merge 8
 typedef void (*_TBP_OOC_Doc__DocumentDesc_Merge)(OOC_Doc__Document doc, OOC_Doc__Document source);
 extern void OOC_OOC_Doc_init(void);
-extern void OOC_OOC_Doc_init0(void);
+extern void OOC_OOC_Doc_open(RT0__Module client);
+extern void OOC_OOC_Doc_destroy(void);
+extern void OOC_OOC_Doc_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Doc__Position;

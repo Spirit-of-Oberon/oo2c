@@ -75,7 +75,9 @@ extern void OOC_SymbolTable_Namespace__ExtendedDesc_CheckRestrictions(OOC_Symbol
 #define _TBN_OOC_SymbolTable_Namespace__ExtendedDesc_CheckRestrictions 9
 typedef void (*_TBP_OOC_SymbolTable_Namespace__ExtendedDesc_CheckRestrictions)(OOC_SymbolTable_Namespace__Extended ns, OOC_SymbolTable__Record record, OOC_SymbolTable_Uses__Uses uses, OOC_Error__List errList);
 extern void OOC_OOC_SymbolTable_Namespace_init(void);
-extern void OOC_OOC_SymbolTable_Namespace_init0(void);
+extern void OOC_OOC_SymbolTable_Namespace_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_Namespace_destroy(void);
+extern void OOC_OOC_SymbolTable_Namespace_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_Namespace__Namespace;

@@ -25,4 +25,7 @@ void OOC_Const7_init(void) {
   ;
 }
 
+void OOC_Const7_destroy(void) {
+}
+
 /* --- */

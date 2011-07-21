@@ -28,11 +28,39 @@ RT0__StructDesc _td_OOC_SymbolTable_Namespace__ExtendedDesc = { (RT0__Struct[]){
 RT0__StructDesc _td_OOC_SymbolTable_Namespace__ErrorContext = { (RT0__Struct[]){&_td_OOC_SymbolTable_Namespace__ErrorContextDesc}, NULL, NULL, &_mid, "ErrorContext", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SymbolTable_Namespace__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_OOC_Error__ContextDesc,&_td_OOC_SymbolTable_Namespace__ErrorContextDesc}, (void*[]){(void*)OOC_SymbolTable_Namespace__ErrorContextDesc_GetTemplate,(void*)OOC_Error__ContextDesc_BaseTemplate}, NULL, &_mid, "ErrorContextDesc", 4, 2, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_SymbolTable_Namespace__3154 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Namespace", (RT0__Struct[]) { &_td_OOC_SymbolTable_Namespace__Namespace, &_td_OOC_SymbolTable_Namespace__NamespaceDesc, &_td_OOC_SymbolTable_Namespace__Nested, &_td_OOC_SymbolTable_Namespace__NestedDesc, &_td_OOC_SymbolTable_Namespace__Extended, &_td_OOC_SymbolTable_Namespace__ExtendedDesc, &_td_OOC_SymbolTable_Namespace__ErrorContext, &_td_OOC_SymbolTable_Namespace__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Namespace", (RT0__Struct[]) { &_td_OOC_SymbolTable_Namespace__Namespace, &_td_OOC_SymbolTable_Namespace__NamespaceDesc, &_td_OOC_SymbolTable_Namespace__Nested, &_td_OOC_SymbolTable_Namespace__NestedDesc, &_td_OOC_SymbolTable_Namespace__Extended, &_td_OOC_SymbolTable_Namespace__ExtendedDesc, &_td_OOC_SymbolTable_Namespace__ErrorContext, &_td_OOC_SymbolTable_Namespace__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_OOC_SymbolTable_Namespace_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SymbolTable_Namespace_init();
+extern void OOC_OOC_SymbolTable_Namespace_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_OOC_SymbolTable_Uses_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SymbolTable_Namespace_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SymbolTable_Namespace_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SymbolTable_Namespace_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_OOC_SymbolTable_Uses_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

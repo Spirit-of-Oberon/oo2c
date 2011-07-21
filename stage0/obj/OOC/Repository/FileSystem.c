@@ -556,4 +556,7 @@ void OOC_OOC_Repository_FileSystem_init(void) {
   ;
 }
 
+void OOC_OOC_Repository_FileSystem_destroy(void) {
+}
+
 /* --- */

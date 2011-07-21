@@ -38,4 +38,7 @@ void OOC_Var7b_init(void) {
   ;
 }
 
+void OOC_Var7b_destroy(void) {
+}
+
 /* --- */

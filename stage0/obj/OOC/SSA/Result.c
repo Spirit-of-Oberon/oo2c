@@ -43,4 +43,7 @@ void OOC_OOC_SSA_Result_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Result_destroy(void) {
+}
+
 /* --- */

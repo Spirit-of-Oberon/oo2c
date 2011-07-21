@@ -123,7 +123,9 @@ extern void Files__SetModTime(const OOC_CHAR8 file__ref[], OOC_LEN file_0d, cons
 extern void Files__GetModTime(const OOC_CHAR8 file__ref[], OOC_LEN file_0d, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag, Msg__Msg *res);
 extern OOC_CHAR8 Files__Exists(const OOC_CHAR8 file__ref[], OOC_LEN file_0d);
 extern void OOC_Files_init(void);
-extern void OOC_Files_init0(void);
+extern void OOC_Files_open(RT0__Module client);
+extern void OOC_Files_destroy(void);
+extern void OOC_Files_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Files__File;

@@ -12,7 +12,9 @@
 #include <Exception.oh>
 extern void OOC_SymbolTable_InterfaceXML__Write(IO__ByteChannel cw, URI__HierarchicalURI baseURI, OOC_SymbolTable__Module module, OOC_Config_Repositories__Section repositories);
 extern void OOC_OOC_SymbolTable_InterfaceXML_init(void);
-extern void OOC_OOC_SymbolTable_InterfaceXML_init0(void);
+extern void OOC_OOC_SymbolTable_InterfaceXML_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_InterfaceXML_destroy(void);
+extern void OOC_OOC_SymbolTable_InterfaceXML_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_InterfaceXML__2183;

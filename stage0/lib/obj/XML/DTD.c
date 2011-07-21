@@ -1403,4 +1403,7 @@ void OOC_XML_DTD_init(void) {
   ;
 }
 
+void OOC_XML_DTD_destroy(void) {
+}
+
 /* --- */

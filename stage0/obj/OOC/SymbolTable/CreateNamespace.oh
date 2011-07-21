@@ -24,7 +24,9 @@ extern OOC_SymbolTable__Declaration OOC_SymbolTable_CreateNamespace__ResolveQual
 extern void OOC_SymbolTable_CreateNamespace__CreateNamespace(OOC_SymbolTable__Module root, OOC_SymbolTable_Uses__Uses uses, OOC_Error__List errList);
 extern void OOC_SymbolTable_CreateNamespace__Init(void);
 extern void OOC_OOC_SymbolTable_CreateNamespace_init(void);
-extern void OOC_OOC_SymbolTable_CreateNamespace_init0(void);
+extern void OOC_OOC_SymbolTable_CreateNamespace_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_CreateNamespace_destroy(void);
+extern void OOC_OOC_SymbolTable_CreateNamespace_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__ErrorContext;

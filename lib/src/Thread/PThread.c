@@ -201,3 +201,7 @@ void OOC_Thread_PThread_init() {
   Thread_PThread__ThreadDesc_INIT(main_thread);
   pthread_setspecific(threadobj_key, main_thread);
 }
+
+void OOC_Thread_PThread_destroy() {
+  /* FIXME... if we ever to module unloading  */
+}

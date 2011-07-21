@@ -1,7 +1,7 @@
-(* 	$Id: UU.Mod,v 1.1 2003/09/22 19:32:17 mva Exp $	 *)
+(* 	$Id: UU.Mod,v 1.2 2004/12/20 10:11:27 mva Exp $	 *)
 MODULE Codec:UU [OOC_EXTENSIONS];
 (*  Codec for uuencode transport encoding.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE Codec:UU [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, Ascii, Codec, Object, ADT:StringBuffer;
+  SYSTEM, Ascii, Codec, ADT:StringBuffer;
 
 CONST
   lineLength = 45;  (* number of bytes per line when encoding *)
@@ -71,24 +71,26 @@ TYPE
 VAR
   uu-: UU;
 
-PROCEDURE (c: UU) NewDecoder*(): Decoder;
-  VAR
-    dec: Decoder;
+PROCEDURE (dec: Decoder) INIT*();
   BEGIN
-    NEW (dec);
-    Codec.InitDecoder (dec);
-    dec. incompleteSize := 0;
-    RETURN dec;
+    dec.INIT^();
+    dec.incompleteSize := 0;
+  END INIT;
+
+PROCEDURE (enc: Encoder) INIT*();
+  BEGIN
+    enc.INIT^(Codec.exceptionEncoder);
+    enc.incompleteSize := 0;
+  END INIT;
+
+PROCEDURE (c: UU) NewDecoder*(): Decoder;
+  BEGIN
+    RETURN NEW(Decoder);
   END NewDecoder;
 
 PROCEDURE (c: UU) NewEncoder*(): Encoder;
-  VAR
-    enc: Encoder;
   BEGIN
-    NEW (enc);
-    Codec.InitEncoder (enc);
-    enc. incompleteSize := 0;
-    RETURN enc;
+    RETURN NEW(Encoder);
   END NewEncoder;
 
 PROCEDURE LookingAt (data[NO_COPY]: ARRAY OF CHAR; start: LONGINT;
@@ -365,24 +367,21 @@ PROCEDURE EncodeLine (data[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
     INC (opos);
   END EncodeLine;
 
-PROCEDURE (enc: Encoder) Encode*(s: Object.String;
-                                 start, end: LONGINT;
-                                 b: StringBuffer.StringBuffer);
+PROCEDURE (enc: Encoder) EncodeLatin1*(s[NO_COPY]: ARRAY OF CHAR;
+                                       start, end: LONGINT;
+                                       b: StringBuffer.StringBuffer);
   CONST
     sizeBuffer = 4*1024;
   VAR
     d: ARRAY sizeBuffer+lengthBufferCode OF CHAR;
-    c: Object.CharsLatin1;
     dpos, len: LONGINT;
   BEGIN
-    c := s(Object.String8).CharsLatin1();
-
     dpos := 0;
     IF (enc.incompleteSize # 0) THEN    (* pending incomplete line *)
       IF (enc.incompleteSize+(end-start) >= lineLength) THEN
         (* we have enough data for the whole line: assemble and encode it *)
         len := lineLength-enc.incompleteSize;
-        SYSTEM.MOVE (SYSTEM.ADR(c[start]),
+        SYSTEM.MOVE (SYSTEM.ADR(s)+start,
                      SYSTEM.ADR(enc.incompleteData[enc.incompleteSize]),
                      len);
         enc.incompleteSize := 0;
@@ -390,7 +389,7 @@ PROCEDURE (enc: Encoder) Encode*(s: Object.String;
         INC (start, len);
       ELSE
         (* still not enough data: add more data to buffer and exit *)
-        SYSTEM.MOVE (SYSTEM.ADR(c[start]),
+        SYSTEM.MOVE (SYSTEM.ADR(s)+start,
                      SYSTEM.ADR(enc.incompleteData[enc.incompleteSize]),
                      end-start);
         INC (enc.incompleteSize, end-start);
@@ -399,7 +398,7 @@ PROCEDURE (enc: Encoder) Encode*(s: Object.String;
     END;
     
     WHILE (start+lineLength <= end) DO
-      EncodeLine (c^, start, start+lineLength, d, dpos);
+      EncodeLine (s, start, start+lineLength, d, dpos);
       
       IF (dpos >= sizeBuffer) THEN
         b.AppendLatin1Region (d, 0, dpos);
@@ -412,13 +411,20 @@ PROCEDURE (enc: Encoder) Encode*(s: Object.String;
 
     (* store unprocessed data for later *)
     IF (end > start) THEN
-      SYSTEM.MOVE (SYSTEM.ADR(c[start]),
+      SYSTEM.MOVE (SYSTEM.ADR(s)+start,
                    SYSTEM.ADR(enc.incompleteData),
                    end-start);
     END;
     enc.incompleteSize := end-start;
-  END Encode;
+  END EncodeLatin1;
 
+PROCEDURE (enc: Encoder) EncodeUTF16*(s[NO_COPY]: ARRAY OF LONGCHAR;
+                                      start, end: LONGINT;
+                                      b: StringBuffer.StringBuffer);
+  BEGIN
+    ASSERT(FALSE);
+  END EncodeUTF16;
+  
 PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
   VAR
     d: ARRAY lengthBufferCode OF CHAR;
@@ -445,6 +451,5 @@ PROCEDURE Register*;
   END Register;
 
 BEGIN
-  NEW (uu);
-  Codec.InitCodec (uu, Codec.transport, "uu");
+  uu := NEW(UU, Codec.transport, "uu");
 END Codec:UU.

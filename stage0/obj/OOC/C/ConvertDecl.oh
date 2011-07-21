@@ -16,7 +16,9 @@ extern OOC_C_DeclWriter__Declaration OOC_C_ConvertDecl__GetDecl(OOC_C_DeclWriter
 extern OOC_C_DeclWriter__Type OOC_C_ConvertDecl__GetTypeRef(OOC_C_DeclWriter__Writer w, OOC_SymbolTable__Type type);
 extern OOC_C_DeclWriter__Declaration OOC_C_ConvertDecl__GetPointerDecl(OOC_C_DeclWriter__Writer w, OOC_SymbolTable__VarDecl paramDecl);
 extern void OOC_OOC_C_ConvertDecl_init(void);
-extern void OOC_OOC_C_ConvertDecl_init0(void);
+extern void OOC_OOC_C_ConvertDecl_open(RT0__Module client);
+extern void OOC_OOC_C_ConvertDecl_destroy(void);
+extern void OOC_OOC_C_ConvertDecl_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_C_ConvertDecl_ */

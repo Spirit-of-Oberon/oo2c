@@ -139,7 +139,9 @@ typedef void (*_TBP_PosixFileDescr__ChannelDesc_Close)(PosixFileDescr__Channel c
 extern void PosixFileDescr__Init(PosixFileDescr__Channel ch, OOC_INT32 fd, OOC_INT8 mode);
 extern void PosixFileDescr__Truncate(PosixFileDescr__Writer w, OOC_INT32 newLength);
 extern void OOC_PosixFileDescr_init(void);
-extern void OOC_PosixFileDescr_init0(void);
+extern void OOC_PosixFileDescr_open(RT0__Module client);
+extern void OOC_PosixFileDescr_destroy(void);
+extern void OOC_PosixFileDescr_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_PosixFileDescr__Channel;

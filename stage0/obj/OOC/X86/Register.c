@@ -1140,4 +1140,7 @@ void OOC_OOC_X86_Register_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Register_destroy(void) {
+}
+
 /* --- */

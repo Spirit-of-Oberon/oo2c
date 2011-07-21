@@ -791,4 +791,7 @@ void OOC_OOC_SSA_CSE_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_CSE_destroy(void) {
+}
+
 /* --- */

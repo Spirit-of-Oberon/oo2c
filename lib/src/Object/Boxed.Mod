@@ -1,4 +1,4 @@
-(*	$Id: Boxed.Mod,v 1.19 2004/11/21 16:30:37 mva Exp $	*)
+(*	$Id: Boxed.Mod,v 1.20 2004/12/18 19:59:20 mva Exp $	*)
 MODULE Object:Boxed;
 (*  Implements object representations for predefined types.
     Copyright (C) 2002-2004  Michael van Acken
@@ -59,6 +59,7 @@ TYPE
   
 VAR
   zeroLongInt-: LongInt;
+  oneLongInt-: LongInt;
 
 TYPE
   LongReal* = POINTER TO LongRealDesc;
@@ -69,6 +70,7 @@ TYPE
   
 VAR
   zeroLongReal-: LongReal;
+  oneLongReal-: LongReal;
 
 TYPE
   Set* = POINTER TO SetDesc;
@@ -614,7 +616,9 @@ BEGIN
   false := NEW(Boolean, FALSE); falseString := Obj.NewLatin1("FALSE");
   
   zeroLongReal := NEW(LongReal, 0.0);
+  oneLongReal := NEW(LongReal, 1.0);
   zeroLongInt := NEW(LongInt, 0);
+  oneLongInt := NEW(LongInt, 1);
 
   NEW(emptyString);
   emptyString.value := Obj.NewLatin1("");

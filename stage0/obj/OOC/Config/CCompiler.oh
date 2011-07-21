@@ -25,7 +25,9 @@ extern Object__String OOC_Config_CCompiler__InstallProgramCmd(URI__URI file, OOC
 extern Object__String OOC_Config_CCompiler__UninstallProgramCmd(Object__String path, OOC_CHAR8 asLibrary);
 extern void OOC_Config_CCompiler__RegisterConfig(void);
 extern void OOC_OOC_Config_CCompiler_init(void);
-extern void OOC_OOC_Config_CCompiler_init0(void);
+extern void OOC_OOC_Config_CCompiler_open(RT0__Module client);
+extern void OOC_OOC_Config_CCompiler_destroy(void);
+extern void OOC_OOC_Config_CCompiler_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_Config_CCompiler_ */

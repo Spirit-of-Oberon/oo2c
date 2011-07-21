@@ -426,4 +426,7 @@ void OOC_Log_init(void) {
   ;
 }
 
+void OOC_Log_destroy(void) {
+}
+
 /* --- */

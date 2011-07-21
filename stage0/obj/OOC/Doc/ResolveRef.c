@@ -999,4 +999,7 @@ void OOC_OOC_Doc_ResolveRef_init(void) {
   ;
 }
 
+void OOC_OOC_Doc_ResolveRef_destroy(void) {
+}
+
 /* --- */

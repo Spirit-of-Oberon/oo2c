@@ -61,7 +61,9 @@ extern StringSearch__Matcher StringSearch__FactoryDesc_Compile(StringSearch__Fac
 #define _TBN_StringSearch__FactoryDesc_Compile 5
 typedef StringSearch__Matcher (*_TBP_StringSearch__FactoryDesc_Compile)(StringSearch__Factory f, Object__String8 pattern, OOC_UINT32 flags);
 extern void OOC_StringSearch_init(void);
-extern void OOC_StringSearch_init0(void);
+extern void OOC_StringSearch_open(RT0__Module client);
+extern void OOC_StringSearch_destroy(void);
+extern void OOC_StringSearch_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_StringSearch__Factory;

@@ -28,11 +28,41 @@ static RT0__StructDesc _td__qtd4 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_O
 static RT0__StructDesc _td__qtd5 = { (RT0__Struct[]){&_td__qtd4}, NULL, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayList, &_td_OOC_X86_Register__LiveData, NULL}, &_mid, "ADT:ArrayList.ArrayList(OOC:X86:Register.LiveData)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd6 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd6}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_Dictionary__DictionaryDesc_Equals,(void*)ADT_Dictionary__DictionaryDesc_HashCode,(void*)ADT_Dictionary__DictionaryDesc_Store,(void*)ADT_Dictionary__DictionaryDesc_Load,(void*)ADT_Dictionary__DictionaryDesc_INIT,(void*)ADT_Dictionary__DictionaryDesc_Destroy,(void*)ADT_Dictionary__DictionaryDesc_Lookup,(void*)ADT_Dictionary__DictionaryDesc_Insert,(void*)ADT_Dictionary__DictionaryDesc_Resize,(void*)ADT_Dictionary__DictionaryDesc_HasKey,(void*)ADT_Dictionary__DictionaryDesc_Size,(void*)ADT_Dictionary__DictionaryDesc_Get,(void*)ADT_Dictionary__DictionaryDesc_Set,(void*)ADT_Dictionary__DictionaryDesc_Copy,(void*)ADT_Dictionary__DictionaryDesc_Delete,(void*)ADT_Dictionary__DictionaryDesc_Clear,(void*)ADT_Dictionary__DictionaryDesc_Keys,(void*)ADT_Dictionary__DictionaryDesc_Values,(void*)ADT_Dictionary__DictionaryDesc_Items,(void*)ADT_Dictionary__DictionaryDesc_IterKeys,(void*)ADT_Dictionary__DictionaryDesc_IterValues}, (RT0__Struct[]){&_td_ADT_Dictionary__DictionaryDesc, &_td_OOC_X86_SSA__Block, &_td_OOC_X86_Register__LiveData, NULL}, &_mid, "ADT:Dictionary.DictionaryDesc(OOC:X86:SSA.Block,OOC:X86:Register.LiveData)", 20, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd7 = { (RT0__Struct[]){&_td__qtd6}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_OOC_X86_SSA__Block, &_td_OOC_X86_Register__LiveData, NULL}, &_mid, "ADT:Dictionary.Dictionary(OOC:X86:SSA.Block,OOC:X86:Register.LiveData)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:Register", (RT0__Struct[]) { &_td_OOC_X86_Register__RegisterFile, &_td_OOC_X86_Register__RegisterFiles, &_td_OOC_X86_Register__RegisterFileDesc, &_td_OOC_X86_Register__LiveData, &_td_OOC_X86_Register__LiveDataDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, &_td__qtd6, &_td__qtd7, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:Register", (RT0__Struct[]) { &_td_OOC_X86_Register__RegisterFile, &_td_OOC_X86_Register__RegisterFiles, &_td_OOC_X86_Register__RegisterFileDesc, &_td_OOC_X86_Register__LiveData, &_td_OOC_X86_Register__LiveDataDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, &_td__qtd6, &_td__qtd7, NULL }, 0 };
 
-extern void OOC_OOC_X86_Register_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_X86_Register_init();
+extern void OOC_OOC_X86_Register_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_OOC_X86_SSA_open(&_mid);
+    OOC_OOC_X86_Machine_open(&_mid);
+    OOC_OOC_SSA_IGraph_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_X86_Register_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_X86_Register_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_X86_Register_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_OOC_X86_SSA_close(&_mid);
+    OOC_OOC_X86_Machine_close(&_mid);
+    OOC_OOC_SSA_IGraph_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

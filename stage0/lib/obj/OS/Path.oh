@@ -14,7 +14,9 @@ extern Object__CharsLatin1 OS_Path__Encode(Object__String path);
 extern Object__String OS_Path__Decode(const OOC_CHAR8 path[], OOC_LEN path_0d);
 extern Object__String OS_Path__QuoteForShell(Object__String path);
 extern void OOC_OS_Path_init(void);
-extern void OOC_OS_Path_init0(void);
+extern void OOC_OS_Path_open(RT0__Module client);
+extern void OOC_OS_Path_destroy(void);
+extern void OOC_OS_Path_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OS_Path__3472;

@@ -57,6 +57,8 @@ IMPORT
   ADT:StringBuffer,
   ADT:Dictionary,
   ADT:ArrayList,
+  Logger:TimeStamp,
+  Logger,
 
   IO,
   IO:Address,
@@ -82,9 +84,11 @@ IMPORT
   libadt,
   libxml,            (* mgs -- unknown *)
 
-  (* _very_ premininary modules, will change radically without notice: *)
+  (* _very_ preliminary modules, will change radically without notice: *)
   Codec,
   CodecAscii := Codec:Ascii,
-  CodecLatin1 := Codec:Latin1;
+  CodecLatin1 := Codec:Latin1,
+  CodecUU := Codec:UU,
+  CodecYEnc := Codec:YEnc;
 
 END liboo2c.

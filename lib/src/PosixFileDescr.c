@@ -1,4 +1,4 @@
-/*	$Id: PosixFileDescr.c,v 1.10 2004/05/10 02:43:50 sgreenhill Exp $	*/
+/*	$Id: PosixFileDescr.c,v 1.11 2004/12/15 11:27:03 mva Exp $	*/
 /*  Generalized access to POSIX-style file descriptors.
     Copyright (C) 1997-2000, 2002  Michael van Acken
 
@@ -981,4 +981,8 @@ void OOC_PosixFileDescr_init(void) {
   setmode(fileno(stdout), O_BINARY);
   setmode(fileno(stderr), O_BINARY);
 #endif 
+}
+
+void OOC_PosixFileDescr_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
 }

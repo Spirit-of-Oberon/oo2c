@@ -31,11 +31,37 @@ RT0__StructDesc _td_Msg__11750 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, 
 RT0__StructDesc _td_Msg__11843 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 48, 48, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_Msg__13285 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 65534, 32767, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_Msg__15658 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 48, 48, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Msg", (RT0__Struct[]) { &_td_Msg__String, &_td_Msg__StringPtr, &_td_Msg__LString, &_td_Msg__LStringPtr, &_td_Msg__Attribute, &_td_Msg__AttributeDesc, &_td_Msg__Context, &_td_Msg__ContextDesc, &_td_Msg__Msg, &_td_Msg__MsgDesc, &_td_Msg__MsgList, &_td_Msg__MsgListDesc, &_td_Msg__IntAttribute, &_td_Msg__IntAttributeDesc, &_td_Msg__StringAttribute, &_td_Msg__StringAttributeDesc, &_td_Msg__LStringAttribute, &_td_Msg__LStringAttributeDesc, &_td_Msg__MsgAttribute, &_td_Msg__MsgAttributeDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Msg", (RT0__Struct[]) { &_td_Msg__String, &_td_Msg__StringPtr, &_td_Msg__LString, &_td_Msg__LStringPtr, &_td_Msg__Attribute, &_td_Msg__AttributeDesc, &_td_Msg__Context, &_td_Msg__ContextDesc, &_td_Msg__Msg, &_td_Msg__MsgDesc, &_td_Msg__MsgList, &_td_Msg__MsgListDesc, &_td_Msg__IntAttribute, &_td_Msg__IntAttributeDesc, &_td_Msg__StringAttribute, &_td_Msg__StringAttributeDesc, &_td_Msg__LStringAttribute, &_td_Msg__LStringAttributeDesc, &_td_Msg__MsgAttribute, &_td_Msg__MsgAttributeDesc, NULL }, 0 };
 
-extern void OOC_Msg_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_Msg_init();
+extern void OOC_Msg_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_CharClass_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_IntStr_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_Msg_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_Msg_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_Msg_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_CharClass_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_IntStr_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

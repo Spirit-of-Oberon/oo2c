@@ -3527,4 +3527,7 @@ void OOC_OOC_SSA_LoopRewrite_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_LoopRewrite_destroy(void) {
+}
+
 /* --- */

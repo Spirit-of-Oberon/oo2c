@@ -29,7 +29,9 @@ extern OOC_Repository__Repository OOC_Config_FileSystem__RepositoryEntryDesc_Pro
 #define _TBN_OOC_Config_FileSystem__RepositoryEntryDesc_ProcessElement 0
 typedef OOC_Repository__Repository (*_TBP_OOC_Config_FileSystem__RepositoryEntryDesc_ProcessElement)(OOC_Config_FileSystem__RepositoryEntry re, Config_Parser__Element node, XML_Locator__ErrorListener errorListener, OOC_Repository__Repository baseRep);
 extern void OOC_OOC_Config_FileSystem_init(void);
-extern void OOC_OOC_Config_FileSystem_init0(void);
+extern void OOC_OOC_Config_FileSystem_open(RT0__Module client);
+extern void OOC_OOC_Config_FileSystem_destroy(void);
+extern void OOC_OOC_Config_FileSystem_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Config_FileSystem__RepositoryEntry;

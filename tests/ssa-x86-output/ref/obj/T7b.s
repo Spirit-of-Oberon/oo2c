@@ -53,12 +53,12 @@ OOC_T7b_init:
 	leave 
 	ret 
 	.size OOC_T7b_init, .-OOC_T7b_init
-.global OOC_T7b_init0
-	.type OOC_T7b_init0, @function
-OOC_T7b_init0:
+.global OOC_T7b_open
+	.type OOC_T7b_open, @function
+OOC_T7b_open:
 	call OOC_T7b_init
 	ret
-	.size OOC_T7b_init0, .-OOC_T7b_init0
+	.size OOC_T7b_open, .-OOC_T7b_open
 	.data
 	.align 4
 	.type _mid_name, @object

@@ -442,4 +442,7 @@ void OOC_OOC_SSA_Aliasing_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Aliasing_destroy(void) {
+}
+
 /* --- */

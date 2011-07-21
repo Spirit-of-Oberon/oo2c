@@ -283,4 +283,7 @@ void OOC_URI_Scheme_File_init(void) {
   ;
 }
 
+void OOC_URI_Scheme_File_destroy(void) {
+}
+
 /* --- */

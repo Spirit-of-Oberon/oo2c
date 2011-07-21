@@ -3680,4 +3680,7 @@ void OOC_OOC_SSA_Blocker_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Blocker_destroy(void) {
+}
+
 /* --- */

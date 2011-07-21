@@ -177,4 +177,7 @@ void OOC_OOC_Scanner_InputBuffer_init(void) {
   ;
 }
 
+void OOC_OOC_Scanner_InputBuffer_destroy(void) {
+}
+
 /* --- */

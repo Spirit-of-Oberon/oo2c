@@ -4,10 +4,16 @@ IMPORT
   Err, H2O:Source, 
   Object, Object:Boxed, ADT:StringBuffer;
 
+CONST
+  output = 1;
+  halt = 2;
+
 TYPE 
   Error* = POINTER TO ErrorDesc;
   ErrorDesc = RECORD
     in : Source.Input;
+    options* : SET;
+    count* : LONGINT;
   END;
 
 PROCEDURE Format(format : STRING; p1, p2, p3 : Object.Object) : STRING;
@@ -37,16 +43,19 @@ END Format;
 
 PROCEDURE (e : Error) MsgString* (msg : STRING; error : BOOLEAN);
 BEGIN
-  IF error THEN
-    Err.String("Error: "); 
-  ELSE
-    Err.String("Warning: ");
+  IF output IN e.options THEN
+    IF error THEN
+      Err.String("Error: "); 
+    ELSE
+      Err.String("Warning: ");
+    END;
+    Err.Object(msg);
+    Err.Ln;
+    Err.Flush;
+    e.in.ShowContext();
   END;
-  Err.Object(msg);
-  Err.Ln;
-  Err.Flush;
-  e.in.ShowContext();
-  IF error THEN HALT(0) END;
+  INC(e.count);
+  IF error & (halt IN e.options) THEN HALT(0) END;
 END MsgString;
 
 PROCEDURE (e : Error) Error*(msg : STRING);
@@ -67,7 +76,7 @@ END MsgParam;
 PROCEDURE (e : Error) UnexpectedCharacter* (ch : CHAR);
 BEGIN
   e.ErrorParam("Unexpected character '$0'",
-               NEW(Boxed.String, Object.NewLatin1Char(ch)),NIL,NIL);
+               Object.NewLatin1Char(ch),NIL,NIL);
 END UnexpectedCharacter;
 
 PROCEDURE (e : Error) ExpectedToken* (expected, found : Object.Object);
@@ -90,6 +99,8 @@ VAR err : Error;
 BEGIN
   NEW(err);
   err.in := in;
+  err.count := 0;
+  err.options := {halt, output};
   RETURN err;
 END New;
 

@@ -810,4 +810,7 @@ void OOC_ADT_ArrayList_init(void) {
   ;
 }
 
+void OOC_ADT_ArrayList_destroy(void) {
+}
+
 /* --- */

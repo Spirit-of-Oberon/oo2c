@@ -9,7 +9,9 @@
 #include <Exception.oh>
 extern void OOC_X86_ConstProp__Transform(OOC_X86_SSA__FunctionBlock pb);
 extern void OOC_OOC_X86_ConstProp_init(void);
-extern void OOC_OOC_X86_ConstProp_init0(void);
+extern void OOC_OOC_X86_ConstProp_open(RT0__Module client);
+extern void OOC_OOC_X86_ConstProp_destroy(void);
+extern void OOC_OOC_X86_ConstProp_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_ConstProp__Worklist;

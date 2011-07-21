@@ -790,4 +790,7 @@ void OOC_OOC_X86_Block_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Block_destroy(void) {
+}
+
 /* --- */

@@ -38,7 +38,9 @@ extern void OOC_X86_Register__LiveDataDesc_INIT(OOC_X86_Register__LiveData ld, O
 typedef void (*_TBP_OOC_X86_Register__LiveDataDesc_INIT)(OOC_X86_Register__LiveData ld, OOC_X86_SSA__Block block, OOC_X86_SSA__Instr position, OOC_INT32 remainingInput, OOC_SSA_IGraph__Vector live);
 extern void OOC_X86_Register__AssignRegisters(OOC_X86_SSA__FunctionBlock b);
 extern void OOC_OOC_X86_Register_init(void);
-extern void OOC_OOC_X86_Register_init0(void);
+extern void OOC_OOC_X86_Register_open(RT0__Module client);
+extern void OOC_OOC_X86_Register_destroy(void);
+extern void OOC_OOC_X86_Register_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_Register__RegisterFile;

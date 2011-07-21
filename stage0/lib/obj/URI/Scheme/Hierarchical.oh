@@ -110,7 +110,9 @@ extern Object__String8 URI_Scheme_Hierarchical__GenericDesc_ToString(URI_Scheme_
 #define _TBN_URI_Scheme_Hierarchical__GenericDesc_ToString 1
 typedef Object__String8 (*_TBP_URI_Scheme_Hierarchical__GenericDesc_ToString)(URI_Scheme_Hierarchical__Generic uri);
 extern void OOC_URI_Scheme_Hierarchical_init(void);
-extern void OOC_URI_Scheme_Hierarchical_init0(void);
+extern void OOC_URI_Scheme_Hierarchical_open(RT0__Module client);
+extern void OOC_URI_Scheme_Hierarchical_destroy(void);
+extern void OOC_URI_Scheme_Hierarchical_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_URI_Scheme_Hierarchical__Parameter;

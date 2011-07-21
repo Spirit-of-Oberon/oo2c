@@ -16,4 +16,7 @@ void OOC_Const5_init(void) {
   ;
 }
 
+void OOC_Const5_destroy(void) {
+}
+
 /* --- */

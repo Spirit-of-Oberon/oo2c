@@ -596,4 +596,7 @@ void OOC_URI_init(void) {
   ;
 }
 
+void OOC_URI_destroy(void) {
+}
+
 /* --- */

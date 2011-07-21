@@ -7,7 +7,9 @@
 #include <Object.oh>
 #include <Exception.oh>
 extern void OOC_oo2c_init(void);
-extern void OOC_oo2c_init0(void);
+extern void OOC_oo2c_open(RT0__Module client);
+extern void OOC_oo2c_destroy(void);
+extern void OOC_oo2c_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_oo2c_ */

@@ -169,7 +169,9 @@ typedef Object__String8 (*_TBP_URI__ReferenceDesc_ToString)(URI__Reference ref);
 extern void URI__RegisterScheme(URI__URI scheme);
 extern URI__URI URI__GetScheme(Object__String name);
 extern void OOC_URI_init(void);
-extern void OOC_URI_init0(void);
+extern void OOC_URI_open(RT0__Module client);
+extern void OOC_URI_destroy(void);
+extern void OOC_URI_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_URI__URI;

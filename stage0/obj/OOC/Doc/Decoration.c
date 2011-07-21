@@ -658,4 +658,7 @@ void OOC_OOC_Doc_Decoration_init(void) {
   ;
 }
 
+void OOC_OOC_Doc_Decoration_destroy(void) {
+}
+
 /* --- */

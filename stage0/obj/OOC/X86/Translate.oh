@@ -12,7 +12,9 @@
 #include <Exception.oh>
 extern void OOC_X86_Translate__Translate(OOC_Repository__Module m, OOC_SymbolTable__Module symTab, OOC_IR__Module moduleIR, IO__ByteChannel ch);
 extern void OOC_OOC_X86_Translate_init(void);
-extern void OOC_OOC_X86_Translate_init0(void);
+extern void OOC_OOC_X86_Translate_open(RT0__Module client);
+extern void OOC_OOC_X86_Translate_destroy(void);
+extern void OOC_OOC_X86_Translate_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_Translate__9498;

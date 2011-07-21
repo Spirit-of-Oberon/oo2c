@@ -68,7 +68,9 @@ extern void Config_Source_CmdLine__CmdLineDesc_Write(Config_Source_CmdLine__CmdL
 #define _TBN_Config_Source_CmdLine__CmdLineDesc_Write 0
 typedef void (*_TBP_Config_Source_CmdLine__CmdLineDesc_Write)(Config_Source_CmdLine__CmdLine cmdLine, IO__ByteChannel ch, const Config_Parser__String rootTag__ref, OOC_LEN rootTag_0d);
 extern void OOC_Config_Source_CmdLine_init(void);
-extern void OOC_Config_Source_CmdLine_init0(void);
+extern void OOC_Config_Source_CmdLine_open(RT0__Module client);
+extern void OOC_Config_Source_CmdLine_destroy(void);
+extern void OOC_Config_Source_CmdLine_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Config_Source_CmdLine__OptionTemplate;

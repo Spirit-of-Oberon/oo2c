@@ -55,7 +55,9 @@ extern void OOC_Config_Pragmas__HistoryDesc_Pop(OOC_Config_Pragmas__History h, O
 #define _TBN_OOC_Config_Pragmas__HistoryDesc_Pop 3
 typedef void (*_TBP_OOC_Config_Pragmas__HistoryDesc_Pop)(OOC_Config_Pragmas__History h, OOC_INT32 charPos);
 extern void OOC_OOC_Config_Pragmas_init(void);
-extern void OOC_OOC_Config_Pragmas_init0(void);
+extern void OOC_OOC_Config_Pragmas_open(RT0__Module client);
+extern void OOC_OOC_Config_Pragmas_destroy(void);
+extern void OOC_OOC_Config_Pragmas_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Config_Pragmas__Section;

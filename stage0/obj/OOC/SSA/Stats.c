@@ -475,4 +475,7 @@ void OOC_OOC_SSA_Stats_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Stats_destroy(void) {
+}
+
 /* --- */

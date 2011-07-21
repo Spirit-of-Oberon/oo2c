@@ -29,7 +29,9 @@ typedef OOC_INT8 OOC_SSA_Opnd__Class;
 #define OOC_SSA_Opnd__dgateRef 22
 extern void OOC_SSA_Opnd__GetName(OOC_INT8 _class, OOC_CHAR8 name[], OOC_LEN name_0d);
 extern void OOC_OOC_SSA_Opnd_init(void);
-extern void OOC_OOC_SSA_Opnd_init0(void);
+extern void OOC_OOC_SSA_Opnd_open(RT0__Module client);
+extern void OOC_OOC_SSA_Opnd_destroy(void);
+extern void OOC_OOC_SSA_Opnd_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_Opnd__5839;

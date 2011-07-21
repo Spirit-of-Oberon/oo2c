@@ -11,7 +11,9 @@
 extern void OOC_SSA_DeadCodeElimination__Transform(OOC_SSA__ProcBlock pb);
 extern void OOC_SSA_DeadCodeElimination__RemoveDesignators(OOC_SSA__ProcBlock pb);
 extern void OOC_OOC_SSA_DeadCodeElimination_init(void);
-extern void OOC_OOC_SSA_DeadCodeElimination_init0(void);
+extern void OOC_OOC_SSA_DeadCodeElimination_open(RT0__Module client);
+extern void OOC_OOC_SSA_DeadCodeElimination_destroy(void);
+extern void OOC_OOC_SSA_DeadCodeElimination_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_SSA_DeadCodeElimination_ */

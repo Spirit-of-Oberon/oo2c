@@ -3448,4 +3448,7 @@ void OOC_OOC_Parser_init(void) {
   ;
 }
 
+void OOC_OOC_Parser_destroy(void) {
+}
+
 /* --- */

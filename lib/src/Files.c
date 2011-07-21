@@ -1,4 +1,4 @@
-/*	$Id: Files.c,v 1.8 2003/10/05 14:30:52 mva Exp $	*/
+/*	$Id: Files.c,v 1.9 2004/12/15 11:27:03 mva Exp $	*/
 /*  Access to files and file attributes.
     Copyright (C) 1997-2000, 2002  Michael van Acken
 
@@ -633,4 +633,8 @@ void OOC_Files_init(void) {
   umask (active_umask);
   /* make sure that all files are closed upon program termination */
   Termination__RegisterProc (&close_all_files);
+}
+
+void OOC_Files_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
 }

@@ -24,4 +24,7 @@ void OOC_Var11_init(void) {
   ;
 }
 
+void OOC_Var11_destroy(void) {
+}
+
 /* --- */

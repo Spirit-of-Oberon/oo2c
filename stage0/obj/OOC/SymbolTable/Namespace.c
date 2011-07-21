@@ -930,4 +930,7 @@ void OOC_OOC_SymbolTable_Namespace_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_Namespace_destroy(void) {
+}
+
 /* --- */

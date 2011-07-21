@@ -716,4 +716,7 @@ void OOC_OOC_X86_RuntimeData_init(void) {
   ;
 }
 
+void OOC_OOC_X86_RuntimeData_destroy(void) {
+}
+
 /* --- */

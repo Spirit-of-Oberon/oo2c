@@ -968,4 +968,7 @@ void OOC_OOC_Doc_TextBuffer_init(void) {
   ;
 }
 
+void OOC_OOC_Doc_TextBuffer_destroy(void) {
+}
+
 /* --- */

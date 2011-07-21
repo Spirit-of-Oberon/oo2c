@@ -24,4 +24,7 @@ void OOC_ADT_Comparator_init(void) {
   ;
 }
 
+void OOC_ADT_Comparator_destroy(void) {
+}
+
 /* --- */

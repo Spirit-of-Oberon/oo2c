@@ -8,16 +8,16 @@
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-extern void OOC_Make_WriteMainFileC__WriteFile(OOC_Repository__Module module, const OOC_Repository__Module imports__ref[], OOC_LEN imports_0d);
+extern void OOC_Make_WriteMainFileC__WriteFile(OOC_Repository__Module module);
 extern void OOC_OOC_Make_WriteMainFileC_init(void);
-extern void OOC_OOC_Make_WriteMainFileC_init0(void);
+extern void OOC_OOC_Make_WriteMainFileC_open(RT0__Module client);
+extern void OOC_OOC_Make_WriteMainFileC_destroy(void);
+extern void OOC_OOC_Make_WriteMainFileC_close(RT0__Module client);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1061;
-extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1252;
-extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1360;
-extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1395;
-extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1795;
+extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1200;
+extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1308;
+extern RT0__StructDesc _td_OOC_Make_WriteMainFileC__1343;
 #endif /* _MODULE_OOC_Make_WriteMainFileC_ */
 
 /* --- */

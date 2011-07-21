@@ -732,4 +732,7 @@ void OOC_XML_UnicodeCodec_UTF16_init(void) {
   ;
 }
 
+void OOC_XML_UnicodeCodec_UTF16_destroy(void) {
+}
+
 /* --- */

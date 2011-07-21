@@ -100,7 +100,9 @@ extern XML_UnicodeBuffer__CharArray Config_Parser__NodeDesc_GetCharDataContent(C
 #define _TBN_Config_Parser__NodeDesc_GetCharDataContent 3
 typedef XML_UnicodeBuffer__CharArray (*_TBP_Config_Parser__NodeDesc_GetCharDataContent)(Config_Parser__Node node);
 extern void OOC_Config_Parser_init(void);
-extern void OOC_Config_Parser_init0(void);
+extern void OOC_Config_Parser_open(RT0__Module client);
+extern void OOC_Config_Parser_destroy(void);
+extern void OOC_Config_Parser_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Config_Parser__String;

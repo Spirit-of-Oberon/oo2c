@@ -30,4 +30,7 @@ void OOC_Generic51_init(void) {
   ;
 }
 
+void OOC_Generic51_destroy(void) {
+}
+
 /* --- */

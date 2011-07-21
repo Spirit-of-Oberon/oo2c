@@ -1,4 +1,4 @@
-(* 	$Id: IR.Mod,v 1.285 2004/11/24 17:39:14 mva Exp $	 *)
+(* 	$Id: IR.Mod,v 1.287 2004/12/06 18:54:14 mva Exp $	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
     Copyright (C) 2001-2004  Michael van Acken, Stewart Greenhill
@@ -5607,7 +5607,7 @@ PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
       var := typeTest. expr(Var). decl(Sym.VarDecl);
       NEW (da, 1);
       da[0] := NewGuardedVar (var, var.name,
-                              typeTest.origType.decl(Sym.TypeDecl).type);
+                              Sym.Expand(typeTest.origType.qualType));
       nested := Namespace.NewNested (da, 1);
       nested. SetEnclosingNamespace (namespace(Namespace.Nested));
       namespace := nested;
@@ -5912,7 +5912,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     ELSIF (id = Id.is) THEN
       result := b.NewTypeTest(sym, left, right);
     ELSIF b.WidenToCommon(left, right) THEN
-      leftType := left.type; rightType := right.type;
+      leftType := left.type.Deparam(); rightType := right.type.Deparam();
       
       isNumeric := TR.IsNumericType(leftType);
       isInteger := TR.IsIntegerType(leftType);

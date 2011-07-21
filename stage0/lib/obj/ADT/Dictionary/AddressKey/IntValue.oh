@@ -63,7 +63,9 @@ extern void ADT_Dictionary_AddressKey_IntValue__DictionaryDesc_Load(ADT_Dictiona
 #define _TBN_ADT_Dictionary_AddressKey_IntValue__DictionaryDesc_Load 5
 typedef void (*_TBP_ADT_Dictionary_AddressKey_IntValue__DictionaryDesc_Load)(ADT_Dictionary_AddressKey_IntValue__Dictionary dict, ADT_Storable__Reader r);
 extern void OOC_ADT_Dictionary_AddressKey_IntValue_init(void);
-extern void OOC_ADT_Dictionary_AddressKey_IntValue_init0(void);
+extern void OOC_ADT_Dictionary_AddressKey_IntValue_open(RT0__Module client);
+extern void OOC_ADT_Dictionary_AddressKey_IntValue_destroy(void);
+extern void OOC_ADT_Dictionary_AddressKey_IntValue_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_Dictionary_AddressKey_IntValue__Entry;

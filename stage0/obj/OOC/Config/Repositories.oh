@@ -58,7 +58,9 @@ extern Object__StringArrayPtr OOC_Config_Repositories__SectionDesc_GetIncludePat
 #define _TBN_OOC_Config_Repositories__SectionDesc_GetIncludePaths 4
 typedef Object__StringArrayPtr (*_TBP_OOC_Config_Repositories__SectionDesc_GetIncludePaths)(OOC_Config_Repositories__Section s);
 extern void OOC_OOC_Config_Repositories_init(void);
-extern void OOC_OOC_Config_Repositories_init0(void);
+extern void OOC_OOC_Config_Repositories_open(RT0__Module client);
+extern void OOC_OOC_Config_Repositories_destroy(void);
+extern void OOC_OOC_Config_Repositories_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Config_Repositories__Section;

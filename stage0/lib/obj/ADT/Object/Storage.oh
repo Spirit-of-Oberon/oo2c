@@ -70,7 +70,9 @@ extern void ADT_Object_Storage__WriterDesc_Disconnect(ADT_Object_Storage__Writer
 #define _TBN_ADT_Object_Storage__WriterDesc_Disconnect 19
 typedef void (*_TBP_ADT_Object_Storage__WriterDesc_Disconnect)(ADT_Object_Storage__Writer w);
 extern void OOC_ADT_Object_Storage_init(void);
-extern void OOC_ADT_Object_Storage_init0(void);
+extern void OOC_ADT_Object_Storage_open(RT0__Module client);
+extern void OOC_ADT_Object_Storage_destroy(void);
+extern void OOC_ADT_Object_Storage_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_Object_Storage__2084;

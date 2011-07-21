@@ -372,4 +372,7 @@ void OOC_IO_Buffer_init(void) {
   ;
 }
 
+void OOC_IO_Buffer_destroy(void) {
+}
+
 /* --- */

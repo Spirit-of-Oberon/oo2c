@@ -2754,4 +2754,7 @@ void OOC_OOC_X86_Translate_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Translate_destroy(void) {
+}
+
 /* --- */

@@ -1,7 +1,7 @@
-(* 	$Id: YEnc.Mod,v 1.1 2003/09/22 19:32:17 mva Exp $	 *)
+(* 	$Id: YEnc.Mod,v 1.2 2004/12/20 10:11:27 mva Exp $	 *)
 MODULE Codec:YEnc [OOC_EXTENSIONS];
 (*  Codec for yEnc transport encoding.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE Codec:YEnc [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, CharClass, Codec, IntStr, Object, ADT:StringBuffer, Codec:UU;
+  Ascii, CharClass, Codec, IntStr, ADT:StringBuffer, Codec:UU;
 
 CONST
   lineLength = 128;
@@ -78,24 +78,26 @@ TYPE
 VAR
   yenc-: YEnc;
 
-PROCEDURE (c: YEnc) NewDecoder*(): Decoder;
-  VAR
-    dec: Decoder;
+PROCEDURE (dec: Decoder) INIT*();
   BEGIN
-    NEW (dec);
-    Codec.InitDecoder (dec);
+    dec.INIT^();
     dec.endsWithEscape := FALSE;
-    RETURN dec;
+  END INIT;
+
+PROCEDURE (enc: Encoder) INIT*();
+  BEGIN
+    enc.INIT^(Codec.exceptionEncoder);
+    enc.incompleteAvail := lineLength;
+  END INIT;
+
+PROCEDURE (c: YEnc) NewDecoder*(): Decoder;
+  BEGIN
+    RETURN NEW(Decoder);
   END NewDecoder;
 
 PROCEDURE (c: YEnc) NewEncoder*(): Encoder;
-  VAR
-    enc: Encoder;
   BEGIN
-    NEW (enc);
-    Codec.InitEncoder (enc);
-    enc.incompleteAvail := lineLength;
-    RETURN enc;
+    RETURN NEW(Encoder);
   END NewEncoder;
 
 PROCEDURE LookingAt (data[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
@@ -452,24 +454,21 @@ PROCEDURE (dec: Decoder) Reset*;
     dec. endsWithEscape := FALSE;
   END Reset;
 
-PROCEDURE (enc: Encoder) Encode*(s: Object.String;
-                                 start, end: LONGINT;
-                                 b: StringBuffer.StringBuffer);
+PROCEDURE (enc: Encoder) EncodeLatin1*(s[NO_COPY]: ARRAY OF CHAR;
+                                       start, end: LONGINT;
+                                       b: StringBuffer.StringBuffer);
   CONST
     sizeBuffer = 4*1024;
   VAR
     d: ARRAY sizeBuffer+lineLength+2 OF CHAR;
-    c: Object.CharsLatin1;
     dpos, avail: LONGINT;
     ch: CHAR;
   BEGIN
-    c := s(Object.String8).CharsLatin1();
-
     dpos := 0;
     avail := enc.incompleteAvail;
     WHILE (start # end) DO
       WHILE (start # end) & (avail > 0) DO
-        ch := CHR((ORD(c[start])+42) MOD 256);
+        ch := CHR((ORD(s[start])+42) MOD 256);
         IF (ch = Ascii.nul) OR (ch = Ascii.cr) OR
            (ch = Ascii.lf) OR (ch = escapeChar) OR 
            ((ch = " ") OR (ch = 0X)) & ((avail = lineLength) OR (avail = 1)) THEN
@@ -499,8 +498,15 @@ PROCEDURE (enc: Encoder) Encode*(s: Object.String;
     END;
     b.AppendLatin1Region (d, 0, dpos);
     enc.incompleteAvail := avail;
-  END Encode;
+  END EncodeLatin1;
 
+PROCEDURE (enc: Encoder) EncodeUTF16*(s[NO_COPY]: ARRAY OF LONGCHAR;
+                                      start, end: LONGINT;
+                                      b: StringBuffer.StringBuffer);
+  BEGIN
+    ASSERT(FALSE);
+  END EncodeUTF16;
+  
 PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
   BEGIN
     IF (enc.incompleteAvail # lineLength) THEN
@@ -520,6 +526,5 @@ PROCEDURE Register*;
   END Register;
 
 BEGIN
-  NEW (yenc);
-  Codec.InitCodec (yenc, Codec.transport, "yEnc");
+  yenc := NEW(YEnc, Codec.transport, "yEnc");
 END Codec:YEnc.

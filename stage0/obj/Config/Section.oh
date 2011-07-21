@@ -53,7 +53,9 @@ extern void Config_Section__SectionListDesc_DumpContent(Config_Section__SectionL
 #define _TBN_Config_Section__SectionListDesc_DumpContent 3
 typedef void (*_TBP_Config_Section__SectionListDesc_DumpContent)(Config_Section__SectionList sl, Channel__Channel ch);
 extern void OOC_Config_Section_init(void);
-extern void OOC_Config_Section_init0(void);
+extern void OOC_Config_Section_open(RT0__Module client);
+extern void OOC_Config_Section_destroy(void);
+extern void OOC_Config_Section_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Config_Section__Section;

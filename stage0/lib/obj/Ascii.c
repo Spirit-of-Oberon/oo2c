@@ -8,4 +8,7 @@ void OOC_Ascii_init(void) {
   ;
 }
 
+void OOC_Ascii_destroy(void) {
+}
+
 /* --- */

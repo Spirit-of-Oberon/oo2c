@@ -17,7 +17,9 @@ extern void OOC_Doc_ResolveRef__ErrorContextDesc_GetTemplate(OOC_Doc_ResolveRef_
 typedef void (*_TBP_OOC_Doc_ResolveRef__ErrorContextDesc_GetTemplate)(OOC_Doc_ResolveRef__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
 extern void OOC_Doc_ResolveRef__Resolve(OOC_SymbolTable__Module symTab, OOC_Error__List errList);
 extern void OOC_OOC_Doc_ResolveRef_init(void);
-extern void OOC_OOC_Doc_ResolveRef_init0(void);
+extern void OOC_OOC_Doc_ResolveRef_open(RT0__Module client);
+extern void OOC_OOC_Doc_ResolveRef_destroy(void);
+extern void OOC_OOC_Doc_ResolveRef_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Doc_ResolveRef__ErrorContext;

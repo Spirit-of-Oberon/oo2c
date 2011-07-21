@@ -33,11 +33,41 @@ RT0__StructDesc _td_Object_BigInt__16944 = { (RT0__Struct[]){&RT0__char}, NULL, 
 RT0__StructDesc _td_Object_BigInt__16933 = { (RT0__Struct[]){&_td_Object_BigInt__16944}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_Object_BigInt__19822 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Object_BigInt__20985 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Object:BigInt", (RT0__Struct[]) { &_td_Object_BigInt__BigInt, &_td_Object_BigInt__DigitArray, &_td_Object_BigInt__BigIntDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Object:BigInt", (RT0__Struct[]) { &_td_Object_BigInt__BigInt, &_td_Object_BigInt__DigitArray, &_td_Object_BigInt__BigIntDesc, NULL }, 0 };
 
-extern void OOC_Object_BigInt_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_Object_BigInt_init();
+extern void OOC_Object_BigInt_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_CharClass_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_ADT_Storable_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_Object_BigInt_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_Object_BigInt_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_Object_BigInt_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_CharClass_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_ADT_Storable_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

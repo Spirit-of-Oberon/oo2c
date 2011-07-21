@@ -15,7 +15,9 @@
 #include <Exception.oh>
 extern void OOC_Auxiliary_ParseModule__ParseModule(OOC_Repository__Module m, OOC_CHAR8 checkModuleName, OOC_CHAR8 createNamespace, OOC_CHAR8 writeSymbolFile, OOC_CHAR8 abortAfterImport, Object__String libraryName, OOC_SymbolTable_Uses__Uses uses, OOC_AST__Node *ast, OOC_SymbolTable__Module *symTab, OOC_Config_Pragmas__History *pragmaHistory, OOC_Error__List *errList);
 extern void OOC_OOC_Auxiliary_ParseModule_init(void);
-extern void OOC_OOC_Auxiliary_ParseModule_init0(void);
+extern void OOC_OOC_Auxiliary_ParseModule_open(RT0__Module client);
+extern void OOC_OOC_Auxiliary_ParseModule_destroy(void);
+extern void OOC_OOC_Auxiliary_ParseModule_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_Auxiliary_ParseModule_ */

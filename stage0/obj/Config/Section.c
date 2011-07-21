@@ -297,4 +297,7 @@ void OOC_Config_Section_init(void) {
   ;
 }
 
+void OOC_Config_Section_destroy(void) {
+}
+
 /* --- */

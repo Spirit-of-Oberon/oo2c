@@ -93,7 +93,9 @@ extern void Object_BigInt__BigIntDesc_Load(Object_BigInt__BigInt a, ADT_Storable
 #define _TBN_Object_BigInt__BigIntDesc_Load 5
 typedef void (*_TBP_Object_BigInt__BigIntDesc_Load)(Object_BigInt__BigInt a, ADT_Storable__Reader r);
 extern void OOC_Object_BigInt_init(void);
-extern void OOC_Object_BigInt_init0(void);
+extern void OOC_Object_BigInt_open(RT0__Module client);
+extern void OOC_Object_BigInt_destroy(void);
+extern void OOC_Object_BigInt_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Object_BigInt__BigInt;

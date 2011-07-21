@@ -288,7 +288,7 @@ PROCEDURE SearchForFile (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
         Log.String("error", "file name mismatch in yenc parts");
         RETURN FALSE;
       ELSIF (old.size # new.size) THEN
-        Log.String("error", "suize mismatch in yenc parts");
+        Log.String("error", "size mismatch in yenc parts");
         RETURN FALSE;
       ELSE
         RETURN TRUE;

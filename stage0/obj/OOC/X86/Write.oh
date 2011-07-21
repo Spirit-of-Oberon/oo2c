@@ -89,7 +89,9 @@ extern void OOC_X86_Write__WriterDesc_WriteFunction(OOC_X86_Write__Writer w, OOC
 #define _TBN_OOC_X86_Write__WriterDesc_WriteFunction 8
 typedef void (*_TBP_OOC_X86_Write__WriterDesc_WriteFunction)(OOC_X86_Write__Writer w, OOC_X86_SSA__FunctionBlock b);
 extern void OOC_OOC_X86_Write_init(void);
-extern void OOC_OOC_X86_Write_init0(void);
+extern void OOC_OOC_X86_Write_open(RT0__Module client);
+extern void OOC_OOC_X86_Write_destroy(void);
+extern void OOC_OOC_X86_Write_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_Write__Arc;
@@ -104,14 +106,14 @@ extern RT0__StructDesc _td_OOC_X86_Write__1030;
 extern RT0__StructDesc _td_OOC_X86_Write__1088;
 extern RT0__StructDesc _td_OOC_X86_Write__6193;
 extern RT0__StructDesc _td_OOC_X86_Write__6651;
-extern RT0__StructDesc _td_OOC_X86_Write__10536;
-extern RT0__StructDesc _td_OOC_X86_Write__10650;
-extern RT0__StructDesc _td_OOC_X86_Write__11586;
-extern RT0__StructDesc _td_OOC_X86_Write__11756;
-extern RT0__StructDesc _td_OOC_X86_Write__12236;
+extern RT0__StructDesc _td_OOC_X86_Write__10548;
+extern RT0__StructDesc _td_OOC_X86_Write__10662;
+extern RT0__StructDesc _td_OOC_X86_Write__11598;
+extern RT0__StructDesc _td_OOC_X86_Write__11768;
+extern RT0__StructDesc _td_OOC_X86_Write__12248;
 extern RT0__StructDesc _td_OOC_X86_Write__WriterDesc_WriteBlock_FixGatedValues_IO;
-extern RT0__StructDesc _td_OOC_X86_Write__18429;
-extern RT0__StructDesc _td_OOC_X86_Write__18418;
+extern RT0__StructDesc _td_OOC_X86_Write__18441;
+extern RT0__StructDesc _td_OOC_X86_Write__18430;
 #endif /* _MODULE_OOC_X86_Write_ */
 
 /* --- */

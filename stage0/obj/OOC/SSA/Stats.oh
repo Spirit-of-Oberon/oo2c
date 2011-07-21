@@ -10,7 +10,9 @@
 extern void OOC_SSA_Stats__AddProcBlock(Object__String label, OOC_SSA__ProcBlock pb);
 extern void OOC_SSA_Stats__Write(void);
 extern void OOC_OOC_SSA_Stats_init(void);
-extern void OOC_OOC_SSA_Stats_init0(void);
+extern void OOC_OOC_SSA_Stats_open(RT0__Module client);
+extern void OOC_OOC_SSA_Stats_destroy(void);
+extern void OOC_OOC_SSA_Stats_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_Stats__Stats;

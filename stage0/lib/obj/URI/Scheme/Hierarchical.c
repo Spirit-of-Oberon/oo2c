@@ -1082,4 +1082,7 @@ void OOC_URI_Scheme_Hierarchical_init(void) {
   ;
 }
 
+void OOC_URI_Scheme_Hierarchical_destroy(void) {
+}
+
 /* --- */

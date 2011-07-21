@@ -416,4 +416,7 @@ void OOC_URI_CharClass_init(void) {
   ;
 }
 
+void OOC_URI_CharClass_destroy(void) {
+}
+
 /* --- */

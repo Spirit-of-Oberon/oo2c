@@ -295,4 +295,7 @@ void OOC_Config_Section_Arguments_init(void) {
   ;
 }
 
+void OOC_Config_Section_Arguments_destroy(void) {
+}
+
 /* --- */

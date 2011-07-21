@@ -4160,4 +4160,7 @@ void OOC_OOC_SSA_WriteC_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_WriteC_destroy(void) {
+}
+
 /* --- */

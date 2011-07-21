@@ -1382,7 +1382,7 @@ l136:
   Out__String("oo2c/", 6);
   Out__String("gcc", 4);
   Out__String(" ", 2);
-  Out__String("2.1.6", 6);
+  Out__String("2.1.7", 6);
   Out__Ln();
   _halt(0);
   goto l139;
@@ -1393,6 +1393,9 @@ l138:
 l139:
   return;
   ;
+}
+
+void OOC_oo2c_destroy(void) {
 }
 
 /* --- */

@@ -386,7 +386,9 @@ extern void OOC_SSA__ProcBlockDesc_Destroy(OOC_SSA__ProcBlock pb);
 #define _TBN_OOC_SSA__ProcBlockDesc_Destroy 25
 typedef void (*_TBP_OOC_SSA__ProcBlockDesc_Destroy)(OOC_SSA__ProcBlock pb);
 extern void OOC_OOC_SSA_init(void);
-extern void OOC_OOC_SSA_init0(void);
+extern void OOC_OOC_SSA_open(RT0__Module client);
+extern void OOC_OOC_SSA_destroy(void);
+extern void OOC_OOC_SSA_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA__Node;

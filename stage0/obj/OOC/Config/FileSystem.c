@@ -162,4 +162,7 @@ void OOC_OOC_Config_FileSystem_init(void) {
   ;
 }
 
+void OOC_OOC_Config_FileSystem_destroy(void) {
+}
+
 /* --- */

@@ -18,7 +18,9 @@ extern void OOC_SymbolTable_ImportModules__ErrorContextDesc_GetTemplate(OOC_Symb
 typedef void (*_TBP_OOC_SymbolTable_ImportModules__ErrorContextDesc_GetTemplate)(OOC_SymbolTable_ImportModules__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
 extern void OOC_SymbolTable_ImportModules__ImportModules(OOC_SymbolTable__Module systemModule, OOC_SymbolTable__Module symTab, OOC_Error__List errList);
 extern void OOC_OOC_SymbolTable_ImportModules_init(void);
-extern void OOC_OOC_SymbolTable_ImportModules_init0(void);
+extern void OOC_OOC_SymbolTable_ImportModules_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_ImportModules_destroy(void);
+extern void OOC_OOC_SymbolTable_ImportModules_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_ImportModules__ErrorContext;

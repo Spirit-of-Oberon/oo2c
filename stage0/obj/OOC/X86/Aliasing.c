@@ -432,4 +432,7 @@ void OOC_OOC_X86_Aliasing_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Aliasing_destroy(void) {
+}
+
 /* --- */

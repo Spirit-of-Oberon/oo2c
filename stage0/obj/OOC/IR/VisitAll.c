@@ -995,4 +995,7 @@ void OOC_OOC_IR_VisitAll_init(void) {
   ;
 }
 
+void OOC_OOC_IR_VisitAll_destroy(void) {
+}
+
 /* --- */

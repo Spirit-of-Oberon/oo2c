@@ -1622,4 +1622,7 @@ void OOC_OOC_SSA_Schedule_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Schedule_destroy(void) {
+}
+
 /* --- */

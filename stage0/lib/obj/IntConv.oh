@@ -17,7 +17,9 @@ extern OOC_INT8 IntConv__FormatInt(const OOC_CHAR8 str__ref[], OOC_LEN str_0d);
 extern OOC_INT32 IntConv__ValueInt(const OOC_CHAR8 str__ref[], OOC_LEN str_0d);
 extern OOC_INT16 IntConv__LengthInt(OOC_INT32 _int);
 extern void OOC_IntConv_init(void);
-extern void OOC_IntConv_init0(void);
+extern void OOC_IntConv_open(RT0__Module client);
+extern void OOC_IntConv_destroy(void);
+extern void OOC_IntConv_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_IntConv__1617;

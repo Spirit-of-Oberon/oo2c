@@ -30,4 +30,7 @@ void OOC_OOC_Config_Assembler_init(void) {
   ;
 }
 
+void OOC_OOC_Config_Assembler_destroy(void) {
+}
+
 /* --- */

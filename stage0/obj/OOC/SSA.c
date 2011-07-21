@@ -2465,4 +2465,7 @@ void OOC_OOC_SSA_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_destroy(void) {
+}
+
 /* --- */

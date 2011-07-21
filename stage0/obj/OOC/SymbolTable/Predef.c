@@ -479,4 +479,7 @@ void OOC_OOC_SymbolTable_Predef_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_Predef_destroy(void) {
+}
+
 /* --- */

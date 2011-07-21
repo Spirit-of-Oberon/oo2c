@@ -10,7 +10,9 @@
  * in the source code of this or any derived work.
  */
 
-void OOC_Codec_TwofishC_init0() {
+void OOC_Codec_TwofishC_open() {
+}
+void OOC_Codec_TwofishC_close() {
 }
 
 /*

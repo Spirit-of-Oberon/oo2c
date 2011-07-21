@@ -8,4 +8,7 @@ void OOC_ConvTypes_init(void) {
   ;
 }
 
+void OOC_ConvTypes_destroy(void) {
+}
+
 /* --- */

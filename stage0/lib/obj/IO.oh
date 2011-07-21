@@ -185,7 +185,9 @@ extern OOC_INT32 IO__ByteChannelDesc_TransferTo(IO__ByteChannel ch, OOC_INT32 le
 #define _TBN_IO__ByteChannelDesc_TransferTo 11
 typedef OOC_INT32 (*_TBP_IO__ByteChannelDesc_TransferTo)(IO__ByteChannel ch, OOC_INT32 length, IO__ByteChannel target);
 extern void OOC_IO_init(void);
-extern void OOC_IO_init0(void);
+extern void OOC_IO_open(RT0__Module client);
+extern void OOC_IO_destroy(void);
+extern void OOC_IO_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_IO__Channel;

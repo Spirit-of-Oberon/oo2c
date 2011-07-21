@@ -173,11 +173,45 @@ RT0__StructDesc _td_OOC_SSA_LoopRewrite__RewrittenCycleDesc = { (RT0__Struct[]){
 RT0__StructDesc _td_OOC_SSA_LoopRewrite__5879 = { (RT0__Struct[]){&_td_OOC_SSA__Result}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_LoopRewrite__5868 = { (RT0__Struct[]){&_td_OOC_SSA_LoopRewrite__5879}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_LoopRewrite__InductionCycleDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_SSA__NodeDesc,&_td_OOC_SSA_LoopRewrite__SumDesc,&_td_OOC_SSA_LoopRewrite__CycleElementDesc,&_td_OOC_SSA_LoopRewrite__InductionCycleDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode}, NULL, &_mid, "InductionCycleDesc", 92, 5, 0, RT0__strRecord };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:LoopRewrite", (RT0__Struct[]) { &_td_OOC_SSA_LoopRewrite__Worklist, &_td_OOC_SSA_LoopRewrite__WorklistDesc, &_td_OOC_SSA_LoopRewrite__Sum, &_td_OOC_SSA_LoopRewrite__Factors, &_td_OOC_SSA_LoopRewrite__Product, &_td_OOC_SSA_LoopRewrite__ProductDesc, &_td_OOC_SSA_LoopRewrite__PList, &_td_OOC_SSA_LoopRewrite__PListDesc, &_td_OOC_SSA_LoopRewrite__CycleElement, &_td_OOC_SSA_LoopRewrite__SumDesc, &_td_OOC_SSA_LoopRewrite__InductionCycle, &_td_OOC_SSA_LoopRewrite__CycleElementDesc, &_td_OOC_SSA_LoopRewrite__RewrittenCycle, &_td_OOC_SSA_LoopRewrite__RewrittenCycleDesc, &_td_OOC_SSA_LoopRewrite__InductionCycleDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:LoopRewrite", (RT0__Struct[]) { &_td_OOC_SSA_LoopRewrite__Worklist, &_td_OOC_SSA_LoopRewrite__WorklistDesc, &_td_OOC_SSA_LoopRewrite__Sum, &_td_OOC_SSA_LoopRewrite__Factors, &_td_OOC_SSA_LoopRewrite__Product, &_td_OOC_SSA_LoopRewrite__ProductDesc, &_td_OOC_SSA_LoopRewrite__PList, &_td_OOC_SSA_LoopRewrite__PListDesc, &_td_OOC_SSA_LoopRewrite__CycleElement, &_td_OOC_SSA_LoopRewrite__SumDesc, &_td_OOC_SSA_LoopRewrite__InductionCycle, &_td_OOC_SSA_LoopRewrite__CycleElementDesc, &_td_OOC_SSA_LoopRewrite__RewrittenCycle, &_td_OOC_SSA_LoopRewrite__RewrittenCycleDesc, &_td_OOC_SSA_LoopRewrite__InductionCycleDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_LoopRewrite_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_LoopRewrite_init();
+extern void OOC_OOC_SSA_LoopRewrite_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_Object_BigInt_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_OOC_SSA_open(&_mid);
+    OOC_OOC_SSA_Opcode_open(&_mid);
+    OOC_OOC_SSA_Opnd_open(&_mid);
+    OOC_OOC_SSA_Result_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_LoopRewrite_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_LoopRewrite_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_LoopRewrite_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_Object_BigInt_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_OOC_SSA_close(&_mid);
+    OOC_OOC_SSA_Opcode_close(&_mid);
+    OOC_OOC_SSA_Opnd_close(&_mid);
+    OOC_OOC_SSA_Result_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

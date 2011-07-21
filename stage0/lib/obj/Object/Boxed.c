@@ -4,13 +4,13 @@
 
 Object__String Object_Boxed__ObjectDesc_ToString(Object_Boxed__Object v) {
 
-  _failed_function(2581); return 0;
+  _failed_function(2631); return 0;
   ;
 }
 
 OOC_INT32 Object_Boxed__ObjectDesc_Cmp(Object_Boxed__Object v, Object__Object y) {
 
-  _failed_function(2652); return 0;
+  _failed_function(2702); return 0;
   ;
 }
 
@@ -19,7 +19,7 @@ void Object_Boxed__BooleanDesc_INIT(Object_Boxed__Boolean v, OOC_CHAR8 value) {
 
   i0 = (OOC_INT32)v;
   i1 = value;
-  *(OOC_UINT8*)(_check_pointer(i0, 2844)) = i1;
+  *(OOC_UINT8*)(_check_pointer(i0, 2894)) = i1;
   return;
   ;
 }
@@ -53,7 +53,7 @@ l7:
   i0 = (OOC_INT32)Object_Boxed__true;
   return (Object_Boxed__Boolean)i0;
 l8:
-  _failed_function(3055); return 0;
+  _failed_function(3105); return 0;
   ;
 }
 
@@ -65,7 +65,7 @@ Object__String Object_Boxed__BooleanToString(OOC_CHAR8 value) {
   i1 = value;
   Object_Boxed__BooleanDesc_INIT((Object_Boxed__Boolean)i0, i1);
   v = (Object_Boxed__Boolean)i0;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3514)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3564)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
   return (Object__String)i0;
   ;
 }
@@ -74,14 +74,14 @@ OOC_CHAR8 Object_Boxed__BooleanDesc_Equals(Object_Boxed__Boolean v, Object__Obje
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)y;
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3629)))), &_td_Object_Boxed__BooleanDesc);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3679)))), &_td_Object_Boxed__BooleanDesc);
   if (i1) goto l3;
   i0=0u;
   goto l4;
 l3:
   i1 = (OOC_INT32)v;
-  i1 = *(OOC_UINT8*)(_check_pointer(i1, 3645));
-  i0 = *(OOC_UINT8*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3656)))), &_td_Object_Boxed__BooleanDesc, 3656)), 3664));
+  i1 = *(OOC_UINT8*)(_check_pointer(i1, 3695));
+  i0 = *(OOC_UINT8*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3706)))), &_td_Object_Boxed__BooleanDesc, 3706)), 3714));
   i0 = i1==i0;
   
 l4:
@@ -91,8 +91,8 @@ l4:
 
 OOC_INT32 Object_Boxed__BooleanDesc_Cmp(Object_Boxed__Boolean v, Object__Object y) {
 
-  _assert(0u, 127, 3781);
-  _failed_function(3712); return 0;
+  _assert(0u, 127, 3831);
+  _failed_function(3762); return 0;
   ;
 }
 
@@ -100,7 +100,7 @@ OOC_INT32 Object_Boxed__BooleanDesc_HashCode(Object_Boxed__Boolean v) {
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_UINT8*)(_check_pointer(i0, 3902));
+  i0 = *(OOC_UINT8*)(_check_pointer(i0, 3952));
   i0 = HashCode__Boolean(i0);
   return i0;
   ;
@@ -110,7 +110,7 @@ Object__String Object_Boxed__BooleanDesc_ToString(Object_Boxed__Boolean v) {
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_UINT8*)(_check_pointer(i0, 3990));
+  i0 = *(OOC_UINT8*)(_check_pointer(i0, 4040));
   if (i0) goto l3;
   i0 = (OOC_INT32)Object_Boxed__falseString;
   return (Object__String)i0;
@@ -119,7 +119,7 @@ l3:
   i0 = (OOC_INT32)Object_Boxed__trueString;
   return (Object__String)i0;
 l4:
-  _failed_function(3953); return 0;
+  _failed_function(4003); return 0;
   ;
 }
 
@@ -127,14 +127,14 @@ void Object_Boxed__BooleanDesc_Store(Object_Boxed__Boolean v, ADT_Storable__Writ
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_UINT8*)(_check_pointer(i0, 4171));
+  i0 = *(OOC_UINT8*)(_check_pointer(i0, 4221));
   if (i0) goto l3;
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4221)))), IO_BinaryRider__WriterDesc_WriteSInt)),IO_BinaryRider__WriterDesc_WriteSInt)((IO_BinaryRider__Writer)i0, 0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4271)))), IO_BinaryRider__WriterDesc_WriteSInt)),IO_BinaryRider__WriterDesc_WriteSInt)((IO_BinaryRider__Writer)i0, 0);
   goto l4;
 l3:
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4190)))), IO_BinaryRider__WriterDesc_WriteSInt)),IO_BinaryRider__WriterDesc_WriteSInt)((IO_BinaryRider__Writer)i0, 1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4240)))), IO_BinaryRider__WriterDesc_WriteSInt)),IO_BinaryRider__WriterDesc_WriteSInt)((IO_BinaryRider__Writer)i0, 1);
 l4:
   return;
   ;
@@ -145,10 +145,10 @@ void Object_Boxed__BooleanDesc_Load(Object_Boxed__Boolean v, ADT_Storable__Reade
   OOC_INT8 si;
 
   i0 = (OOC_INT32)r;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4362)))), IO_BinaryRider__ReaderDesc_ReadSInt)),IO_BinaryRider__ReaderDesc_ReadSInt)((IO_BinaryRider__Reader)i0, (void*)(OOC_INT32)&si);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4412)))), IO_BinaryRider__ReaderDesc_ReadSInt)),IO_BinaryRider__ReaderDesc_ReadSInt)((IO_BinaryRider__Reader)i0, (void*)(OOC_INT32)&si);
   i0 = (OOC_INT32)v;
   i1 = si;
-  *(OOC_UINT8*)(_check_pointer(i0, 4382)) = (i1!=0);
+  *(OOC_UINT8*)(_check_pointer(i0, 4432)) = (i1!=0);
   return;
   ;
 }
@@ -158,7 +158,7 @@ void Object_Boxed__LongIntDesc_INIT(Object_Boxed__LongInt v, OOC_INT32 val) {
 
   i0 = (OOC_INT32)v;
   i1 = val;
-  *(OOC_INT32*)(_check_pointer(i0, 4563)) = i1;
+  *(OOC_INT32*)(_check_pointer(i0, 4613)) = i1;
   return;
   ;
 }
@@ -192,7 +192,7 @@ l3:
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i1, i0);
   return (Object_Boxed__LongInt)i1;
 l4:
-  _failed_function(4768); return 0;
+  _failed_function(4818); return 0;
   ;
 }
 
@@ -204,7 +204,7 @@ Object__String Object_Boxed__IntToString(OOC_INT32 value) {
   i1 = value;
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, i1);
   v = (Object_Boxed__LongInt)i0;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5272)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5322)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
   return (Object__String)i0;
   ;
 }
@@ -214,8 +214,8 @@ void Object_Boxed__LongIntDesc_Store(Object_Boxed__LongInt v, ADT_Storable__Writ
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)w;
-  i0 = *(OOC_INT32*)(_check_pointer(i0, 5398));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5385)))), IO_BinaryRider__WriterDesc_WriteLInt)),IO_BinaryRider__WriterDesc_WriteLInt)((IO_BinaryRider__Writer)i1, i0);
+  i0 = *(OOC_INT32*)(_check_pointer(i0, 5448));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5435)))), IO_BinaryRider__WriterDesc_WriteLInt)),IO_BinaryRider__WriterDesc_WriteLInt)((IO_BinaryRider__Writer)i1, i0);
   return;
   ;
 }
@@ -225,7 +225,7 @@ void Object_Boxed__LongIntDesc_Load(Object_Boxed__LongInt v, ADT_Storable__Reade
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)r;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5500)))), IO_BinaryRider__ReaderDesc_ReadLInt)),IO_BinaryRider__ReaderDesc_ReadLInt)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 5512)));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5550)))), IO_BinaryRider__ReaderDesc_ReadLInt)),IO_BinaryRider__ReaderDesc_ReadLInt)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 5562)));
   return;
   ;
 }
@@ -234,14 +234,14 @@ OOC_CHAR8 Object_Boxed__LongIntDesc_Equals(Object_Boxed__LongInt v, Object__Obje
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)y;
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5612)))), &_td_Object_Boxed__LongIntDesc);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5662)))), &_td_Object_Boxed__LongIntDesc);
   if (i1) goto l3;
   i0=0u;
   goto l4;
 l3:
   i1 = (OOC_INT32)v;
-  i1 = *(OOC_INT32*)(_check_pointer(i1, 5628));
-  i0 = *(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5639)))), &_td_Object_Boxed__LongIntDesc, 5639)), 5647));
+  i1 = *(OOC_INT32*)(_check_pointer(i1, 5678));
+  i0 = *(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5689)))), &_td_Object_Boxed__LongIntDesc, 5689)), 5697));
   i0 = i1==i0;
   
 l4:
@@ -253,7 +253,7 @@ OOC_INT32 Object_Boxed__LongIntDesc_HashCode(Object_Boxed__LongInt v) {
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_INT32*)(_check_pointer(i0, 5739));
+  i0 = *(OOC_INT32*)(_check_pointer(i0, 5789));
   return i0;
   ;
 }
@@ -263,7 +263,7 @@ Object__String Object_Boxed__LongIntDesc_ToString(Object_Boxed__LongInt v) {
   OOC_CHAR8 str[10];
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_INT32*)(_check_pointer(i0, 5871));
+  i0 = *(OOC_INT32*)(_check_pointer(i0, 5921));
   IntStr__IntToStr(i0, (void*)(OOC_INT32)str, 10);
   i0 = (OOC_INT32)Object__NewLatin1((void*)(OOC_INT32)str, 10);
   return (Object__String)i0;
@@ -276,8 +276,8 @@ Object_Boxed__LongInt Object_Boxed__LongIntDesc_Add(Object_Boxed__LongInt v, Obj
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  i1 = *(OOC_INT32*)(_check_pointer(i1, 6020));
-  i2 = *(OOC_INT32*)(_check_pointer(i2, 6034));
+  i1 = *(OOC_INT32*)(_check_pointer(i1, 6070));
+  i2 = *(OOC_INT32*)(_check_pointer(i2, 6084));
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, (i1+i2));
   return (Object_Boxed__LongInt)i0;
   ;
@@ -289,8 +289,8 @@ Object_Boxed__LongInt Object_Boxed__LongIntDesc_Sub(Object_Boxed__LongInt v, Obj
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  i1 = *(OOC_INT32*)(_check_pointer(i1, 6142));
-  i2 = *(OOC_INT32*)(_check_pointer(i2, 6156));
+  i1 = *(OOC_INT32*)(_check_pointer(i1, 6192));
+  i2 = *(OOC_INT32*)(_check_pointer(i2, 6206));
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, (i1-i2));
   return (Object_Boxed__LongInt)i0;
   ;
@@ -302,8 +302,8 @@ Object_Boxed__LongInt Object_Boxed__LongIntDesc_Mul(Object_Boxed__LongInt v, Obj
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  i1 = *(OOC_INT32*)(_check_pointer(i1, 6264));
-  i2 = *(OOC_INT32*)(_check_pointer(i2, 6278));
+  i1 = *(OOC_INT32*)(_check_pointer(i1, 6314));
+  i2 = *(OOC_INT32*)(_check_pointer(i2, 6328));
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, (i1*i2));
   return (Object_Boxed__LongInt)i0;
   ;
@@ -315,8 +315,8 @@ Object_Boxed__LongInt Object_Boxed__LongIntDesc_Div(Object_Boxed__LongInt v, Obj
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  i1 = *(OOC_INT32*)(_check_pointer(i1, 6386));
-  i2 = *(OOC_INT32*)(_check_pointer(i2, 6402));
+  i1 = *(OOC_INT32*)(_check_pointer(i1, 6436));
+  i2 = *(OOC_INT32*)(_check_pointer(i2, 6452));
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, (_div(i1,i2)));
   return (Object_Boxed__LongInt)i0;
   ;
@@ -328,8 +328,8 @@ Object_Boxed__LongInt Object_Boxed__LongIntDesc_Mod(Object_Boxed__LongInt v, Obj
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  i1 = *(OOC_INT32*)(_check_pointer(i1, 6510));
-  i2 = *(OOC_INT32*)(_check_pointer(i2, 6526));
+  i1 = *(OOC_INT32*)(_check_pointer(i1, 6560));
+  i2 = *(OOC_INT32*)(_check_pointer(i2, 6576));
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, (_mod(i1,i2)));
   return (Object_Boxed__LongInt)i0;
   ;
@@ -340,12 +340,12 @@ OOC_INT32 Object_Boxed__LongIntDesc_Cmp(Object_Boxed__LongInt v, Object__Object 
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)right;
-  i2 = *(OOC_INT32*)(_check_pointer(i0, 6620));
-  i3 = *(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6635)))), &_td_Object_Boxed__LongIntDesc, 6635)), 6643));
+  i2 = *(OOC_INT32*)(_check_pointer(i0, 6670));
+  i3 = *(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6685)))), &_td_Object_Boxed__LongIntDesc, 6685)), 6693));
   i2 = i2==i3;
   if (i2) goto l7;
-  i1 = *(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6697)))), &_td_Object_Boxed__LongIntDesc, 6697)), 6705));
-  i0 = *(OOC_INT32*)(_check_pointer(i0, 6682));
+  i1 = *(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6747)))), &_td_Object_Boxed__LongIntDesc, 6747)), 6755));
+  i0 = *(OOC_INT32*)(_check_pointer(i0, 6732));
   i0 = i0<i1;
   if (i0) goto l5;
   return 1;
@@ -356,7 +356,7 @@ l5:
 l7:
   return 0;
 l8:
-  _failed_function(6570); return 0;
+  _failed_function(6620); return 0;
   ;
 }
 
@@ -365,7 +365,7 @@ OOC_INT32 Object_Boxed__LongIntDesc_Sign(Object_Boxed__LongInt v) {
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)Object_Boxed__zeroLongInt;
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6841)))), Object_Boxed__LongIntDesc_Cmp)),Object_Boxed__LongIntDesc_Cmp)((Object_Boxed__LongInt)i0, (Object__Object)i1);
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6891)))), Object_Boxed__LongIntDesc_Cmp)),Object_Boxed__LongIntDesc_Cmp)((Object_Boxed__LongInt)i0, (Object__Object)i1);
   return i0;
   ;
 }
@@ -375,7 +375,7 @@ Object_Boxed__LongInt Object_Boxed__LongIntDesc_Neg(Object_Boxed__LongInt v) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
   i1 = (OOC_INT32)v;
-  i1 = *(OOC_INT32*)(_check_pointer(i1, 6947));
+  i1 = *(OOC_INT32*)(_check_pointer(i1, 6997));
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, (-i1));
   return (Object_Boxed__LongInt)i0;
   ;
@@ -387,7 +387,7 @@ void Object_Boxed__LongRealDesc_INIT(Object_Boxed__LongReal v, OOC_REAL64 val) {
 
   i0 = (OOC_INT32)v;
   d0 = val;
-  *(OOC_REAL64*)(_check_pointer(i0, 7119)) = d0;
+  *(OOC_REAL64*)(_check_pointer(i0, 7169)) = d0;
   return;
   ;
 }
@@ -423,7 +423,7 @@ l3:
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, d0);
   return (Object_Boxed__LongReal)i0;
 l4:
-  _failed_function(7330); return 0;
+  _failed_function(7380); return 0;
   ;
 }
 
@@ -436,7 +436,7 @@ Object__String Object_Boxed__LongRealToString(OOC_REAL64 value) {
   d0 = value;
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, d0);
   v = (Object_Boxed__LongReal)i0;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7858)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7908)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
   return (Object__String)i0;
   ;
 }
@@ -451,13 +451,13 @@ Object_Boxed__LongReal Object_Boxed__ParseLongRealLiteral(const OOC_CHAR8 s__ref
   OOC_REAL32 real;
 
   OOC_INITIALIZE_VPAR(s__ref,s,OOC_CHAR8 ,s_0d)
-  i0 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(0, s_0d, OOC_UINT32, 8409)));
+  i0 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(0, s_0d, OOC_UINT32, 8459)));
   i0 = i0!=0u;
   if (i0) goto l3;
   i0=0u;
   goto l5;
 l3:
-  i0 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(0, s_0d, OOC_UINT32, 8423)));
+  i0 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(0, s_0d, OOC_UINT32, 8473)));
   i0 = i0!=68u;
   
 l5:
@@ -468,19 +468,19 @@ l7:
   i0=0;
 l8_loop:
   i0 = i0+1;
-  i1 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8409)));
+  i1 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8459)));
   i1 = i1!=0u;
   if (i1) goto l11;
   i1=0u;
   goto l13;
 l11:
-  i1 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8423)));
+  i1 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8473)));
   i1 = i1!=68u;
   
 l13:
   if (i1) goto l8_loop;
 l17:
-  i1 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8489)));
+  i1 = *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8539)));
   i1 = i1==68u;
   if (i1) goto l24;
   RealStr__StrToReal((void*)(OOC_INT32)s, s_0d, (void*)(OOC_INT32)&real, (void*)(OOC_INT32)&res);
@@ -496,7 +496,7 @@ l22:
   
   goto l29;
 l24:
-  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8512))) = 69u;
+  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i0, s_0d, OOC_UINT32, 8562))) = 69u;
   LRealStr__StrToReal((void*)(OOC_INT32)s, s_0d, (void*)(OOC_INT32)&longreal, (void*)(OOC_INT32)&res);
   i0 = res;
   i0 = i0==0;
@@ -519,8 +519,8 @@ void Object_Boxed__LongRealDesc_Store(Object_Boxed__LongReal v, ADT_Storable__Wr
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)w;
-  d0 = *(OOC_REAL64*)(_check_pointer(i0, 8939));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8925)))), IO_BinaryRider__WriterDesc_WriteLReal)),IO_BinaryRider__WriterDesc_WriteLReal)((IO_BinaryRider__Writer)i1, d0);
+  d0 = *(OOC_REAL64*)(_check_pointer(i0, 8989));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8975)))), IO_BinaryRider__WriterDesc_WriteLReal)),IO_BinaryRider__WriterDesc_WriteLReal)((IO_BinaryRider__Writer)i1, d0);
   return;
   ;
 }
@@ -530,7 +530,7 @@ void Object_Boxed__LongRealDesc_Load(Object_Boxed__LongReal v, ADT_Storable__Rea
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)r;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9042)))), IO_BinaryRider__ReaderDesc_ReadLReal)),IO_BinaryRider__ReaderDesc_ReadLReal)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 9055)));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9092)))), IO_BinaryRider__ReaderDesc_ReadLReal)),IO_BinaryRider__ReaderDesc_ReadLReal)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 9105)));
   return;
   ;
 }
@@ -540,14 +540,14 @@ OOC_CHAR8 Object_Boxed__LongRealDesc_Equals(Object_Boxed__LongReal v, Object__Ob
   register OOC_REAL64 d0,d1;
 
   i0 = (OOC_INT32)y;
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9156)))), &_td_Object_Boxed__LongRealDesc);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9206)))), &_td_Object_Boxed__LongRealDesc);
   if (i1) goto l3;
   i0=0u;
   goto l4;
 l3:
   i1 = (OOC_INT32)v;
-  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9173));
-  d1 = *(OOC_REAL64*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9184)))), &_td_Object_Boxed__LongRealDesc, 9184)), 9193));
+  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9223));
+  d1 = *(OOC_REAL64*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9234)))), &_td_Object_Boxed__LongRealDesc, 9234)), 9243));
   i0 = d0==d1;
   
 l4:
@@ -560,7 +560,7 @@ OOC_INT32 Object_Boxed__LongRealDesc_HashCode(Object_Boxed__LongReal v) {
   register OOC_REAL64 d0;
 
   i0 = (OOC_INT32)v;
-  d0 = *(OOC_REAL64*)(_check_pointer(i0, 9304));
+  d0 = *(OOC_REAL64*)(_check_pointer(i0, 9354));
   i0 = HashCode__LongReal(d0);
   return i0;
   ;
@@ -572,7 +572,7 @@ Object__String Object_Boxed__LongRealDesc_ToString(Object_Boxed__LongReal v) {
   OOC_CHAR8 str[128];
 
   i0 = (OOC_INT32)v;
-  d0 = *(OOC_REAL64*)(_check_pointer(i0, 9444));
+  d0 = *(OOC_REAL64*)(_check_pointer(i0, 9494));
   LRealStr__RealToFloat(d0, 17, (void*)(OOC_INT32)str, 128);
   i0 = (OOC_INT32)Object__NewLatin1((void*)(OOC_INT32)str, 128);
   return (Object__String)i0;
@@ -584,7 +584,7 @@ OOC_REAL64 Object_Boxed__LongRealDesc_ToLongReal(Object_Boxed__LongReal v) {
   register OOC_REAL64 d0;
 
   i0 = (OOC_INT32)v;
-  d0 = *(OOC_REAL64*)(_check_pointer(i0, 9579));
+  d0 = *(OOC_REAL64*)(_check_pointer(i0, 9629));
   return d0;
   ;
 }
@@ -596,8 +596,8 @@ Object_Boxed__LongReal Object_Boxed__LongRealDesc_Add(Object_Boxed__LongReal v, 
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9697));
-  d1 = *(OOC_REAL64*)(_check_pointer(i2, 9711));
+  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9747));
+  d1 = *(OOC_REAL64*)(_check_pointer(i2, 9761));
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, (d0+d1));
   return (Object_Boxed__LongReal)i0;
   ;
@@ -610,8 +610,8 @@ Object_Boxed__LongReal Object_Boxed__LongRealDesc_Sub(Object_Boxed__LongReal v, 
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9823));
-  d1 = *(OOC_REAL64*)(_check_pointer(i2, 9837));
+  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9873));
+  d1 = *(OOC_REAL64*)(_check_pointer(i2, 9887));
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, (d0-d1));
   return (Object_Boxed__LongReal)i0;
   ;
@@ -624,8 +624,8 @@ Object_Boxed__LongReal Object_Boxed__LongRealDesc_Mul(Object_Boxed__LongReal v, 
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9949));
-  d1 = *(OOC_REAL64*)(_check_pointer(i2, 9963));
+  d0 = *(OOC_REAL64*)(_check_pointer(i1, 9999));
+  d1 = *(OOC_REAL64*)(_check_pointer(i2, 10013));
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, (d0*d1));
   return (Object_Boxed__LongReal)i0;
   ;
@@ -638,8 +638,8 @@ Object_Boxed__LongReal Object_Boxed__LongRealDesc_Div(Object_Boxed__LongReal v, 
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
   i1 = (OOC_INT32)v;
   i2 = (OOC_INT32)right;
-  d0 = *(OOC_REAL64*)(_check_pointer(i1, 10075));
-  d1 = *(OOC_REAL64*)(_check_pointer(i2, 10089));
+  d0 = *(OOC_REAL64*)(_check_pointer(i1, 10125));
+  d1 = *(OOC_REAL64*)(_check_pointer(i2, 10139));
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, (d0/d1));
   return (Object_Boxed__LongReal)i0;
   ;
@@ -651,12 +651,12 @@ OOC_INT32 Object_Boxed__LongRealDesc_Cmp(Object_Boxed__LongReal v, Object__Objec
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)right;
-  d0 = *(OOC_REAL64*)(_check_pointer(i0, 10184));
-  d1 = *(OOC_REAL64*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10199)))), &_td_Object_Boxed__LongRealDesc, 10199)), 10208));
+  d0 = *(OOC_REAL64*)(_check_pointer(i0, 10234));
+  d1 = *(OOC_REAL64*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10249)))), &_td_Object_Boxed__LongRealDesc, 10249)), 10258));
   i2 = d0==d1;
   if (i2) goto l7;
-  d0 = *(OOC_REAL64*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10262)))), &_td_Object_Boxed__LongRealDesc, 10262)), 10271));
-  d1 = *(OOC_REAL64*)(_check_pointer(i0, 10247));
+  d0 = *(OOC_REAL64*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10312)))), &_td_Object_Boxed__LongRealDesc, 10312)), 10321));
+  d1 = *(OOC_REAL64*)(_check_pointer(i0, 10297));
   i0 = d1<d0;
   if (i0) goto l5;
   return 1;
@@ -667,7 +667,7 @@ l5:
 l7:
   return 0;
 l8:
-  _failed_function(10134); return 0;
+  _failed_function(10184); return 0;
   ;
 }
 
@@ -676,7 +676,7 @@ OOC_INT32 Object_Boxed__LongRealDesc_Sign(Object_Boxed__LongReal v) {
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)Object_Boxed__zeroLongReal;
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10566)))), Object_Boxed__LongRealDesc_Cmp)),Object_Boxed__LongRealDesc_Cmp)((Object_Boxed__LongReal)i0, (Object__Object)i1);
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10616)))), Object_Boxed__LongRealDesc_Cmp)),Object_Boxed__LongRealDesc_Cmp)((Object_Boxed__LongReal)i0, (Object__Object)i1);
   return i0;
   ;
 }
@@ -687,7 +687,7 @@ Object_Boxed__LongReal Object_Boxed__LongRealDesc_Neg(Object_Boxed__LongReal v) 
 
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
   i1 = (OOC_INT32)v;
-  d0 = *(OOC_REAL64*)(_check_pointer(i1, 10676));
+  d0 = *(OOC_REAL64*)(_check_pointer(i1, 10726));
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, (-d0));
   return (Object_Boxed__LongReal)i0;
   ;
@@ -698,7 +698,7 @@ void Object_Boxed__SetDesc_INIT(Object_Boxed__Set v, OOC_UINT32 value) {
 
   i0 = (OOC_INT32)v;
   i1 = value;
-  *(OOC_UINT32*)(_check_pointer(i0, 10835)) = i1;
+  *(OOC_UINT32*)(_check_pointer(i0, 10885)) = i1;
   return;
   ;
 }
@@ -721,7 +721,7 @@ Object__String Object_Boxed__SetToString(OOC_UINT32 value) {
   i1 = value;
   Object_Boxed__SetDesc_INIT((Object_Boxed__Set)i0, i1);
   v = (Object_Boxed__Set)i0;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11236)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11286)))), Object_Boxed__ObjectDesc_ToString)),Object_Boxed__ObjectDesc_ToString)((Object_Boxed__Object)i0);
   return (Object__String)i0;
   ;
 }
@@ -730,24 +730,24 @@ OOC_CHAR8 Object_Boxed__SetDesc_Equals(Object_Boxed__Set v, Object__Object y) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)y;
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11335)))), &_td_Object_Boxed__SetDesc);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11385)))), &_td_Object_Boxed__SetDesc);
   if (i1) goto l3;
   return 0u;
   goto l4;
 l3:
   i1 = (OOC_INT32)v;
-  i0 = *(OOC_UINT32*)(_check_pointer(i0, 11356));
-  i1 = *(OOC_UINT32*)(_check_pointer(i1, 11366));
+  i0 = *(OOC_UINT32*)(_check_pointer(i0, 11406));
+  i1 = *(OOC_UINT32*)(_check_pointer(i1, 11416));
   return (i0==i1);
 l4:
-  _failed_function(11288); return 0;
+  _failed_function(11338); return 0;
   ;
 }
 
 OOC_INT32 Object_Boxed__SetDesc_Cmp(Object_Boxed__Set v, Object__Object y) {
 
-  _assert(0u, 127, 11506);
-  _failed_function(11437); return 0;
+  _assert(0u, 127, 11556);
+  _failed_function(11487); return 0;
   ;
 }
 
@@ -755,7 +755,7 @@ OOC_INT32 Object_Boxed__SetDesc_HashCode(Object_Boxed__Set v) {
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_UINT32*)(_check_pointer(i0, 11619));
+  i0 = *(OOC_UINT32*)(_check_pointer(i0, 11669));
   i0 = HashCode__Set(i0);
   return i0;
   ;
@@ -767,7 +767,7 @@ Object__String Object_Boxed__SetDesc_ToString(Object_Boxed__Set v) {
   OOC_CHAR8 num[8];
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_UINT32*)(_check_pointer(i0, 11826));
+  i0 = *(OOC_UINT32*)(_check_pointer(i0, 11876));
   _copy_8((const void*)"{",(void*)(OOC_INT32)str,131);
   i1=0;i2=0u;
 l1_loop:
@@ -836,7 +836,7 @@ OOC_INT32 Object_Boxed__SetDesc_ToLongInt(Object_Boxed__Set v) {
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)v;
-  i0 = *(OOC_UINT32*)(_check_pointer(i0, 12642));
+  i0 = *(OOC_UINT32*)(_check_pointer(i0, 12692));
   return (_type_cast_fast(OOC_INT32, OOC_UINT32, i0));
   ;
 }
@@ -846,8 +846,8 @@ void Object_Boxed__SetDesc_Store(Object_Boxed__Set v, ADT_Storable__Writer w) {
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)w;
-  i0 = *(OOC_UINT32*)(_check_pointer(i0, 12756));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 12745)))), IO_BinaryRider__WriterDesc_WriteSet)),IO_BinaryRider__WriterDesc_WriteSet)((IO_BinaryRider__Writer)i1, i0);
+  i0 = *(OOC_UINT32*)(_check_pointer(i0, 12806));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 12795)))), IO_BinaryRider__WriterDesc_WriteSet)),IO_BinaryRider__WriterDesc_WriteSet)((IO_BinaryRider__Writer)i1, i0);
   return;
   ;
 }
@@ -857,7 +857,7 @@ void Object_Boxed__SetDesc_Load(Object_Boxed__Set v, ADT_Storable__Reader r) {
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)r;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 12854)))), IO_BinaryRider__ReaderDesc_ReadSet)),IO_BinaryRider__ReaderDesc_ReadSet)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 12864)));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 12904)))), IO_BinaryRider__ReaderDesc_ReadSet)),IO_BinaryRider__ReaderDesc_ReadSet)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 12914)));
   return;
   ;
 }
@@ -867,7 +867,7 @@ void Object_Boxed__StringDesc_INIT(Object_Boxed__String v, Object__String value)
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)value;
-  *(OOC_INT32*)(_check_pointer(i0, 13033)) = i1;
+  *(OOC_INT32*)(_check_pointer(i0, 13083)) = i1;
   return;
   ;
 }
@@ -876,7 +876,7 @@ Object_Boxed__String Object_Boxed__NewString(Object__String value) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)value;
-  i1 = *(OOC_INT32*)(_check_pointer(i0, 13192));
+  i1 = *(OOC_INT32*)(_check_pointer(i0, 13242));
   i1 = i1==0;
   if (i1) goto l3;
   i1 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__String.baseTypes[0]);
@@ -887,7 +887,7 @@ l3:
   i0 = (OOC_INT32)Object_Boxed__emptyString;
   return (Object_Boxed__String)i0;
 l4:
-  _failed_function(13086); return 0;
+  _failed_function(13136); return 0;
   ;
 }
 
@@ -896,10 +896,10 @@ OOC_INT32 Object_Boxed__StringDesc_Cmp(Object_Boxed__String v, Object__Object st
 
   i0 = (OOC_INT32)str;
   i1 = (OOC_INT32)v;
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13379));
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13398)))), &_td_Object_Boxed__StringDesc, 13398)), 13405));
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13379));
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 13385)))), Object__StringDesc_Compare)),Object__StringDesc_Compare)((Object__String)i1, (Object__Object)i0);
+  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13429));
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13448)))), &_td_Object_Boxed__StringDesc, 13448)), 13455));
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13429));
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 13435)))), Object__StringDesc_Compare)),Object__StringDesc_Compare)((Object__String)i1, (Object__Object)i0);
   return i0;
   ;
 }
@@ -908,16 +908,16 @@ OOC_CHAR8 Object_Boxed__StringDesc_Equals(Object_Boxed__String v, Object__Object
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)y;
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13503)))), &_td_Object_Boxed__StringDesc);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13553)))), &_td_Object_Boxed__StringDesc);
   if (i1) goto l3;
   i0=0u;
   goto l4;
 l3:
   i1 = (OOC_INT32)v;
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13517));
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13535)))), &_td_Object_Boxed__StringDesc, 13535)), 13542));
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13517));
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 13524)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i1, (Object__Object)i0);
+  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13567));
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13585)))), &_td_Object_Boxed__StringDesc, 13585)), 13592));
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13567));
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 13574)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i1, (Object__Object)i0);
   
 l4:
   return i0;
@@ -928,9 +928,9 @@ OOC_INT32 Object_Boxed__StringDesc_HashCode(Object_Boxed__String v) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)v;
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13633));
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13633));
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13639)))), Object__StringDesc_HashCode)),Object__StringDesc_HashCode)((Object__String)i0);
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13683));
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13683));
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13689)))), Object__StringDesc_HashCode)),Object__StringDesc_HashCode)((Object__String)i0);
   return i0;
   ;
 }
@@ -942,9 +942,9 @@ Object__String Object_Boxed__StringDesc_ToString(Object_Boxed__String v) {
   ADT_StringBuffer__StringBuffer sb;
 
   i0 = (OOC_INT32)v;
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13817));
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13817));
-  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13824)))), Object__StringDesc_IndexOf)),Object__StringDesc_IndexOf)((Object__String)i2, 34u, 0);
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13867));
+  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13867));
+  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13874)))), Object__StringDesc_IndexOf)),Object__StringDesc_IndexOf)((Object__String)i2, 34u, 0);
   i = i1;
   i1 = i1<0;
   if (i1) goto l3;
@@ -956,10 +956,10 @@ l4:
   i1 = (OOC_INT32)Object__NewLatin1((void*)(OOC_INT32)delim, 2);
   i1 = (OOC_INT32)ADT_StringBuffer__New((Object__String)i1);
   sb = (ADT_StringBuffer__StringBuffer)i1;
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 13985));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13976)))), ADT_StringBuffer__StringBufferDesc_Append)),ADT_StringBuffer__StringBufferDesc_Append)((ADT_StringBuffer__StringBuffer)i1, (Object__Object)i0);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14000)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i1, (void*)(OOC_INT32)delim, 2);
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14035)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i1);
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 14035));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14026)))), ADT_StringBuffer__StringBufferDesc_Append)),ADT_StringBuffer__StringBufferDesc_Append)((ADT_StringBuffer__StringBuffer)i1, (Object__Object)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14050)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i1, (void*)(OOC_INT32)delim, 2);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14085)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i1);
   return (Object__String)i0;
   ;
 }
@@ -969,8 +969,8 @@ void Object_Boxed__StringDesc_Store(Object_Boxed__String v, ADT_Storable__Writer
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)w;
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 14155));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14144)))), IO_BinaryRider__WriterDesc_WriteStr)),IO_BinaryRider__WriterDesc_WriteStr)((IO_BinaryRider__Writer)i1, (Object__String)i0);
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 14205));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14194)))), IO_BinaryRider__WriterDesc_WriteStr)),IO_BinaryRider__WriterDesc_WriteStr)((IO_BinaryRider__Writer)i1, (Object__String)i0);
   return;
   ;
 }
@@ -980,7 +980,7 @@ void Object_Boxed__StringDesc_Load(Object_Boxed__String v, ADT_Storable__Reader 
 
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)r;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14256)))), IO_BinaryRider__ReaderDesc_ReadStr)),IO_BinaryRider__ReaderDesc_ReadStr)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 14266)));
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 14306)))), IO_BinaryRider__ReaderDesc_ReadStr)),IO_BinaryRider__ReaderDesc_ReadStr)((IO_BinaryRider__Reader)i1, (void*)(_check_pointer(i0, 14316)));
   return;
   ;
 }
@@ -988,7 +988,7 @@ void Object_Boxed__StringDesc_Load(Object_Boxed__String v, ADT_Storable__Reader 
 Object_Boxed__String Object_Boxed__ParseString(const OOC_CHAR8 str[], OOC_LEN str_0d) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT32, 14405)));
+  i0 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT32, 14455)));
   i0 = i0!=0u;
   if (i0) goto l3;
   i0=0;
@@ -997,7 +997,7 @@ l3:
   i0=0;
 l4_loop:
   i0 = i0+1;
-  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT32, 14405)));
+  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT32, 14455)));
   i1 = i1!=0u;
   if (i1) goto l4_loop;
 l9:
@@ -1006,8 +1006,8 @@ l9:
   i1=0u;
   goto l14;
 l12:
-  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT8, 14463)));
-  i2 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index((i0-1), str_0d, OOC_UINT32, 14472)));
+  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT8, 14513)));
+  i2 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index((i0-1), str_0d, OOC_UINT32, 14522)));
   i1 = i1==i2;
   
 l14:
@@ -1015,10 +1015,10 @@ l14:
   i1=0u;
   goto l22;
 l16:
-  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT8, 14486)));
+  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT8, 14536)));
   i1 = i1==34u;
   if (i1) goto l19;
-  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT8, 14504)));
+  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(0, str_0d, OOC_UINT8, 14554)));
   i1 = i1==39u;
   
   goto l22;
@@ -1034,7 +1034,7 @@ l24:
   Object_Boxed__StringDesc_INIT((Object_Boxed__String)i1, (Object__String)i0);
   return (Object_Boxed__String)i1;
 l25:
-  _failed_function(14298); return 0;
+  _failed_function(14348); return 0;
   ;
 }
 
@@ -1054,15 +1054,24 @@ void OOC_Object_Boxed_init(void) {
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, 0.0000000000000000);
   Object_Boxed__zeroLongReal = (Object_Boxed__LongReal)i0;
+  i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
+  Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, 1.0000000000000000);
+  Object_Boxed__oneLongReal = (Object_Boxed__LongReal)i0;
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
   Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, 0);
   Object_Boxed__zeroLongInt = (Object_Boxed__LongInt)i0;
+  i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongInt.baseTypes[0]);
+  Object_Boxed__LongIntDesc_INIT((Object_Boxed__LongInt)i0, 1);
+  Object_Boxed__oneLongInt = (Object_Boxed__LongInt)i0;
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__String.baseTypes[0]);
   Object_Boxed__emptyString = (Object_Boxed__String)i0;
   i1 = (OOC_INT32)Object__NewLatin1("", 1);
-  *(OOC_INT32*)(_check_pointer(i0, 14929)) = i1;
+  *(OOC_INT32*)(_check_pointer(i0, 15049)) = i1;
   return;
   ;
+}
+
+void OOC_Object_Boxed_destroy(void) {
 }
 
 /* --- */

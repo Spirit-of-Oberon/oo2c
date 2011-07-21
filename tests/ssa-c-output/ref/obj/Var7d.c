@@ -37,4 +37,7 @@ void OOC_Var7d_init(void) {
   ;
 }
 
+void OOC_Var7d_destroy(void) {
+}
+
 /* --- */

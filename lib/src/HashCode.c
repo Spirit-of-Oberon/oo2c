@@ -1,4 +1,4 @@
-/*	$Id: HashCode.c,v 1.2 2003/08/14 21:19:43 mva Exp $	*/
+/*	$Id: HashCode.c,v 1.3 2004/12/15 11:27:03 mva Exp $	*/
 /*  Hash functions for basic types.
     Copyright (C) 2003  Michael van Acken
 
@@ -124,4 +124,7 @@ void HashCode__Append(HashCode__Hash x, HashCode__Hash *hash) {
 }
 
 void OOC_HashCode_init() {
+}
+
+void OOC_HashCode_destroy(void) {
 }

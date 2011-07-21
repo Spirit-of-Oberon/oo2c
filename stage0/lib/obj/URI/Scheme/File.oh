@@ -43,7 +43,9 @@ extern URI_Scheme_File__URI URI_Scheme_File__NewPrototype(void);
 extern URI_Scheme_File__URI URI_Scheme_File__GetCwd(void);
 extern URI_Scheme_File__URI URI_Scheme_File__ToURI(const OOC_CHAR8 filePath__ref[], volatile OOC_LEN filePath_0d);
 extern void OOC_URI_Scheme_File_init(void);
-extern void OOC_URI_Scheme_File_init0(void);
+extern void OOC_URI_Scheme_File_open(RT0__Module client);
+extern void OOC_URI_Scheme_File_destroy(void);
+extern void OOC_URI_Scheme_File_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_URI_Scheme_File__URI;

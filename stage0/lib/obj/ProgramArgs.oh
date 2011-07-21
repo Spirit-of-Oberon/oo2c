@@ -71,7 +71,9 @@ extern void ProgramArgs__ChannelDesc_Close(ProgramArgs__Channel ch);
 #define _TBN_ProgramArgs__ChannelDesc_Close 5
 typedef void (*_TBP_ProgramArgs__ChannelDesc_Close)(ProgramArgs__Channel ch);
 extern void OOC_ProgramArgs_init(void);
-extern void OOC_ProgramArgs_init0(void);
+extern void OOC_ProgramArgs_open(RT0__Module client);
+extern void OOC_ProgramArgs_destroy(void);
+extern void OOC_ProgramArgs_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ProgramArgs__Channel;

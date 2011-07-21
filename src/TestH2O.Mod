@@ -1,8 +1,8 @@
-MODULE TestH2O;
-
+MODULE TestH2O; 
 IMPORT 
   Out,
-  H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, H2O:Parser,
+  H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, 
+  H2O:Parser, H2O:Translate, H2O:Option,
   CfgData := Config, Config:Section:Options, OOC:Config, OOC:Error;
 
 VAR
@@ -16,6 +16,7 @@ VAR
   process : Process.Process;	(* preprocessor *)
   parser : Parser.Parser;		(* language parser *)
   error : E.Error;
+  configOptions : Option.Options;
 
   preprocess : Options.Option;
   evaluate : Options.Option;
@@ -95,7 +96,12 @@ BEGIN
 
     parser := Parser.New();
     process := Process.New(scanner, parser, error);
-    Parser.Init(process);
+
+    configOptions := NEW(Option.Options);
+    configOptions.Merge(Translate.options);
+    configOptions.Merge(source.options);
+    Parser.Init(process, configOptions);
+
     tokenSource := process;
     IF preprocess. value(CfgData.BooleanVar). boolean THEN
       token := Scanner.NewToken(Scanner.endFile);
@@ -115,6 +121,7 @@ BEGIN
       Parser.Evaluate();
     ELSE
       Parser.Body();
+      Translate.Translate();
     END;
 
     scanner.in.Summary;

@@ -122,7 +122,9 @@ extern void XML_Writer__WriterDesc_EndOfText(XML_Writer__Writer w);
 #define _TBN_XML_Writer__WriterDesc_EndOfText 29
 typedef void (*_TBP_XML_Writer__WriterDesc_EndOfText)(XML_Writer__Writer w);
 extern void OOC_XML_Writer_init(void);
-extern void OOC_XML_Writer_init0(void);
+extern void OOC_XML_Writer_open(RT0__Module client);
+extern void OOC_XML_Writer_destroy(void);
+extern void OOC_XML_Writer_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_Writer__1479;

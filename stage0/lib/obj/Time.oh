@@ -50,7 +50,9 @@ extern OOC_REAL64 Time__Interval_Fraction(struct Time__Interval *a, RT0__Struct 
 #define _TBN_Time__Interval_Fraction 4
 typedef OOC_REAL64 (*_TBP_Time__Interval_Fraction)(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
 extern void OOC_Time_init(void);
-extern void OOC_Time_init0(void);
+extern void OOC_Time_open(RT0__Module client);
+extern void OOC_Time_destroy(void);
+extern void OOC_Time_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Time__TimeStamp;

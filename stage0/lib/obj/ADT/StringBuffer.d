@@ -21,11 +21,37 @@ RT0__StructDesc _td_ADT_StringBuffer__8918 = { (RT0__Struct[]){&RT0__char}, NULL
 RT0__StructDesc _td_ADT_StringBuffer__9124 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_ADT_StringBuffer__9518 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_ADT_StringBuffer__9768 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"ADT:StringBuffer", (RT0__Struct[]) { &_td_ADT_StringBuffer__CharsLatin1, &_td_ADT_StringBuffer__CharsUTF16, &_td_ADT_StringBuffer__StringBuffer, &_td_ADT_StringBuffer__StringBufferDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"ADT:StringBuffer", (RT0__Struct[]) { &_td_ADT_StringBuffer__CharsLatin1, &_td_ADT_StringBuffer__CharsUTF16, &_td_ADT_StringBuffer__StringBuffer, &_td_ADT_StringBuffer__StringBufferDesc, NULL }, 0 };
 
-extern void OOC_ADT_StringBuffer_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_ADT_StringBuffer_init();
+extern void OOC_ADT_StringBuffer_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Ascii_open(&_mid);
+    OOC_IntStr_open(&_mid);
+    OOC_RealStr_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_ADT_StringBuffer_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_ADT_StringBuffer_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_ADT_StringBuffer_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Ascii_close(&_mid);
+    OOC_IntStr_close(&_mid);
+    OOC_RealStr_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

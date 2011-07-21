@@ -82,7 +82,9 @@ extern void OOC_AST_CreateSymTab__VisitorDesc_VisitQualType(OOC_AST_CreateSymTab
 typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitQualType)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__QualType qualType);
 extern OOC_SymbolTable__Module OOC_AST_CreateSymTab__CreateSymTab(OOC_AST__Node module, OOC_SymbolTable_Builder__Builder stb, Object__String libraryName, URI__HierarchicalURI baseURI, URI__HierarchicalURI rootURI);
 extern void OOC_OOC_AST_CreateSymTab_init(void);
-extern void OOC_OOC_AST_CreateSymTab_init0(void);
+extern void OOC_OOC_AST_CreateSymTab_open(RT0__Module client);
+extern void OOC_OOC_AST_CreateSymTab_destroy(void);
+extern void OOC_OOC_AST_CreateSymTab_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_AST_CreateSymTab__Visitor;

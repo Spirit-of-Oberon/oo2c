@@ -489,4 +489,7 @@ void OOC_OOC_SSA_Opcode_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Opcode_destroy(void) {
+}
+
 /* --- */

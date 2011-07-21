@@ -744,4 +744,7 @@ void OOC_ADT_Dictionary_IntValue_init(void) {
   ;
 }
 
+void OOC_ADT_Dictionary_IntValue_destroy(void) {
+}
+
 /* --- */

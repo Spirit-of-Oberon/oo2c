@@ -10,7 +10,9 @@
 #include <Exception.oh>
 extern void OOC_AST_XML__Write(IO__ByteChannel cw, OOC_AST__Module m);
 extern void OOC_OOC_AST_XML_init(void);
-extern void OOC_OOC_AST_XML_init0(void);
+extern void OOC_OOC_AST_XML_open(RT0__Module client);
+extern void OOC_OOC_AST_XML_destroy(void);
+extern void OOC_OOC_AST_XML_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_AST_XML_ */

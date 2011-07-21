@@ -19,7 +19,9 @@ extern void OOC_X86_Destore__MemAccessDesc_INIT(OOC_X86_Destore__MemAccess memAc
 typedef void (*_TBP_OOC_X86_Destore__MemAccessDesc_INIT)(OOC_X86_Destore__MemAccess memAccess, OOC_INT8 type, OOC_X86_SSA__Designator designator, OOC_X86_SSA__Result address);
 extern void OOC_X86_Destore__Transform(OOC_X86_SSA__FunctionBlock fctBlock);
 extern void OOC_OOC_X86_Destore_init(void);
-extern void OOC_OOC_X86_Destore_init0(void);
+extern void OOC_OOC_X86_Destore_open(RT0__Module client);
+extern void OOC_OOC_X86_Destore_destroy(void);
+extern void OOC_OOC_X86_Destore_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_Destore__Worklist;

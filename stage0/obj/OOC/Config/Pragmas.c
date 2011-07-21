@@ -466,4 +466,7 @@ void OOC_OOC_Config_Pragmas_init(void) {
   ;
 }
 
+void OOC_OOC_Config_Pragmas_destroy(void) {
+}
+
 /* --- */

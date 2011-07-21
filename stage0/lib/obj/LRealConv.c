@@ -81,4 +81,7 @@ void OOC_LRealConv_init(void) {
   ;
 }
 
+void OOC_LRealConv_destroy(void) {
+}
+
 /* --- */

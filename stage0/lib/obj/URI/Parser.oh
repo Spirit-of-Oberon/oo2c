@@ -14,7 +14,9 @@ extern URI__URI URI_Parser__NewURI(Object__String8 str, URI__HierarchicalURI bas
 extern URI__Reference URI_Parser__NewReferenceLatin1(const OOC_CHAR8 str__ref[], OOC_LEN str_0d, URI__HierarchicalURI baseURI, URI__Fragment fragmentPrototype);
 extern URI__Reference URI_Parser__NewReference(Object__String8 str, URI__HierarchicalURI baseURI, URI__Fragment fragmentPrototype);
 extern void OOC_URI_Parser_init(void);
-extern void OOC_URI_Parser_init0(void);
+extern void OOC_URI_Parser_open(RT0__Module client);
+extern void OOC_URI_Parser_destroy(void);
+extern void OOC_URI_Parser_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_URI_Parser__1147;

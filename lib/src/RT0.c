@@ -333,6 +333,11 @@ void RT0__RegisterModule(RT0__Module mid) {
   moduleCount++;
 }
 
+void RT0__UnregisterModule(RT0__Module mid) {
+  /* until we have dynamic unloading, there is no need to do anything
+     fancy here */
+}
+
 RT0__Module RT0__ThisModule(const OOC_CHAR8 name__ref[], OOC_LEN name_0d) {
   int i=0;
   while ((i != moduleCount) && strcmp(name__ref, modules[i]->name)) {
@@ -424,4 +429,7 @@ void OOC_RT0_init() {
   PS(RT0__byte     , "BYTE",     RT0__strByte     , sizeof(OOC_BYTE));
   PS(RT0__ptr      , "PTR",      RT0__strPtr      , sizeof(OOC_PTR));
   PS(RT0__procedure, "$PROC",    RT0__strProcedure, sizeof(OOC_PTR));
+}
+
+void OOC_RT0_destroy() {
 }

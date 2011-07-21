@@ -47,11 +47,47 @@ static RT0__StructDesc _td__qtd2 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_O
 static RT0__StructDesc _td__qtd3 = { (RT0__Struct[]){&_td__qtd2}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_Object__String, &_td_Object__Object, NULL}, &_mid, "ADT:Dictionary.Dictionary(Object.String,Object.Object)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd4 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd4}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_Dictionary__DictionaryDesc_Equals,(void*)ADT_Dictionary__DictionaryDesc_HashCode,(void*)ADT_Dictionary__DictionaryDesc_Store,(void*)ADT_Dictionary__DictionaryDesc_Load,(void*)ADT_Dictionary__DictionaryDesc_INIT,(void*)ADT_Dictionary__DictionaryDesc_Destroy,(void*)ADT_Dictionary__DictionaryDesc_Lookup,(void*)ADT_Dictionary__DictionaryDesc_Insert,(void*)ADT_Dictionary__DictionaryDesc_Resize,(void*)ADT_Dictionary__DictionaryDesc_HasKey,(void*)ADT_Dictionary__DictionaryDesc_Size,(void*)ADT_Dictionary__DictionaryDesc_Get,(void*)ADT_Dictionary__DictionaryDesc_Set,(void*)ADT_Dictionary__DictionaryDesc_Copy,(void*)ADT_Dictionary__DictionaryDesc_Delete,(void*)ADT_Dictionary__DictionaryDesc_Clear,(void*)ADT_Dictionary__DictionaryDesc_Keys,(void*)ADT_Dictionary__DictionaryDesc_Values,(void*)ADT_Dictionary__DictionaryDesc_Items,(void*)ADT_Dictionary__DictionaryDesc_IterKeys,(void*)ADT_Dictionary__DictionaryDesc_IterValues}, (RT0__Struct[]){&_td_ADT_Dictionary__DictionaryDesc, &_td_Object__String, &_td_OOC_SymbolTable__Name, NULL}, &_mid, "ADT:Dictionary.DictionaryDesc(Object.String,OOC:SymbolTable.Name)", 20, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd5 = { (RT0__Struct[]){&_td__qtd4}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_Object__String, &_td_OOC_SymbolTable__Name, NULL}, &_mid, "ADT:Dictionary.Dictionary(Object.String,OOC:SymbolTable.Name)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Builder", (RT0__Struct[]) { &_td_OOC_SymbolTable_Builder__Builder, &_td_OOC_SymbolTable_Builder__BuilderDesc, &_td_OOC_SymbolTable_Builder__Writer, &_td_OOC_SymbolTable_Builder__WriterDesc, &_td_OOC_SymbolTable_Builder__Reader, &_td_OOC_SymbolTable_Builder__ReaderDesc, &_td_OOC_SymbolTable_Builder__AutoImport, &_td_OOC_SymbolTable_Builder__Name, &_td_OOC_SymbolTable_Builder__AutoImportDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Builder", (RT0__Struct[]) { &_td_OOC_SymbolTable_Builder__Builder, &_td_OOC_SymbolTable_Builder__BuilderDesc, &_td_OOC_SymbolTable_Builder__Writer, &_td_OOC_SymbolTable_Builder__WriterDesc, &_td_OOC_SymbolTable_Builder__Reader, &_td_OOC_SymbolTable_Builder__ReaderDesc, &_td_OOC_SymbolTable_Builder__AutoImport, &_td_OOC_SymbolTable_Builder__Name, &_td_OOC_SymbolTable_Builder__AutoImportDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, NULL }, 0 };
 
-extern void OOC_OOC_SymbolTable_Builder_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SymbolTable_Builder_init();
+extern void OOC_OOC_SymbolTable_Builder_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Out_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_OOC_Doc_open(&_mid);
+    OOC_OOC_AST_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SymbolTable_Builder_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SymbolTable_Builder_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SymbolTable_Builder_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Out_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_OOC_Doc_close(&_mid);
+    OOC_OOC_AST_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

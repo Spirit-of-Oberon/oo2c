@@ -1,4 +1,4 @@
-/*	$Id: SysClock.c,v 1.3 2002/12/28 13:21:27 mva Exp $	*/
+/*	$Id: SysClock.c,v 1.4 2004/12/15 11:27:03 mva Exp $	*/
 /*  SysClock - facilities for accessing a system clock that records the 
                date and time of day.
     Copyright (C) 1996-2000, 2002  Michael Griebling, Michael van Acken
@@ -199,4 +199,7 @@ void SysClock__SetClock(const SysClock__DateTime *userData) {
 }
 
 void OOC_SysClock_init(void) {
+}
+
+void OOC_SysClock_destroy(void) {
 }

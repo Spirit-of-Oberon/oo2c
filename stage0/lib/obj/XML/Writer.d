@@ -39,11 +39,49 @@ RT0__StructDesc _td_XML_Writer__10903 = { (RT0__Struct[]){&RT0__longchar}, NULL,
 RT0__StructDesc _td_XML_Writer__10950 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_XML_Writer__11110 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_XML_Writer__11328 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:Writer", (RT0__Struct[]) { &_td_XML_Writer__String, &_td_XML_Writer__Elements, &_td_XML_Writer__Writer, &_td_XML_Writer__WriterDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:Writer", (RT0__Struct[]) { &_td_XML_Writer__String, &_td_XML_Writer__Elements, &_td_XML_Writer__Writer, &_td_XML_Writer__WriterDesc, NULL }, 0 };
 
-extern void OOC_XML_Writer_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_XML_Writer_init();
+extern void OOC_XML_Writer_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Ascii_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_IntStr_open(&_mid);
+    OOC_RealStr_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_XML_UnicodeCodec_open(&_mid);
+    OOC_XML_UnicodeBuffer_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_XML_Writer_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_XML_Writer_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_XML_Writer_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Ascii_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_IntStr_close(&_mid);
+    OOC_RealStr_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_XML_UnicodeCodec_close(&_mid);
+    OOC_XML_UnicodeBuffer_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

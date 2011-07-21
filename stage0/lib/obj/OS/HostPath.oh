@@ -13,7 +13,9 @@
 extern Object__String OS_HostPath__Normalize(Object__String path);
 extern Object__String OS_HostPath__Denormalize(Object__String path);
 extern void OOC_OS_HostPath_init(void);
-extern void OOC_OS_HostPath_init0(void);
+extern void OOC_OS_HostPath_open(RT0__Module client);
+extern void OOC_OS_HostPath_destroy(void);
+extern void OOC_OS_HostPath_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OS_HostPath_ */

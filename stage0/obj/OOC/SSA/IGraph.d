@@ -21,11 +21,31 @@ RT0__StructDesc _td_OOC_SSA_IGraph__9271 = { (RT0__Struct[]){&RT0__longint}, NUL
 RT0__StructDesc _td_OOC_SSA_IGraph__9260 = { (RT0__Struct[]){&_td_OOC_SSA_IGraph__9271}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_IGraph__9296 = { (RT0__Struct[]){&RT0__set32}, NULL, NULL, &_mid, NULL, 128, 32, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_SSA_IGraph__10270 = { (RT0__Struct[]){&RT0__longint}, NULL, NULL, &_mid, NULL, 4, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:IGraph", (RT0__Struct[]) { &_td_OOC_SSA_IGraph__BitMatrix, &_td_OOC_SSA_IGraph__ColorArray, &_td_OOC_SSA_IGraph__Vector, &_td_OOC_SSA_IGraph__Graph, &_td_OOC_SSA_IGraph__GraphDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:IGraph", (RT0__Struct[]) { &_td_OOC_SSA_IGraph__BitMatrix, &_td_OOC_SSA_IGraph__ColorArray, &_td_OOC_SSA_IGraph__Vector, &_td_OOC_SSA_IGraph__Graph, &_td_OOC_SSA_IGraph__GraphDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_IGraph_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_IGraph_init();
+extern void OOC_OOC_SSA_IGraph_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Exception_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_IGraph_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_IGraph_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_IGraph_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Exception_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

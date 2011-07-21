@@ -92,7 +92,9 @@ extern OOC_CHAR8 OOC_Scanner_Symbol__representation[81][10];
 extern OOC_CHAR8 OOC_Scanner_Symbol__IsKeyword(OOC_INT8 id);
 extern OOC_CHAR8 OOC_Scanner_Symbol__IsWhitespace(OOC_INT8 id);
 extern void OOC_OOC_Scanner_Symbol_init(void);
-extern void OOC_OOC_Scanner_Symbol_init0(void);
+extern void OOC_OOC_Scanner_Symbol_open(RT0__Module client);
+extern void OOC_OOC_Scanner_Symbol_destroy(void);
+extern void OOC_OOC_Scanner_Symbol_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Scanner_Symbol__2526;

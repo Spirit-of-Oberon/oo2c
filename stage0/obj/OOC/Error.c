@@ -416,4 +416,7 @@ void OOC_OOC_Error_init(void) {
   ;
 }
 
+void OOC_OOC_Error_destroy(void) {
+}
+
 /* --- */

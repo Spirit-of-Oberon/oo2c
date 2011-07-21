@@ -16,7 +16,9 @@ extern OOC_CHAR8 CharClass__IsControl(OOC_CHAR8 ch);
 extern OOC_CHAR8 CharClass__IsWhiteSpace(OOC_CHAR8 ch);
 extern OOC_CHAR8 CharClass__IsEol(OOC_CHAR8 ch);
 extern void OOC_CharClass_init(void);
-extern void OOC_CharClass_init0(void);
+extern void OOC_CharClass_open(RT0__Module client);
+extern void OOC_CharClass_destroy(void);
+extern void OOC_CharClass_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_CharClass__1077;

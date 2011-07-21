@@ -48,11 +48,51 @@ RT0__StructDesc _td_OOC_SSA__17662 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, 
 RT0__StructDesc _td_OOC_SSA__26681 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA__31935 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA__31967 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 64, 64, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA", (RT0__Struct[]) { &_td_OOC_SSA__Node, &_td_OOC_SSA__Opnd, &_td_OOC_SSA__Result, &_td_OOC_SSA__Instr, &_td_OOC_SSA__Const, &_td_OOC_SSA__DeclRef, &_td_OOC_SSA__TypeRef, &_td_OOC_SSA__Address, &_td_OOC_SSA__NodeDesc, &_td_OOC_SSA__OpndDesc, &_td_OOC_SSA__TypedOpnd, &_td_OOC_SSA__TypedOpndDesc, &_td_OOC_SSA__ResultDesc, &_td_OOC_SSA__InstrDesc, &_td_OOC_SSA__ConstDesc, &_td_OOC_SSA__DeclRefDesc, &_td_OOC_SSA__TypeRefDesc, &_td_OOC_SSA__AddressDesc, &_td_OOC_SSA__ProcBlock, &_td_OOC_SSA__ProcBlockDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA", (RT0__Struct[]) { &_td_OOC_SSA__Node, &_td_OOC_SSA__Opnd, &_td_OOC_SSA__Result, &_td_OOC_SSA__Instr, &_td_OOC_SSA__Const, &_td_OOC_SSA__DeclRef, &_td_OOC_SSA__TypeRef, &_td_OOC_SSA__Address, &_td_OOC_SSA__NodeDesc, &_td_OOC_SSA__OpndDesc, &_td_OOC_SSA__TypedOpnd, &_td_OOC_SSA__TypedOpndDesc, &_td_OOC_SSA__ResultDesc, &_td_OOC_SSA__InstrDesc, &_td_OOC_SSA__ConstDesc, &_td_OOC_SSA__DeclRefDesc, &_td_OOC_SSA__TypeRefDesc, &_td_OOC_SSA__AddressDesc, &_td_OOC_SSA__ProcBlock, &_td_OOC_SSA__ProcBlockDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_init();
+extern void OOC_OOC_SSA_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Log_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_Object_BigInt_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_OOC_IR_open(&_mid);
+    OOC_OOC_SSA_Opcode_open(&_mid);
+    OOC_OOC_SSA_Result_open(&_mid);
+    OOC_OOC_SSA_Opnd_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Log_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_Object_BigInt_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_OOC_IR_close(&_mid);
+    OOC_OOC_SSA_Opcode_close(&_mid);
+    OOC_OOC_SSA_Result_close(&_mid);
+    OOC_OOC_SSA_Opnd_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

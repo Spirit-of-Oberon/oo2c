@@ -414,4 +414,7 @@ void OOC_XML_Error_init(void) {
   ;
 }
 
+void OOC_XML_Error_destroy(void) {
+}
+
 /* --- */

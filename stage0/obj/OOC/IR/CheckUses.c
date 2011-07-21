@@ -2145,4 +2145,7 @@ void OOC_OOC_IR_CheckUses_init(void) {
   ;
 }
 
+void OOC_OOC_IR_CheckUses_destroy(void) {
+}
+
 /* --- */

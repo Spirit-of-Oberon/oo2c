@@ -1694,4 +1694,7 @@ void OOC_OOC_AST_CreateIR_init(void) {
   ;
 }
 
+void OOC_OOC_AST_CreateIR_destroy(void) {
+}
+
 /* --- */

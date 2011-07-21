@@ -529,4 +529,7 @@ void OOC_Config_Parser_init(void) {
   ;
 }
 
+void OOC_Config_Parser_destroy(void) {
+}
+
 /* --- */

@@ -47,7 +47,9 @@ extern void XML_UnicodeCodec__Register(const OOC_CHAR8 name__ref[], OOC_LEN name
 extern void XML_UnicodeCodec__Unregister(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
 extern XML_UnicodeCodec__Factory XML_UnicodeCodec__GetFactory(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
 extern void OOC_XML_UnicodeCodec_init(void);
-extern void OOC_XML_UnicodeCodec_init0(void);
+extern void OOC_XML_UnicodeCodec_open(RT0__Module client);
+extern void OOC_XML_UnicodeCodec_destroy(void);
+extern void OOC_XML_UnicodeCodec_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_UnicodeCodec__Factory;

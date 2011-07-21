@@ -1389,4 +1389,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_Builder_destroy(void) {
+}
+
 /* --- */

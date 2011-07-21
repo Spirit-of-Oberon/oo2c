@@ -76,4 +76,7 @@ void OOC_Quicksort1_init(void) {
   ;
 }
 
+void OOC_Quicksort1_destroy(void) {
+}
+
 /* --- */

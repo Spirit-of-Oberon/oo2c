@@ -38,7 +38,9 @@ extern void OOC_Doc_TextBuffer__FormatBlock(OOC_Doc_TextBuffer__Buffer dest, OOC
 extern void OOC_Doc_TextBuffer__FormatBlockHTML(OOC_Doc_TextBuffer__Buffer dest, OOC_Doc_TextBuffer__Buffer source, OOC_INT32 indent, OOC_INT32 scrWidth, OOC_INT32 offsetFirst);
 extern void OOC_Doc_TextBuffer__IndentBlock(OOC_Doc_TextBuffer__Buffer dest, OOC_Doc_TextBuffer__Buffer source, OOC_INT32 indent);
 extern void OOC_OOC_Doc_TextBuffer_init(void);
-extern void OOC_OOC_Doc_TextBuffer_init0(void);
+extern void OOC_OOC_Doc_TextBuffer_open(RT0__Module client);
+extern void OOC_OOC_Doc_TextBuffer_destroy(void);
+extern void OOC_OOC_Doc_TextBuffer_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Doc_TextBuffer__Buffer;

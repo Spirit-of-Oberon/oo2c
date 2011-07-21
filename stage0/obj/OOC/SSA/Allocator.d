@@ -59,11 +59,57 @@ RT0__StructDesc _td_OOC_SSA_Allocator__3150 = { (RT0__Struct[]){&_td_OOC_SSA_All
 RT0__StructDesc _td_OOC_SSA_Allocator__3205 = { (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_Allocator__3194 = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__3205}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_Allocator__17736 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 16, 16, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Allocator", (RT0__Struct[]) { &_td_OOC_SSA_Allocator__BlockList, &_td_OOC_SSA_Allocator__NameArray, &_td_OOC_SSA_Allocator__RegisterFile, &_td_OOC_SSA_Allocator__RegisterFiles, &_td_OOC_SSA_Allocator__RegisterFileDesc, &_td_OOC_SSA_Allocator__LiveData, &_td_OOC_SSA_Allocator__LiveDataDesc, &_td_OOC_SSA_Allocator__BlockInfo, &_td_OOC_SSA_Allocator__BlockInfoDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Allocator", (RT0__Struct[]) { &_td_OOC_SSA_Allocator__BlockList, &_td_OOC_SSA_Allocator__NameArray, &_td_OOC_SSA_Allocator__RegisterFile, &_td_OOC_SSA_Allocator__RegisterFiles, &_td_OOC_SSA_Allocator__RegisterFileDesc, &_td_OOC_SSA_Allocator__LiveData, &_td_OOC_SSA_Allocator__LiveDataDesc, &_td_OOC_SSA_Allocator__BlockInfo, &_td_OOC_SSA_Allocator__BlockInfoDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_Allocator_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_Allocator_init();
+extern void OOC_OOC_SSA_Allocator_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Log_open(&_mid);
+    OOC_IntStr_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_OOC_SSA_open(&_mid);
+    OOC_OOC_SSA_Opcode_open(&_mid);
+    OOC_OOC_SSA_Opnd_open(&_mid);
+    OOC_OOC_SSA_Result_open(&_mid);
+    OOC_OOC_SSA_Schedule_open(&_mid);
+    OOC_OOC_SSA_IGraph_open(&_mid);
+    OOC_OOC_C_DeclWriter_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_Allocator_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_Allocator_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_Allocator_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Log_close(&_mid);
+    OOC_IntStr_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_OOC_SSA_close(&_mid);
+    OOC_OOC_SSA_Opcode_close(&_mid);
+    OOC_OOC_SSA_Opnd_close(&_mid);
+    OOC_OOC_SSA_Result_close(&_mid);
+    OOC_OOC_SSA_Schedule_close(&_mid);
+    OOC_OOC_SSA_IGraph_close(&_mid);
+    OOC_OOC_C_DeclWriter_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

@@ -68,7 +68,9 @@ extern void NORETURN Exception__Abort(Exception__Exception e) NORETURN2;
 extern void NORETURN Exception__FatalError(Object__String msg) NORETURN2;
 extern void Exception__InitThreadState(struct Exception__ThreadState *ts);
 extern void OOC_Exception_init(void);
-extern void OOC_Exception_init0(void);
+extern void OOC_Exception_open(RT0__Module client);
+extern void OOC_Exception_destroy(void);
+extern void OOC_Exception_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Exception__Exception;

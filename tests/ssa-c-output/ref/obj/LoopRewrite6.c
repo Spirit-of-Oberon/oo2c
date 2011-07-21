@@ -28,4 +28,7 @@ void OOC_LoopRewrite6_init(void) {
   ;
 }
 
+void OOC_LoopRewrite6_destroy(void) {
+}
+
 /* --- */

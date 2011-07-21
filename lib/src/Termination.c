@@ -1,4 +1,4 @@
-/*	$Id: Termination.c,v 1.4 2004/05/10 02:43:50 sgreenhill Exp $	*/
+/*	$Id: Termination.c,v 1.5 2004/12/15 11:27:03 mva Exp $	*/
 /*  Provides procedures for program finalization.
     Copyright (C) 1997, 1999, 2000, 2002  Michael van Acken
 
@@ -155,4 +155,8 @@ void OOC_Termination_init(void) {
 #else
   (void)on_exit(&run_term_procs,NULL);
 #endif
+}
+
+void OOC_Termination_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
 }

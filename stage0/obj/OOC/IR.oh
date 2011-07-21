@@ -1351,7 +1351,9 @@ extern OOC_IR__Expression OOC_IR__BuilderDesc_NewCall(OOC_IR__Builder b, OOC_IR_
 #define _TBN_OOC_IR__BuilderDesc_NewCall 100
 typedef OOC_IR__Expression (*_TBP_OOC_IR__BuilderDesc_NewCall)(OOC_IR__Builder b, OOC_IR__Expression design, OOC_IR__ExpressionList arguments, OOC_CHAR8 isFunctionCall, OOC_SymbolTable__Item context, OOC_Scanner_SymList__Symbol endOfArgsSym);
 extern void OOC_OOC_IR_init(void);
-extern void OOC_OOC_IR_init0(void);
+extern void OOC_OOC_IR_open(RT0__Module client);
+extern void OOC_OOC_IR_destroy(void);
+extern void OOC_OOC_IR_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_IR__Node;

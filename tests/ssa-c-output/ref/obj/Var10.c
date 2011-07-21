@@ -29,4 +29,7 @@ void OOC_Var10_init(void) {
   ;
 }
 
+void OOC_Var10_destroy(void) {
+}
+
 /* --- */

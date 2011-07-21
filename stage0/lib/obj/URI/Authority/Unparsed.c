@@ -121,4 +121,7 @@ void OOC_URI_Authority_Unparsed_init(void) {
   ;
 }
 
+void OOC_URI_Authority_Unparsed_destroy(void) {
+}
+
 /* --- */

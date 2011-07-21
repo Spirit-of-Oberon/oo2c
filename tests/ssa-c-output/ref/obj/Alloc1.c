@@ -32,4 +32,7 @@ void OOC_Alloc1_init(void) {
   ;
 }
 
+void OOC_Alloc1_destroy(void) {
+}
+
 /* --- */

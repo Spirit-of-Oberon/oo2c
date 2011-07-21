@@ -9,5 +9,5 @@ void Transclosure(unsigned char path[], int max) {
 	    path[i*max+k] = 1;
 }
 
-void OOC_WarshallC_init0(void) { }
+void OOC_WarshallC_open(void) { }
 

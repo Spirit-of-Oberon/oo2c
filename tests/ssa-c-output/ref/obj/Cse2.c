@@ -37,4 +37,7 @@ void OOC_Cse2_init(void) {
   ;
 }
 
+void OOC_Cse2_destroy(void) {
+}
+
 /* --- */

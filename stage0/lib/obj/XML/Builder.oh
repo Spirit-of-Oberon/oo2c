@@ -107,7 +107,9 @@ extern void XML_Builder__AttributeListDesc_Append(XML_Builder__AttributeList att
 #define _TBN_XML_Builder__AttributeListDesc_Append 1
 typedef void (*_TBP_XML_Builder__AttributeListDesc_Append)(XML_Builder__AttributeList attrList, XML_Builder__Attribute attr);
 extern void OOC_XML_Builder_init(void);
-extern void OOC_XML_Builder_init0(void);
+extern void OOC_XML_Builder_open(RT0__Module client);
+extern void OOC_XML_Builder_destroy(void);
+extern void OOC_XML_Builder_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_Builder__Builder;

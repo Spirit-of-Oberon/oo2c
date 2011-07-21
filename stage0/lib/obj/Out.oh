@@ -31,7 +31,9 @@ extern void Out__RealEng(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
 extern void Out__Set(OOC_UINT32 s);
 extern void Out__Ln(void);
 extern void OOC_Out_init(void);
-extern void OOC_Out_init0(void);
+extern void OOC_Out_open(RT0__Module client);
+extern void OOC_Out_destroy(void);
+extern void OOC_Out_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Out__2255;

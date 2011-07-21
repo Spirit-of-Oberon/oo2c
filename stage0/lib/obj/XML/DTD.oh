@@ -390,7 +390,9 @@ extern XML_DTD__StringURI XML_DTD__GetStringURI(OOC_CHAR8 string[], OOC_LEN stri
 extern void XML_DTD__Init(XML_DTD__Builder b);
 extern XML_DTD__Builder XML_DTD__New(void);
 extern void OOC_XML_DTD_init(void);
-extern void OOC_XML_DTD_init0(void);
+extern void OOC_XML_DTD_open(RT0__Module client);
+extern void OOC_XML_DTD_destroy(void);
+extern void OOC_XML_DTD_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_DTD__StringVar;

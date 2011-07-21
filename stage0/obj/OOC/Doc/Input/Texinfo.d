@@ -133,11 +133,61 @@ RT0__StructDesc _td_OOC_Doc_Input_Texinfo__25525 = { (RT0__Struct[]){&RT0__char}
 RT0__StructDesc _td_OOC_Doc_Input_Texinfo__27314 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 2, 2, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_Doc_Input_Texinfo__30651 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 2, 2, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_Doc_Input_Texinfo__34261 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Doc:Input:Texinfo", (RT0__Struct[]) { &_td_OOC_Doc_Input_Texinfo__Command, &_td_OOC_Doc_Input_Texinfo__CommandDesc, &_td_OOC_Doc_Input_Texinfo__Token, &_td_OOC_Doc_Input_Texinfo__TokenDesc, &_td_OOC_Doc_Input_Texinfo__ErrorContext, &_td_OOC_Doc_Input_Texinfo__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Doc:Input:Texinfo", (RT0__Struct[]) { &_td_OOC_Doc_Input_Texinfo__Command, &_td_OOC_Doc_Input_Texinfo__CommandDesc, &_td_OOC_Doc_Input_Texinfo__Token, &_td_OOC_Doc_Input_Texinfo__TokenDesc, &_td_OOC_Doc_Input_Texinfo__ErrorContext, &_td_OOC_Doc_Input_Texinfo__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_OOC_Doc_Input_Texinfo_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Doc_Input_Texinfo_init();
+extern void OOC_OOC_Doc_Input_Texinfo_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Ascii_open(&_mid);
+    OOC_CharClass_open(&_mid);
+    OOC_IntStr_open(&_mid);
+    OOC_Out_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_Channel_open(&_mid);
+    OOC_TextRider_open(&_mid);
+    OOC_StdChannels_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_Scanner_InputBuffer_open(&_mid);
+    OOC_OOC_Scanner_open(&_mid);
+    OOC_OOC_Scanner_SymList_open(&_mid);
+    OOC_OOC_Doc_open(&_mid);
+    OOC_OOC_Doc_Decoration_open(&_mid);
+    OOC_OOC_Doc_TextBuffer_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Doc_Input_Texinfo_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Doc_Input_Texinfo_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Doc_Input_Texinfo_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Ascii_close(&_mid);
+    OOC_CharClass_close(&_mid);
+    OOC_IntStr_close(&_mid);
+    OOC_Out_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_Channel_close(&_mid);
+    OOC_TextRider_close(&_mid);
+    OOC_StdChannels_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_Scanner_InputBuffer_close(&_mid);
+    OOC_OOC_Scanner_close(&_mid);
+    OOC_OOC_Scanner_SymList_close(&_mid);
+    OOC_OOC_Doc_close(&_mid);
+    OOC_OOC_Doc_Decoration_close(&_mid);
+    OOC_OOC_Doc_TextBuffer_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

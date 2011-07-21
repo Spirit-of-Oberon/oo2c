@@ -143,4 +143,7 @@ void OOC_OOC_SymbolTable_ImportModules_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_ImportModules_destroy(void) {
+}
+
 /* --- */

@@ -396,4 +396,7 @@ void OOC_OOC_Config_CCompiler_init(void) {
   ;
 }
 
+void OOC_OOC_Config_CCompiler_destroy(void) {
+}
+
 /* --- */

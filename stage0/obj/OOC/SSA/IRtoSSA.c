@@ -3549,4 +3549,7 @@ void OOC_OOC_SSA_IRtoSSA_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_IRtoSSA_destroy(void) {
+}
+
 /* --- */

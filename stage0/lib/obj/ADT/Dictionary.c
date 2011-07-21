@@ -1042,4 +1042,7 @@ void OOC_ADT_Dictionary_init(void) {
   ;
 }
 
+void OOC_ADT_Dictionary_destroy(void) {
+}
+
 /* --- */

@@ -80,7 +80,9 @@ extern XML_Parser__Parser XML_Parser__NewURI(URI__URI uri, URI__URI baseURI, XML
 extern XML_Parser__Parser XML_Parser__NewFile(const OOC_CHAR8 filePath__ref[], OOC_LEN filePath_0d, URI__URI baseURI, XML_UnicodeCodec__Factory codecFactory, XML_EntityResolver__Resolver entityResolver, XML_Builder__Builder builder);
 extern XML_Parser__Parser XML_Parser__NewExternalID(const OOC_CHAR16 _public__ref[], OOC_LEN _public_0d, const OOC_CHAR16 system__ref[], OOC_LEN system_0d, URI__URI systemBaseURI, XML_UnicodeCodec__Factory codecFactory, XML_EntityResolver__Resolver entityResolver, XML_Builder__Builder builder, Msg__Msg *res);
 extern void OOC_XML_Parser_init(void);
-extern void OOC_XML_Parser_init0(void);
+extern void OOC_XML_Parser_open(RT0__Module client);
+extern void OOC_XML_Parser_destroy(void);
+extern void OOC_XML_Parser_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_Parser__PEInfo;

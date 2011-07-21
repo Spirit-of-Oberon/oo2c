@@ -190,7 +190,9 @@ extern Object__String16 Object__String16Desc_ToUppercaseLatin1(Object__String16 
 #define _TBN_Object__String16Desc_ToUppercaseLatin1 17
 typedef Object__String16 (*_TBP_Object__String16Desc_ToUppercaseLatin1)(Object__String16 s);
 extern void OOC_Object_init(void);
-extern void OOC_Object_init0(void);
+extern void OOC_Object_open(RT0__Module client);
+extern void OOC_Object_destroy(void);
+extern void OOC_Object_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Object__Object;

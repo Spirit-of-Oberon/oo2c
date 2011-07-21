@@ -30,7 +30,9 @@ extern OOC_Scanner_InputBuffer__CharArray OOC_Doc_Decoration__PlainIndentDesc_De
 #define _TBN_OOC_Doc_Decoration__PlainIndentDesc_Decorate 0
 typedef OOC_Scanner_InputBuffer__CharArray (*_TBP_OOC_Doc_Decoration__PlainIndentDesc_Decorate)(OOC_Doc_Decoration__PlainIndent d, OOC_Scanner_InputBuffer__CharArray s);
 extern void OOC_OOC_Doc_Decoration_init(void);
-extern void OOC_OOC_Doc_Decoration_init0(void);
+extern void OOC_OOC_Doc_Decoration_open(RT0__Module client);
+extern void OOC_OOC_Doc_Decoration_destroy(void);
+extern void OOC_OOC_Doc_Decoration_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Doc_Decoration__Decoration;

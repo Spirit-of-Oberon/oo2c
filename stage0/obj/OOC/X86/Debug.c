@@ -1772,4 +1772,7 @@ void OOC_OOC_X86_Debug_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Debug_destroy(void) {
+}
+
 /* --- */

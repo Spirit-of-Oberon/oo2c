@@ -64,4 +64,7 @@ void OOC_URI_Scheme_CurrentDoc_init(void) {
   ;
 }
 
+void OOC_URI_Scheme_CurrentDoc_destroy(void) {
+}
+
 /* --- */

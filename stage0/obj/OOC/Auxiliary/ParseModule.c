@@ -114,4 +114,7 @@ void OOC_OOC_Auxiliary_ParseModule_init(void) {
   ;
 }
 
+void OOC_OOC_Auxiliary_ParseModule_destroy(void) {
+}
+
 /* --- */

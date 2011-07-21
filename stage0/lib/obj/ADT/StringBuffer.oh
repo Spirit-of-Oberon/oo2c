@@ -84,7 +84,9 @@ extern void ADT_StringBuffer__StringBufferDesc_Delete(ADT_StringBuffer__StringBu
 #define _TBN_ADT_StringBuffer__StringBufferDesc_Delete 23
 typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_Delete)(ADT_StringBuffer__StringBuffer b, OOC_INT32 start, OOC_INT32 end);
 extern void OOC_ADT_StringBuffer_init(void);
-extern void OOC_ADT_StringBuffer_init0(void);
+extern void OOC_ADT_StringBuffer_open(RT0__Module client);
+extern void OOC_ADT_StringBuffer_destroy(void);
+extern void OOC_ADT_StringBuffer_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_StringBuffer__1012;

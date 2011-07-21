@@ -568,4 +568,7 @@ void OOC_OOC_X86_Machine_init(void) {
   ;
 }
 
+void OOC_OOC_X86_Machine_destroy(void) {
+}
+
 /* --- */

@@ -1176,4 +1176,7 @@ void OOC_Config_Source_CmdLine_init(void) {
   ;
 }
 
+void OOC_Config_Source_CmdLine_destroy(void) {
+}
+
 /* --- */

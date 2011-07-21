@@ -55,7 +55,9 @@ extern void XML_Error__ListDesc_Write(volatile XML_Error__List errList, volatile
 #define _TBN_XML_Error__ListDesc_Write 2
 typedef void (*_TBP_XML_Error__ListDesc_Write)(XML_Error__List errList, Channel__Channel ch);
 extern void OOC_XML_Error_init(void);
-extern void OOC_XML_Error_init0(void);
+extern void OOC_XML_Error_open(RT0__Module client);
+extern void OOC_XML_Error_destroy(void);
+extern void OOC_XML_Error_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_XML_Error__Mapping;

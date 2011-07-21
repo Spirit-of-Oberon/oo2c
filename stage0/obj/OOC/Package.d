@@ -126,11 +126,87 @@ static RT0__StructDesc _td__qtd2 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_O
 static RT0__StructDesc _td__qtd3 = { (RT0__Struct[]){&_td__qtd2}, NULL, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayList, &_td_OOC_Package__Executable, NULL}, &_mid, "ADT:ArrayList.ArrayList(OOC:Package.Executable)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd4 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd4}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_ArrayList__ArrayListDesc_Equals,(void*)ADT_ArrayList__ArrayListDesc_HashCode,(void*)ADT_ArrayList__ArrayListDesc_Store,(void*)ADT_ArrayList__ArrayListDesc_Load,(void*)ADT_ArrayList__ArrayListDesc_CreateArray,(void*)ADT_ArrayList__ArrayListDesc_INIT,(void*)ADT_ArrayList__ArrayListDesc_Destroy,(void*)ADT_ArrayList__ArrayListDesc_Copy,(void*)ADT_ArrayList__ArrayListDesc_EnsureCapacity,(void*)ADT_ArrayList__ArrayListDesc_Clear,(void*)ADT_ArrayList__ArrayListDesc_Append,(void*)ADT_ArrayList__ArrayListDesc_Insert,(void*)ADT_ArrayList__ArrayListDesc_Get,(void*)ADT_ArrayList__ArrayListDesc_Set,(void*)ADT_ArrayList__ArrayListDesc_RemoveRange,(void*)ADT_ArrayList__ArrayListDesc_Remove,(void*)ADT_ArrayList__ArrayListDesc_TrimToSize,(void*)ADT_ArrayList__ArrayListDesc_Size,(void*)ADT_ArrayList__ArrayListDesc_Contains,(void*)ADT_ArrayList__ArrayListDesc_IndexOf,(void*)ADT_ArrayList__ArrayListDesc_LastIndexOf,(void*)ADT_ArrayList__ArrayListDesc_IsEmpty,(void*)ADT_ArrayList__ArrayListDesc_Sort,(void*)ADT_ArrayList__ArrayListDesc_Elements,(void*)ADT_ArrayList__ArrayListDesc_IterElements}, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayListDesc, &_td_Object__String, NULL}, &_mid, "ADT:ArrayList.ArrayListDesc(Object.String)", 8, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd5 = { (RT0__Struct[]){&_td__qtd4}, NULL, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayList, &_td_Object__String, NULL}, &_mid, "ADT:ArrayList.ArrayList(Object.String)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Package", (RT0__Struct[]) { &_td_OOC_Package__Version, &_td_OOC_Package__VersionDesc, &_td_OOC_Package__Executable, &_td_OOC_Package__ExecutableDesc, &_td_OOC_Package__Library, &_td_OOC_Package__LibraryDesc, &_td_OOC_Package__FileData, &_td_OOC_Package__FileDataDesc, &_td_OOC_Package__File, &_td_OOC_Package__FileDesc, &_td_OOC_Package__FileSet, &_td_OOC_Package__FileSetDesc, &_td_OOC_Package__KeyValue, &_td_OOC_Package__KeyValueDesc, &_td_OOC_Package__Package, &_td_OOC_Package__PackageDesc, &_td_OOC_Package__Repository, &_td_OOC_Package__RepositoryDesc, &_td_OOC_Package__ErrorContext, &_td_OOC_Package__ErrorContextDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Package", (RT0__Struct[]) { &_td_OOC_Package__Version, &_td_OOC_Package__VersionDesc, &_td_OOC_Package__Executable, &_td_OOC_Package__ExecutableDesc, &_td_OOC_Package__Library, &_td_OOC_Package__LibraryDesc, &_td_OOC_Package__FileData, &_td_OOC_Package__FileDataDesc, &_td_OOC_Package__File, &_td_OOC_Package__FileDesc, &_td_OOC_Package__FileSet, &_td_OOC_Package__FileSetDesc, &_td_OOC_Package__KeyValue, &_td_OOC_Package__KeyValueDesc, &_td_OOC_Package__Package, &_td_OOC_Package__PackageDesc, &_td_OOC_Package__Repository, &_td_OOC_Package__RepositoryDesc, &_td_OOC_Package__ErrorContext, &_td_OOC_Package__ErrorContextDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, NULL }, 0 };
 
-extern void OOC_OOC_Package_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Package_init();
+extern void OOC_OOC_Package_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_IntStr_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_IO_FileChannel_open(&_mid);
+    OOC_IO_StdChannels_open(&_mid);
+    OOC_Exception_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_OS_Files_open(&_mid);
+    OOC_OS_ProcessManagement_open(&_mid);
+    OOC_OS_Path_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_URI_Scheme_File_open(&_mid);
+    OOC_XML_UnicodeCodec_Latin1_open(&_mid);
+    OOC_XML_Error_open(&_mid);
+    OOC_XML_Locator_open(&_mid);
+    OOC_XML_DTD_open(&_mid);
+    OOC_XML_Builder_open(&_mid);
+    OOC_XML_Writer_open(&_mid);
+    OOC_Config_Parser_open(&_mid);
+    OOC_Config_open(&_mid);
+    OOC_Config_Section_Options_open(&_mid);
+    OOC_OOC_Logger_open(&_mid);
+    OOC_OOC_Config_open(&_mid);
+    OOC_OOC_Error_open(&_mid);
+    OOC_OOC_Repository_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Package_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Package_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Package_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_IntStr_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_IO_FileChannel_close(&_mid);
+    OOC_IO_StdChannels_close(&_mid);
+    OOC_Exception_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_OS_Files_close(&_mid);
+    OOC_OS_ProcessManagement_close(&_mid);
+    OOC_OS_Path_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_URI_Scheme_File_close(&_mid);
+    OOC_XML_UnicodeCodec_Latin1_close(&_mid);
+    OOC_XML_Error_close(&_mid);
+    OOC_XML_Locator_close(&_mid);
+    OOC_XML_DTD_close(&_mid);
+    OOC_XML_Builder_close(&_mid);
+    OOC_XML_Writer_close(&_mid);
+    OOC_Config_Parser_close(&_mid);
+    OOC_Config_close(&_mid);
+    OOC_Config_Section_Options_close(&_mid);
+    OOC_OOC_Logger_close(&_mid);
+    OOC_OOC_Config_close(&_mid);
+    OOC_OOC_Error_close(&_mid);
+    OOC_OOC_Repository_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

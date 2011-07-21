@@ -29,11 +29,43 @@ RT0__StructDesc _td_URI__Reference = { (RT0__Struct[]){&_td_URI__ReferenceDesc},
 RT0__StructDesc _td_URI__ReferenceDesc = { (RT0__Struct[]){&_td_URI__ReferenceDesc}, (void*[]){(void*)URI__ReferenceDesc_WriteXML,(void*)URI__ReferenceDesc_ToString}, NULL, &_mid, "ReferenceDesc", 8, 0, 0, RT0__strRecord };
 RT0__StructDesc _td_URI__List = { (RT0__Struct[]){&_td_URI__ListDesc}, NULL, NULL, &_mid, "List", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_URI__ListDesc = { (RT0__Struct[]){&_td_URI__ListDesc}, (void*[]){}, NULL, &_mid, "ListDesc", 8, 0, 0, RT0__strRecord };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"URI", (RT0__Struct[]) { &_td_URI__URI, &_td_URI__URIDesc, &_td_URI__Authority, &_td_URI__AuthorityDesc, &_td_URI__Query, &_td_URI__QueryDesc, &_td_URI__Fragment, &_td_URI__FragmentDesc, &_td_URI__HierarchicalURI, &_td_URI__HierarchicalURIDesc, &_td_URI__OpaqueURI, &_td_URI__OpaqueURIDesc, &_td_URI__Reference, &_td_URI__ReferenceDesc, &_td_URI__List, &_td_URI__ListDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"URI", (RT0__Struct[]) { &_td_URI__URI, &_td_URI__URIDesc, &_td_URI__Authority, &_td_URI__AuthorityDesc, &_td_URI__Query, &_td_URI__QueryDesc, &_td_URI__Fragment, &_td_URI__FragmentDesc, &_td_URI__HierarchicalURI, &_td_URI__HierarchicalURIDesc, &_td_URI__OpaqueURI, &_td_URI__OpaqueURIDesc, &_td_URI__Reference, &_td_URI__ReferenceDesc, &_td_URI__List, &_td_URI__ListDesc, NULL }, 0 };
 
-extern void OOC_URI_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_URI_init();
+extern void OOC_URI_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_CharClass_open(&_mid);
+    OOC_TextRider_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_URI_String_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_URI_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_URI_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_URI_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_CharClass_close(&_mid);
+    OOC_TextRider_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_URI_String_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

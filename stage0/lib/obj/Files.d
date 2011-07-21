@@ -18,11 +18,43 @@ RT0__StructDesc _td_Files__11161 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_
 RT0__StructDesc _td_Files__12585 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Files__12958 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Files__13222 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Files", (RT0__Struct[]) { &_td_Files__File, &_td_Files__FileDesc, &_td_Files__Reader, &_td_Files__ReaderDesc, &_td_Files__Writer, &_td_Files__WriterDesc, &_td_Files__ErrorContext, &_td_Files__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Files", (RT0__Struct[]) { &_td_Files__File, &_td_Files__FileDesc, &_td_Files__Reader, &_td_Files__ReaderDesc, &_td_Files__Writer, &_td_Files__WriterDesc, &_td_Files__ErrorContext, &_td_Files__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_Files_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_Files_init();
+extern void OOC_Files_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Channel_open(&_mid);
+    OOC_PosixFileDescr_open(&_mid);
+    OOC_Time_open(&_mid);
+    OOC_Termination_open(&_mid);
+    OOC_CharClass_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_Files_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_Files_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_Files_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Channel_close(&_mid);
+    OOC_PosixFileDescr_close(&_mid);
+    OOC_Time_close(&_mid);
+    OOC_Termination_close(&_mid);
+    OOC_CharClass_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

@@ -739,4 +739,7 @@ void OOC_ADT_Dictionary_AddressKey_IntValue_init(void) {
   ;
 }
 
+void OOC_ADT_Dictionary_AddressKey_IntValue_destroy(void) {
+}
+
 /* --- */

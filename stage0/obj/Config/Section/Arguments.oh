@@ -40,7 +40,9 @@ extern void Config_Section_Arguments__SectionDesc_DumpContent(Config_Section_Arg
 #define _TBN_Config_Section_Arguments__SectionDesc_DumpContent 1
 typedef void (*_TBP_Config_Section_Arguments__SectionDesc_DumpContent)(Config_Section_Arguments__Section s, Channel__Channel ch);
 extern void OOC_Config_Section_Arguments_init(void);
-extern void OOC_Config_Section_Arguments_init0(void);
+extern void OOC_Config_Section_Arguments_open(RT0__Module client);
+extern void OOC_Config_Section_Arguments_destroy(void);
+extern void OOC_Config_Section_Arguments_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Config_Section_Arguments__Section;

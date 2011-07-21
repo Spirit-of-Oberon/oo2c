@@ -31,7 +31,9 @@ extern void Err__RealEng(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
 extern void Err__Set(OOC_UINT32 s);
 extern void Err__Ln(void);
 extern void OOC_Err_init(void);
-extern void OOC_Err_init0(void);
+extern void OOC_Err_open(RT0__Module client);
+extern void OOC_Err_destroy(void);
+extern void OOC_Err_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Err__2209;

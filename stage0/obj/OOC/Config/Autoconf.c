@@ -8,4 +8,7 @@ void OOC_OOC_Config_Autoconf_init(void) {
   ;
 }
 
+void OOC_OOC_Config_Autoconf_destroy(void) {
+}
+
 /* --- */

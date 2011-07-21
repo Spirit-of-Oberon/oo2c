@@ -774,4 +774,7 @@ void OOC_LongStrings_init(void) {
   ;
 }
 
+void OOC_LongStrings_destroy(void) {
+}
+
 /* --- */

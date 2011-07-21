@@ -61,7 +61,9 @@ extern void ADT_Storable__ReaderDesc_Disconnect(ADT_Storable__Reader r);
 #define _TBN_ADT_Storable__ReaderDesc_Disconnect 19
 typedef void (*_TBP_ADT_Storable__ReaderDesc_Disconnect)(ADT_Storable__Reader r);
 extern void OOC_ADT_Storable_init(void);
-extern void OOC_ADT_Storable_init0(void);
+extern void OOC_ADT_Storable_open(RT0__Module client);
+extern void OOC_ADT_Storable_destroy(void);
+extern void OOC_ADT_Storable_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_Storable__Object;

@@ -97,14 +97,14 @@ RT0__StructDesc _td_OOC_X86_Write__1030 = { (RT0__Struct[]){&_td_ADT_Dictionary_
 RT0__StructDesc _td_OOC_X86_Write__1088 = { (RT0__Struct[]){&_td_ADT_ArrayList__ArrayList}, NULL, NULL, &_mid, NULL, 76, 19, 0, RT0__strArray };
 RT0__StructDesc _td_OOC_X86_Write__6193 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 16, 16, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_X86_Write__6651 = { (RT0__Struct[]){&_td_OOC_X86_Write__6651}, (void*[]){}, NULL, &_mid, NULL, 8, 0, (1<<RT0__flagAtomic), RT0__strRecord };
-RT0__StructDesc _td_OOC_X86_Write__10536 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_X86_Write__10650 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 3, 3, (1<<RT0__flagAtomic), RT0__strArray };
-RT0__StructDesc _td_OOC_X86_Write__11586 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_X86_Write__11756 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_X86_Write__12236 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 8, 8, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_X86_Write__10548 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_X86_Write__10662 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 3, 3, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_X86_Write__11598 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_X86_Write__11768 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_X86_Write__12248 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 8, 8, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_X86_Write__WriterDesc_WriteBlock_FixGatedValues_IO = { (RT0__Struct[]){&_td_OOC_X86_Write__WriterDesc_WriteBlock_FixGatedValues_IO}, (void*[]){}, NULL, &_mid, "IO", 8, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_OOC_X86_Write__18429 = { (RT0__Struct[]){&_td_OOC_X86_Write__WriterDesc_WriteBlock_FixGatedValues_IO}, NULL, NULL, &_mid, NULL, 8, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_OOC_X86_Write__18418 = { (RT0__Struct[]){&_td_OOC_X86_Write__18429}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_X86_Write__18441 = { (RT0__Struct[]){&_td_OOC_X86_Write__WriterDesc_WriteBlock_FixGatedValues_IO}, NULL, NULL, &_mid, NULL, 8, 1, 0, RT0__strOpenArray };
+RT0__StructDesc _td_OOC_X86_Write__18430 = { (RT0__Struct[]){&_td_OOC_X86_Write__18441}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 static RT0__StructDesc _td__qtd0 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd0}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_Dictionary__DictionaryDesc_Equals,(void*)ADT_Dictionary__DictionaryDesc_HashCode,(void*)ADT_Dictionary__DictionaryDesc_Store,(void*)ADT_Dictionary__DictionaryDesc_Load,(void*)ADT_Dictionary__DictionaryDesc_INIT,(void*)ADT_Dictionary__DictionaryDesc_Destroy,(void*)ADT_Dictionary__DictionaryDesc_Lookup,(void*)ADT_Dictionary__DictionaryDesc_Insert,(void*)ADT_Dictionary__DictionaryDesc_Resize,(void*)ADT_Dictionary__DictionaryDesc_HasKey,(void*)ADT_Dictionary__DictionaryDesc_Size,(void*)ADT_Dictionary__DictionaryDesc_Get,(void*)ADT_Dictionary__DictionaryDesc_Set,(void*)ADT_Dictionary__DictionaryDesc_Copy,(void*)ADT_Dictionary__DictionaryDesc_Delete,(void*)ADT_Dictionary__DictionaryDesc_Clear,(void*)ADT_Dictionary__DictionaryDesc_Keys,(void*)ADT_Dictionary__DictionaryDesc_Values,(void*)ADT_Dictionary__DictionaryDesc_Items,(void*)ADT_Dictionary__DictionaryDesc_IterKeys,(void*)ADT_Dictionary__DictionaryDesc_IterValues}, (RT0__Struct[]){&_td_ADT_Dictionary__DictionaryDesc, &_td_Object__Object, &_td_Object__String, NULL}, &_mid, "ADT:Dictionary.DictionaryDesc(Object.Object,Object.String)", 20, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd1 = { (RT0__Struct[]){&_td__qtd0}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_Object__Object, &_td_Object__String, NULL}, &_mid, "ADT:Dictionary.Dictionary(Object.Object,Object.String)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd2 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd2}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_ArrayList__ArrayListDesc_Equals,(void*)ADT_ArrayList__ArrayListDesc_HashCode,(void*)ADT_ArrayList__ArrayListDesc_Store,(void*)ADT_ArrayList__ArrayListDesc_Load,(void*)ADT_ArrayList__ArrayListDesc_CreateArray,(void*)ADT_ArrayList__ArrayListDesc_INIT,(void*)ADT_ArrayList__ArrayListDesc_Destroy,(void*)ADT_ArrayList__ArrayListDesc_Copy,(void*)ADT_ArrayList__ArrayListDesc_EnsureCapacity,(void*)ADT_ArrayList__ArrayListDesc_Clear,(void*)ADT_ArrayList__ArrayListDesc_Append,(void*)ADT_ArrayList__ArrayListDesc_Insert,(void*)ADT_ArrayList__ArrayListDesc_Get,(void*)ADT_ArrayList__ArrayListDesc_Set,(void*)ADT_ArrayList__ArrayListDesc_RemoveRange,(void*)ADT_ArrayList__ArrayListDesc_Remove,(void*)ADT_ArrayList__ArrayListDesc_TrimToSize,(void*)ADT_ArrayList__ArrayListDesc_Size,(void*)ADT_ArrayList__ArrayListDesc_Contains,(void*)ADT_ArrayList__ArrayListDesc_IndexOf,(void*)ADT_ArrayList__ArrayListDesc_LastIndexOf,(void*)ADT_ArrayList__ArrayListDesc_IsEmpty,(void*)ADT_ArrayList__ArrayListDesc_Sort,(void*)ADT_ArrayList__ArrayListDesc_Elements,(void*)ADT_ArrayList__ArrayListDesc_IterElements}, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayListDesc, &_td_Object__Object, NULL}, &_mid, "ADT:ArrayList.ArrayListDesc(Object.Object)", 8, 3, 0, RT0__strQualType };
@@ -113,11 +113,57 @@ static RT0__StructDesc _td__qtd4 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_O
 static RT0__StructDesc _td__qtd5 = { (RT0__Struct[]){&_td__qtd4}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_OOC_X86_SSA__Block, &_td_OOC_X86_Write__Block, NULL}, &_mid, "ADT:Dictionary.Dictionary(OOC:X86:SSA.Block,OOC:X86:Write.Block)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd6 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd6}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_ArrayList__ArrayListDesc_Equals,(void*)ADT_ArrayList__ArrayListDesc_HashCode,(void*)ADT_ArrayList__ArrayListDesc_Store,(void*)ADT_ArrayList__ArrayListDesc_Load,(void*)ADT_ArrayList__ArrayListDesc_CreateArray,(void*)ADT_ArrayList__ArrayListDesc_INIT,(void*)ADT_ArrayList__ArrayListDesc_Destroy,(void*)ADT_ArrayList__ArrayListDesc_Copy,(void*)ADT_ArrayList__ArrayListDesc_EnsureCapacity,(void*)ADT_ArrayList__ArrayListDesc_Clear,(void*)ADT_ArrayList__ArrayListDesc_Append,(void*)ADT_ArrayList__ArrayListDesc_Insert,(void*)ADT_ArrayList__ArrayListDesc_Get,(void*)ADT_ArrayList__ArrayListDesc_Set,(void*)ADT_ArrayList__ArrayListDesc_RemoveRange,(void*)ADT_ArrayList__ArrayListDesc_Remove,(void*)ADT_ArrayList__ArrayListDesc_TrimToSize,(void*)ADT_ArrayList__ArrayListDesc_Size,(void*)ADT_ArrayList__ArrayListDesc_Contains,(void*)ADT_ArrayList__ArrayListDesc_IndexOf,(void*)ADT_ArrayList__ArrayListDesc_LastIndexOf,(void*)ADT_ArrayList__ArrayListDesc_IsEmpty,(void*)ADT_ArrayList__ArrayListDesc_Sort,(void*)ADT_ArrayList__ArrayListDesc_Elements,(void*)ADT_ArrayList__ArrayListDesc_IterElements}, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayListDesc, &_td_OOC_X86_Write__Block, NULL}, &_mid, "ADT:ArrayList.ArrayListDesc(OOC:X86:Write.Block)", 8, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd7 = { (RT0__Struct[]){&_td__qtd6}, NULL, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayList, &_td_OOC_X86_Write__Block, NULL}, &_mid, "ADT:ArrayList.ArrayList(OOC:X86:Write.Block)", 4, 0, 0, RT0__strQualType };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:Write", (RT0__Struct[]) { &_td_OOC_X86_Write__Arc, &_td_OOC_X86_Write__Block, &_td_OOC_X86_Write__ArcDesc, &_td_OOC_X86_Write__BlockDesc, &_td_OOC_X86_Write__Writer, &_td_OOC_X86_Write__WriterDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, &_td__qtd6, &_td__qtd7, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:X86:Write", (RT0__Struct[]) { &_td_OOC_X86_Write__Arc, &_td_OOC_X86_Write__Block, &_td_OOC_X86_Write__ArcDesc, &_td_OOC_X86_Write__BlockDesc, &_td_OOC_X86_Write__Writer, &_td_OOC_X86_Write__WriterDesc, &_td__qtd0, &_td__qtd1, &_td__qtd2, &_td__qtd3, &_td__qtd4, &_td__qtd5, &_td__qtd6, &_td__qtd7, NULL }, 0 };
 
-extern void OOC_OOC_X86_Write_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_X86_Write_init();
+extern void OOC_OOC_X86_Write_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Ascii_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_Object_BigInt_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_IO_TextRider_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_OOC_C_Naming_open(&_mid);
+    OOC_OOC_X86_SSA_open(&_mid);
+    OOC_OOC_X86_RuntimeData_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_X86_Write_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_X86_Write_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_X86_Write_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Ascii_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_Object_BigInt_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_IO_TextRider_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_OOC_C_Naming_close(&_mid);
+    OOC_OOC_X86_SSA_close(&_mid);
+    OOC_OOC_X86_RuntimeData_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

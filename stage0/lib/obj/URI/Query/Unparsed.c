@@ -121,4 +121,7 @@ void OOC_URI_Query_Unparsed_init(void) {
   ;
 }
 
+void OOC_URI_Query_Unparsed_destroy(void) {
+}
+
 /* --- */

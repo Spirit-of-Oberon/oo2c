@@ -60,11 +60,37 @@ RT0__StructDesc _td_XML_DTD__36176 = { (RT0__Struct[]){&RT0__longchar}, NULL, NU
 RT0__StructDesc _td_XML_DTD__36454 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_XML_DTD__36608 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_XML_DTD__37086 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:DTD", (RT0__Struct[]) { &_td_XML_DTD__StringVar, &_td_XML_DTD__Namespace, &_td_XML_DTD__Declaration, &_td_XML_DTD__Builder, &_td_XML_DTD__BuilderDesc, &_td_XML_DTD__DeclarationDesc, &_td_XML_DTD__NamespaceDesc, &_td_XML_DTD__Fragment, &_td_XML_DTD__FragmentDesc, &_td_XML_DTD__Characters, &_td_XML_DTD__CharactersDesc, &_td_XML_DTD__EntityRef, &_td_XML_DTD__Entity, &_td_XML_DTD__EntityRefDesc, &_td_XML_DTD__AttValue, &_td_XML_DTD__AttValueDesc, &_td_XML_DTD__NameNode, &_td_XML_DTD__NameNodeDesc, &_td_XML_DTD__Enumeration, &_td_XML_DTD__EnumerationDesc, &_td_XML_DTD__AttrDecl, &_td_XML_DTD__AttrDeclDesc, &_td_XML_DTD__EntityDesc, &_td_XML_DTD__InternalEntity, &_td_XML_DTD__InternalEntityDesc, &_td_XML_DTD__ExternalEntity, &_td_XML_DTD__ExternalEntityDesc, &_td_XML_DTD__Notation, &_td_XML_DTD__NotationDesc, &_td_XML_DTD__CP, &_td_XML_DTD__CPDesc, &_td_XML_DTD__ChoiceCP, &_td_XML_DTD__ChoiceCPDesc, &_td_XML_DTD__SeqCP, &_td_XML_DTD__SeqCPDesc, &_td_XML_DTD__NameCP, &_td_XML_DTD__NameCPDesc, &_td_XML_DTD__RegexpInfo, &_td_XML_DTD__RegexpInfoDesc, &_td_XML_DTD__ElementDecl, &_td_XML_DTD__ElementDeclDesc, &_td_XML_DTD__NamespaceDeclaration, &_td_XML_DTD__StringURI, &_td_XML_DTD__NamespaceDeclarationDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"XML:DTD", (RT0__Struct[]) { &_td_XML_DTD__StringVar, &_td_XML_DTD__Namespace, &_td_XML_DTD__Declaration, &_td_XML_DTD__Builder, &_td_XML_DTD__BuilderDesc, &_td_XML_DTD__DeclarationDesc, &_td_XML_DTD__NamespaceDesc, &_td_XML_DTD__Fragment, &_td_XML_DTD__FragmentDesc, &_td_XML_DTD__Characters, &_td_XML_DTD__CharactersDesc, &_td_XML_DTD__EntityRef, &_td_XML_DTD__Entity, &_td_XML_DTD__EntityRefDesc, &_td_XML_DTD__AttValue, &_td_XML_DTD__AttValueDesc, &_td_XML_DTD__NameNode, &_td_XML_DTD__NameNodeDesc, &_td_XML_DTD__Enumeration, &_td_XML_DTD__EnumerationDesc, &_td_XML_DTD__AttrDecl, &_td_XML_DTD__AttrDeclDesc, &_td_XML_DTD__EntityDesc, &_td_XML_DTD__InternalEntity, &_td_XML_DTD__InternalEntityDesc, &_td_XML_DTD__ExternalEntity, &_td_XML_DTD__ExternalEntityDesc, &_td_XML_DTD__Notation, &_td_XML_DTD__NotationDesc, &_td_XML_DTD__CP, &_td_XML_DTD__CPDesc, &_td_XML_DTD__ChoiceCP, &_td_XML_DTD__ChoiceCPDesc, &_td_XML_DTD__SeqCP, &_td_XML_DTD__SeqCPDesc, &_td_XML_DTD__NameCP, &_td_XML_DTD__NameCPDesc, &_td_XML_DTD__RegexpInfo, &_td_XML_DTD__RegexpInfoDesc, &_td_XML_DTD__ElementDecl, &_td_XML_DTD__ElementDeclDesc, &_td_XML_DTD__NamespaceDeclaration, &_td_XML_DTD__StringURI, &_td_XML_DTD__NamespaceDeclarationDesc, NULL }, 0 };
 
-extern void OOC_XML_DTD_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_XML_DTD_init();
+extern void OOC_XML_DTD_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_LongStrings_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_XML_UnicodeCodec_open(&_mid);
+    OOC_XML_UnicodeBuffer_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_XML_DTD_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_XML_DTD_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_XML_DTD_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_LongStrings_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_XML_UnicodeCodec_close(&_mid);
+    OOC_XML_UnicodeBuffer_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

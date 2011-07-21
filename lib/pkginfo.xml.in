@@ -17,7 +17,7 @@
   </pragmas>
   
   <library name="oo2c" main-module="liboo2c">
-    <version current="2" revision="0" age="0"/>
+    <version current="3" revision="0" age="0"/>
   </library>
 
   <file-set source-dir="src">

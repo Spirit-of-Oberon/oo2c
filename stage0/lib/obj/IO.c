@@ -512,4 +512,7 @@ void OOC_IO_init(void) {
   ;
 }
 
+void OOC_IO_destroy(void) {
+}
+
 /* --- */

@@ -13,7 +13,9 @@
 extern OOC_CHAR8 OOC_SymbolTable_InterfaceDescr__absoluteDtdSystemId;
 extern void OOC_SymbolTable_InterfaceDescr__Write(IO__ByteChannel cw, URI__HierarchicalURI baseURI, OOC_SymbolTable__Module module, OOC_Config_Repositories__Section repositories, ADT_Dictionary__Dictionary extensionDict);
 extern void OOC_OOC_SymbolTable_InterfaceDescr_init(void);
-extern void OOC_OOC_SymbolTable_InterfaceDescr_init0(void);
+extern void OOC_OOC_SymbolTable_InterfaceDescr_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_InterfaceDescr_destroy(void);
+extern void OOC_OOC_SymbolTable_InterfaceDescr_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_InterfaceDescr__2743;

@@ -120,11 +120,63 @@ RT0__StructDesc _td_OOC_SymbolTable__WriterDesc = { (RT0__Struct[]){&_td_IO_Bina
 RT0__StructDesc _td_OOC_SymbolTable__Reader = { (RT0__Struct[]){&_td_OOC_SymbolTable__ReaderDesc}, NULL, NULL, &_mid, "Reader", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SymbolTable__ReaderDesc = { (RT0__Struct[]){&_td_IO_BinaryRider__ReaderDesc,&_td_ADT_Storable__ReaderDesc,&_td_ADT_Object_Storage__ReaderDesc,&_td_OOC_SymbolTable__ReaderDesc}, (void*[]){(void*)IO_BinaryRider__ReaderDesc_SetPos,(void*)IO_BinaryRider__ReaderDesc_ReadBytes,(void*)IO_BinaryRider__ReaderDesc_ReadBytesOrdered,(void*)IO_BinaryRider__ReaderDesc_ReadBool,(void*)IO_BinaryRider__ReaderDesc_ReadChar,(void*)IO_BinaryRider__ReaderDesc_ReadLChar,(void*)IO_BinaryRider__ReaderDesc_ReadString,(void*)IO_BinaryRider__ReaderDesc_ReadLString,(void*)IO_BinaryRider__ReaderDesc_ReadSInt,(void*)IO_BinaryRider__ReaderDesc_ReadInt,(void*)IO_BinaryRider__ReaderDesc_ReadLInt,(void*)IO_BinaryRider__ReaderDesc_ReadNum,(void*)IO_BinaryRider__ReaderDesc_ReadReal,(void*)IO_BinaryRider__ReaderDesc_ReadLReal,(void*)IO_BinaryRider__ReaderDesc_ReadSet,(void*)IO_BinaryRider__ReaderDesc_ReadStr,(void*)IO_BinaryRider__ReaderDesc_SetByteOrder,(void*)OOC_SymbolTable__ReaderDesc_INIT,(void*)ADT_Object_Storage__ReaderDesc_ReadObject,(void*)ADT_Object_Storage__ReaderDesc_Disconnect}, NULL, &_mid, "ReaderDesc", 284, 3, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_SymbolTable__64529 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1024, 1024, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable", (RT0__Struct[]) { &_td_OOC_SymbolTable__Position, &_td_OOC_SymbolTable__PositionDesc, &_td_OOC_SymbolTable__Name, &_td_OOC_SymbolTable__NameDesc, &_td_OOC_SymbolTable__Flag, &_td_OOC_SymbolTable__FlagDesc, &_td_OOC_SymbolTable__Item, &_td_OOC_SymbolTable__ItemDesc, &_td_OOC_SymbolTable__Declaration, &_td_OOC_SymbolTable__DeclarationDesc, &_td_OOC_SymbolTable__DeclarationArray, &_td_OOC_SymbolTable__Namespace, &_td_OOC_SymbolTable__NamespaceDesc, &_td_OOC_SymbolTable__TypePars, &_td_OOC_SymbolTable__TypeVar, &_td_OOC_SymbolTable__TypeVarArray, &_td_OOC_SymbolTable__TypeParsDesc, &_td_OOC_SymbolTable__Type, &_td_OOC_SymbolTable__TypeDecl, &_td_OOC_SymbolTable__TypeDesc, &_td_OOC_SymbolTable__LinkDirective, &_td_OOC_SymbolTable__LinkDirectiveDesc, &_td_OOC_SymbolTable__LinkFile, &_td_OOC_SymbolTable__LinkFileDesc, &_td_OOC_SymbolTable__LinkLib, &_td_OOC_SymbolTable__LinkLibDesc, &_td_OOC_SymbolTable__Module, &_td_OOC_SymbolTable__ModuleRef, &_td_OOC_SymbolTable__ModuleRefDesc, &_td_OOC_SymbolTable__ModuleRefArray, &_td_OOC_SymbolTable__ProcDecl, &_td_OOC_SymbolTable__ModuleDesc, &_td_OOC_SymbolTable__Import, &_td_OOC_SymbolTable__ImportDesc, &_td_OOC_SymbolTable__PredefType, &_td_OOC_SymbolTable__PredefTypeDesc, &_td_OOC_SymbolTable__TypeName, &_td_OOC_SymbolTable__TypeNameDesc, &_td_OOC_SymbolTable__Pointer, &_td_OOC_SymbolTable__PointerDesc, &_td_OOC_SymbolTable__ExceptionName, &_td_OOC_SymbolTable__ExceptionNameArray, &_td_OOC_SymbolTable__ExceptionNameDesc, &_td_OOC_SymbolTable__VarDecl, &_td_OOC_SymbolTable__VarDeclArray, &_td_OOC_SymbolTable__FormalPars, &_td_OOC_SymbolTable__FormalParsDesc, &_td_OOC_SymbolTable__Array, &_td_OOC_SymbolTable__ArrayDesc, &_td_OOC_SymbolTable__Record, &_td_OOC_SymbolTable__RecordDesc, &_td_OOC_SymbolTable__TypeVarDesc, &_td_OOC_SymbolTable__QualType, &_td_OOC_SymbolTable__TypeRef, &_td_OOC_SymbolTable__TypeRefArray, &_td_OOC_SymbolTable__QualTypeDesc, &_td_OOC_SymbolTable__TypeClosure, &_td_OOC_SymbolTable__TypeClosureDesc, &_td_OOC_SymbolTable__ProcDeclDesc, &_td_OOC_SymbolTable__PredefProc, &_td_OOC_SymbolTable__PredefProcDesc, &_td_OOC_SymbolTable__ConstDecl, &_td_OOC_SymbolTable__ConstDeclDesc, &_td_OOC_SymbolTable__VarDeclDesc, &_td_OOC_SymbolTable__FieldDecl, &_td_OOC_SymbolTable__FieldDeclDesc, &_td_OOC_SymbolTable__TypeDeclDesc, &_td_OOC_SymbolTable__Redirect, &_td_OOC_SymbolTable__RedirectDesc, &_td_OOC_SymbolTable__Writer, &_td_OOC_SymbolTable__WriterDesc, &_td_OOC_SymbolTable__Reader, &_td_OOC_SymbolTable__ReaderDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable", (RT0__Struct[]) { &_td_OOC_SymbolTable__Position, &_td_OOC_SymbolTable__PositionDesc, &_td_OOC_SymbolTable__Name, &_td_OOC_SymbolTable__NameDesc, &_td_OOC_SymbolTable__Flag, &_td_OOC_SymbolTable__FlagDesc, &_td_OOC_SymbolTable__Item, &_td_OOC_SymbolTable__ItemDesc, &_td_OOC_SymbolTable__Declaration, &_td_OOC_SymbolTable__DeclarationDesc, &_td_OOC_SymbolTable__DeclarationArray, &_td_OOC_SymbolTable__Namespace, &_td_OOC_SymbolTable__NamespaceDesc, &_td_OOC_SymbolTable__TypePars, &_td_OOC_SymbolTable__TypeVar, &_td_OOC_SymbolTable__TypeVarArray, &_td_OOC_SymbolTable__TypeParsDesc, &_td_OOC_SymbolTable__Type, &_td_OOC_SymbolTable__TypeDecl, &_td_OOC_SymbolTable__TypeDesc, &_td_OOC_SymbolTable__LinkDirective, &_td_OOC_SymbolTable__LinkDirectiveDesc, &_td_OOC_SymbolTable__LinkFile, &_td_OOC_SymbolTable__LinkFileDesc, &_td_OOC_SymbolTable__LinkLib, &_td_OOC_SymbolTable__LinkLibDesc, &_td_OOC_SymbolTable__Module, &_td_OOC_SymbolTable__ModuleRef, &_td_OOC_SymbolTable__ModuleRefDesc, &_td_OOC_SymbolTable__ModuleRefArray, &_td_OOC_SymbolTable__ProcDecl, &_td_OOC_SymbolTable__ModuleDesc, &_td_OOC_SymbolTable__Import, &_td_OOC_SymbolTable__ImportDesc, &_td_OOC_SymbolTable__PredefType, &_td_OOC_SymbolTable__PredefTypeDesc, &_td_OOC_SymbolTable__TypeName, &_td_OOC_SymbolTable__TypeNameDesc, &_td_OOC_SymbolTable__Pointer, &_td_OOC_SymbolTable__PointerDesc, &_td_OOC_SymbolTable__ExceptionName, &_td_OOC_SymbolTable__ExceptionNameArray, &_td_OOC_SymbolTable__ExceptionNameDesc, &_td_OOC_SymbolTable__VarDecl, &_td_OOC_SymbolTable__VarDeclArray, &_td_OOC_SymbolTable__FormalPars, &_td_OOC_SymbolTable__FormalParsDesc, &_td_OOC_SymbolTable__Array, &_td_OOC_SymbolTable__ArrayDesc, &_td_OOC_SymbolTable__Record, &_td_OOC_SymbolTable__RecordDesc, &_td_OOC_SymbolTable__TypeVarDesc, &_td_OOC_SymbolTable__QualType, &_td_OOC_SymbolTable__TypeRef, &_td_OOC_SymbolTable__TypeRefArray, &_td_OOC_SymbolTable__QualTypeDesc, &_td_OOC_SymbolTable__TypeClosure, &_td_OOC_SymbolTable__TypeClosureDesc, &_td_OOC_SymbolTable__ProcDeclDesc, &_td_OOC_SymbolTable__PredefProc, &_td_OOC_SymbolTable__PredefProcDesc, &_td_OOC_SymbolTable__ConstDecl, &_td_OOC_SymbolTable__ConstDeclDesc, &_td_OOC_SymbolTable__VarDeclDesc, &_td_OOC_SymbolTable__FieldDecl, &_td_OOC_SymbolTable__FieldDeclDesc, &_td_OOC_SymbolTable__TypeDeclDesc, &_td_OOC_SymbolTable__Redirect, &_td_OOC_SymbolTable__RedirectDesc, &_td_OOC_SymbolTable__Writer, &_td_OOC_SymbolTable__WriterDesc, &_td_OOC_SymbolTable__Reader, &_td_OOC_SymbolTable__ReaderDesc, NULL }, 0 };
 
-extern void OOC_OOC_SymbolTable_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SymbolTable_init();
+extern void OOC_OOC_SymbolTable_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_Exception_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_ADT_Dictionary_AddressKey_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_ADT_Storable_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_ADT_Object_Storage_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_URI_Parser_open(&_mid);
+    OOC_URI_Scheme_File_open(&_mid);
+    OOC_OOC_Scanner_InputBuffer_open(&_mid);
+    OOC_OOC_Scanner_SymList_open(&_mid);
+    OOC_OOC_Doc_open(&_mid);
+    OOC_OOC_AST_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SymbolTable_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SymbolTable_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SymbolTable_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_Exception_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_ADT_Dictionary_AddressKey_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_ADT_Storable_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_ADT_Object_Storage_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_URI_Parser_close(&_mid);
+    OOC_URI_Scheme_File_close(&_mid);
+    OOC_OOC_Scanner_InputBuffer_close(&_mid);
+    OOC_OOC_Scanner_SymList_close(&_mid);
+    OOC_OOC_Doc_close(&_mid);
+    OOC_OOC_AST_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

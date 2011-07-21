@@ -37,11 +37,53 @@ RT0__StructDesc _td_OOC_SSA_Blocker__LoopDesc = { (RT0__Struct[]){&_td_RT0__Obje
 RT0__StructDesc _td_OOC_SSA_Blocker__DependenceData = { (RT0__Struct[]){&_td_OOC_SSA_Blocker__DependenceDataDesc}, NULL, NULL, &_mid, "DependenceData", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_Blocker__DependenceDataDesc = { (RT0__Struct[]){&_td_OOC_SSA_Blocker__DependenceDataDesc}, (void*[]){(void*)OOC_SSA_Blocker__DependenceDataDesc_SameRegion,(void*)OOC_SSA_Blocker__DependenceDataDesc_Dominates,(void*)OOC_SSA_Blocker__DependenceDataDesc_Conflict,(void*)OOC_SSA_Blocker__DependenceDataDesc_DependsOn,(void*)OOC_SSA_Blocker__DependenceDataDesc_AvailableTo,(void*)OOC_SSA_Blocker__DependenceDataDesc_GetSameInstr,(void*)OOC_SSA_Blocker__DependenceDataDesc_SetRegion}, NULL, &_mid, "DependenceDataDesc", 8, 0, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_SSA_Blocker__15943 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 64, 64, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Blocker", (RT0__Struct[]) { &_td_OOC_SSA_Blocker__Proxy, &_td_OOC_SSA_Blocker__Region, &_td_OOC_SSA_Blocker__Select, &_td_OOC_SSA_Blocker__Loop, &_td_OOC_SSA_Blocker__ProxyDesc, &_td_OOC_SSA_Blocker__RegionDesc, &_td_OOC_SSA_Blocker__SelectDesc, &_td_OOC_SSA_Blocker__Preceeds, &_td_OOC_SSA_Blocker__PreceedsDesc, &_td_OOC_SSA_Blocker__LoopDesc, &_td_OOC_SSA_Blocker__DependenceData, &_td_OOC_SSA_Blocker__DependenceDataDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:Blocker", (RT0__Struct[]) { &_td_OOC_SSA_Blocker__Proxy, &_td_OOC_SSA_Blocker__Region, &_td_OOC_SSA_Blocker__Select, &_td_OOC_SSA_Blocker__Loop, &_td_OOC_SSA_Blocker__ProxyDesc, &_td_OOC_SSA_Blocker__RegionDesc, &_td_OOC_SSA_Blocker__SelectDesc, &_td_OOC_SSA_Blocker__Preceeds, &_td_OOC_SSA_Blocker__PreceedsDesc, &_td_OOC_SSA_Blocker__LoopDesc, &_td_OOC_SSA_Blocker__DependenceData, &_td_OOC_SSA_Blocker__DependenceDataDesc, NULL }, 0 };
 
-extern void OOC_OOC_SSA_Blocker_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SSA_Blocker_init();
+extern void OOC_OOC_SSA_Blocker_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_Object_BigInt_open(&_mid);
+    OOC_ADT_Dictionary_open(&_mid);
+    OOC_ADT_Dictionary_IntValue_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_IO_TextRider_open(&_mid);
+    OOC_IO_StdChannels_open(&_mid);
+    OOC_OOC_SSA_open(&_mid);
+    OOC_OOC_SSA_Opcode_open(&_mid);
+    OOC_OOC_SSA_Opnd_open(&_mid);
+    OOC_OOC_SSA_DeadCodeElimination_open(&_mid);
+    OOC_OOC_SSA_Destore_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SSA_Blocker_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SSA_Blocker_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SSA_Blocker_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_Object_BigInt_close(&_mid);
+    OOC_ADT_Dictionary_close(&_mid);
+    OOC_ADT_Dictionary_IntValue_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_IO_TextRider_close(&_mid);
+    OOC_IO_StdChannels_close(&_mid);
+    OOC_OOC_SSA_close(&_mid);
+    OOC_OOC_SSA_Opcode_close(&_mid);
+    OOC_OOC_SSA_Opnd_close(&_mid);
+    OOC_OOC_SSA_DeadCodeElimination_close(&_mid);
+    OOC_OOC_SSA_Destore_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

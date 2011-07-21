@@ -22,11 +22,59 @@ RT0__StructDesc _td_OOC_Config_FileSystem__ErrorContext = { (RT0__Struct[]){&_td
 RT0__StructDesc _td_OOC_Config_FileSystem__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_XML_Error__ContextDesc,&_td_Config_Section__ErrorContextDesc,&_td_OOC_Config_FileSystem__ErrorContextDesc}, (void*[]){(void*)OOC_Config_FileSystem__ErrorContextDesc_GetTemplate,(void*)XML_Error__ContextDesc_WriteTemplate,(void*)XML_Error__ContextDesc_SetString}, NULL, &_mid, "ErrorContextDesc", 8, 3, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_Config_FileSystem__1708 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_Config_FileSystem__2649 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 4096, 4096, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Config:FileSystem", (RT0__Struct[]) { &_td_OOC_Config_FileSystem__RepositoryEntry, &_td_OOC_Config_FileSystem__RepositoryEntryDesc, &_td_OOC_Config_FileSystem__ErrorContext, &_td_OOC_Config_FileSystem__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Config:FileSystem", (RT0__Struct[]) { &_td_OOC_Config_FileSystem__RepositoryEntry, &_td_OOC_Config_FileSystem__RepositoryEntryDesc, &_td_OOC_Config_FileSystem__ErrorContext, &_td_OOC_Config_FileSystem__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_OOC_Config_FileSystem_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Config_FileSystem_init();
+extern void OOC_OOC_Config_FileSystem_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Msg_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_Exception_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_URI_Parser_open(&_mid);
+    OOC_URI_Scheme_File_open(&_mid);
+    OOC_XML_DTD_open(&_mid);
+    OOC_XML_Builder_open(&_mid);
+    OOC_XML_Locator_open(&_mid);
+    OOC_Config_Parser_open(&_mid);
+    OOC_Config_Section_open(&_mid);
+    OOC_OOC_Config_Repositories_open(&_mid);
+    OOC_OOC_Repository_open(&_mid);
+    OOC_OOC_Repository_FileSystem_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Config_FileSystem_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Config_FileSystem_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Config_FileSystem_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Msg_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_Exception_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_URI_Parser_close(&_mid);
+    OOC_URI_Scheme_File_close(&_mid);
+    OOC_XML_DTD_close(&_mid);
+    OOC_XML_Builder_close(&_mid);
+    OOC_XML_Locator_close(&_mid);
+    OOC_Config_Parser_close(&_mid);
+    OOC_Config_Section_close(&_mid);
+    OOC_OOC_Config_Repositories_close(&_mid);
+    OOC_OOC_Repository_close(&_mid);
+    OOC_OOC_Repository_FileSystem_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

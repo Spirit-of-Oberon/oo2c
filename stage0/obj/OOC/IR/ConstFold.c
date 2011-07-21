@@ -1660,4 +1660,7 @@ void OOC_OOC_IR_ConstFold_init(void) {
   ;
 }
 
+void OOC_OOC_IR_ConstFold_destroy(void) {
+}
+
 /* --- */

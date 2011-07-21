@@ -45,6 +45,7 @@ typedef struct RT0__StructDesc {
 typedef struct RT0__ModuleDesc {
   RT0__Name name;
   RT0__Struct *typeDescriptors;
+  OOC_INT32 openCount;
 } RT0__ModuleDesc;
 typedef struct RT0__CaseRange {
   OOC_INT32 low;
@@ -88,11 +89,14 @@ extern void NORETURN RT0__ErrorFailedFunction(RT0__Module mid, OOC_INT32 pos) NO
 extern void NORETURN RT0__ErrorAssertionFailed(RT0__Module mid, OOC_INT32 pos, OOC_INT32 code) NORETURN2;
 extern void NORETURN RT0__Halt(OOC_INT32 code) NORETURN2;
 extern void RT0__RegisterModule(RT0__Module mid);
+extern void RT0__UnregisterModule(RT0__Module mid);
 extern RT0__Module RT0__ThisModule(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
 extern RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
 extern OOC_PTR RT0__ScanCaseRanges(const struct RT0__CaseRange table__ref[], OOC_INT32 value);
 extern void OOC_RT0_init(void);
-extern void OOC_RT0_init0(void);
+extern void OOC_RT0_open(RT0__Module client);
+extern void OOC_RT0_destroy(void);
+extern void OOC_RT0_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_RT0__Object;
@@ -106,11 +110,11 @@ extern RT0__StructDesc _td_RT0__7158;
 extern RT0__StructDesc _td_RT0__ModuleDesc;
 extern RT0__StructDesc _td_RT0__8935;
 extern RT0__StructDesc _td_RT0__CaseRange;
-extern RT0__StructDesc _td_RT0__9724;
-extern RT0__StructDesc _td_RT0__9650;
-extern RT0__StructDesc _td_RT0__14317;
-extern RT0__StructDesc _td_RT0__14523;
-extern RT0__StructDesc _td_RT0__14869;
+extern RT0__StructDesc _td_RT0__9949;
+extern RT0__StructDesc _td_RT0__9875;
+extern RT0__StructDesc _td_RT0__14694;
+extern RT0__StructDesc _td_RT0__14900;
+extern RT0__StructDesc _td_RT0__15246;
 #endif /* _MODULE_RT0_ */
 
 /* --- */

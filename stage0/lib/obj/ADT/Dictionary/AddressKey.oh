@@ -79,7 +79,9 @@ extern void ADT_Dictionary_AddressKey__DummyDesc_Destroy(ADT_Dictionary_AddressK
 #define _TBN_ADT_Dictionary_AddressKey__DummyDesc_Destroy 4
 typedef void (*_TBP_ADT_Dictionary_AddressKey__DummyDesc_Destroy)(ADT_Dictionary_AddressKey__Dummy dummy);
 extern void OOC_ADT_Dictionary_AddressKey_init(void);
-extern void OOC_ADT_Dictionary_AddressKey_init0(void);
+extern void OOC_ADT_Dictionary_AddressKey_open(RT0__Module client);
+extern void OOC_ADT_Dictionary_AddressKey_destroy(void);
+extern void OOC_ADT_Dictionary_AddressKey_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__Entry;

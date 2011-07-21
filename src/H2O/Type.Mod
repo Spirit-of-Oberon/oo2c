@@ -52,6 +52,7 @@ CONST
     addr* : LONGINT;
     type* : Type;
     qualifiers* : SET;
+    module* : Module.Module;
     next* : Object;
   END;
 
@@ -62,6 +63,16 @@ VAR
   longLongType-, unsignedLongLongType-,
   floatType-, doubleType-, longDoubleType-,
   charType-, unsignedCharType-, voidType- : Type;
+
+VAR
+(* All objects declared in the global scope (ie. variables and procedures) *)
+  vars* : Object;
+
+(* All types declared with type tags (ie. struct, union, enum) *)
+  types* : Object;
+
+(* All types declared via typedef *)
+  typedefs* : Object;
 
 CONST
   pointerSize* = 4;
@@ -80,7 +91,7 @@ BEGIN
   END;
 END IsConstructor;
 
-PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList);
+PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module.Module));
 
   PROCEDURE Accumulate(module : Module.Module);
   BEGIN
@@ -191,7 +202,7 @@ BEGIN
   END;
 END AppendObject;
 
-PROCEDURE NewObject* (name : STRING; addr : LONGINT; type : Type) : Object;
+PROCEDURE NewObject* (name : STRING; addr : LONGINT; type : Type; module : Module.Module) : Object;
 VAR o : Object;
 BEGIN
   NEW(o);
@@ -199,13 +210,14 @@ BEGIN
   o.addr := addr;
   o.type := type;
   o.qualifiers := {};
+  o.module := module;
   o.next := NIL;
   RETURN o;
 END NewObject;
 
-PROCEDURE Bind* (VAR s : Object; name : STRING; addr : LONGINT; type : Type);
+PROCEDURE Bind* (VAR s : Object; name : STRING; addr : LONGINT; type : Type; mod : Module.Module);
 BEGIN
-  AppendObject(s, NewObject(name, addr, type));
+  AppendObject(s, NewObject(name, addr, type, mod));
 END Bind;
 
 PROCEDURE NewType* (class : SHORTINT; base : Type; size : LONGINT; qual : SET) : Type;
@@ -231,6 +243,28 @@ BEGIN
   RETURN t;
 END BaseType;
 
+(* In some situations a type may be redefined. In particular, this is allowed
+if a structure or union is defined as an opaque type, and is later redefined.
+*)
+
+PROCEDURE AllowedRedefinition* (new, old : Type) : BOOLEAN;
+BEGIN
+  RETURN (new.class = old.class) &
+    ((new.class = tStruct) OR (new.class = tUnion)) &
+    (old.link = NIL);
+END AllowedRedefinition;
+
+(* Some declarations are OK without defining a name. This is because they have
+   a type tag which generates a declaration as a side-effect. *)
+
+PROCEDURE TypeNeedsName* (t : Type) : BOOLEAN;
+VAR class : INTEGER;
+BEGIN
+  class := t.class;
+  RETURN ~
+  ((class = tStruct) OR (class = tUnion) OR (class = tEnum));
+END TypeNeedsName;
+
 BEGIN
   charType := BaseType(tInteger, 1, "char");  
   unsignedCharType := BaseType(tUnsigned, 1, "unsigned char");
@@ -245,5 +279,9 @@ BEGIN
   doubleType := BaseType(tReal, 8, "double");
   longDoubleType := BaseType(tReal, 8, "long double");
   voidType := BaseType(tVoid, 0, "void");
+
+  vars := NIL;
+  types := NIL;
+  typedefs := NIL;
 END H2O:Type.
 

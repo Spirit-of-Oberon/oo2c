@@ -697,4 +697,7 @@ void OOC_OOC_SSA_XML_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_XML_destroy(void) {
+}
+
 /* --- */

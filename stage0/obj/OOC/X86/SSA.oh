@@ -899,7 +899,9 @@ extern void OOC_X86_SSA__FunctionBlockDesc_DeadCodeElimination(OOC_X86_SSA__Func
 #define _TBN_OOC_X86_SSA__FunctionBlockDesc_DeadCodeElimination 87
 typedef void (*_TBP_OOC_X86_SSA__FunctionBlockDesc_DeadCodeElimination)(OOC_X86_SSA__FunctionBlock fctBlock);
 extern void OOC_OOC_X86_SSA_init(void);
-extern void OOC_OOC_X86_SSA_init0(void);
+extern void OOC_OOC_X86_SSA_open(RT0__Module client);
+extern void OOC_OOC_X86_SSA_destroy(void);
+extern void OOC_OOC_X86_SSA_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_SSA__Node;

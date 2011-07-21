@@ -776,4 +776,7 @@ void OOC_OOC_SymbolTable_Uses_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_Uses_destroy(void) {
+}
+
 /* --- */

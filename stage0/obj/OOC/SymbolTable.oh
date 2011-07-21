@@ -1074,7 +1074,9 @@ extern OOC_SymbolTable__Namespace OOC_SymbolTable__DeclarationDesc_GetEmbeddedNa
 #define _TBN_OOC_SymbolTable__DeclarationDesc_GetEmbeddedNamespace 14
 typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__DeclarationDesc_GetEmbeddedNamespace)(OOC_SymbolTable__Declaration decl, OOC_CHAR8 followTypeNames);
 extern void OOC_OOC_SymbolTable_init(void);
-extern void OOC_OOC_SymbolTable_init0(void);
+extern void OOC_OOC_SymbolTable_open(RT0__Module client);
+extern void OOC_OOC_SymbolTable_destroy(void);
+extern void OOC_OOC_SymbolTable_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable__Position;

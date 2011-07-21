@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; minmax7 minmax8">-->
+  select ="&SetupTestCasesWithOut; generic77 generic78 generic79 generic80">-->
 
   &TestSetupWithOut;
     
@@ -1843,6 +1843,22 @@
       Regression test: Defining an <code>INIT</code> procedure as
       <code>ABSTRACT</code>.
     </test>
+    <test id="generic77" type="accept" file="Generic77.Mod">
+      Regression test: Comparison of parametric pointer types is
+      possible if they are compatible.
+    </test>
+    <test id="generic78" type="reject" file="Generic78.Mod">
+      Regression test: Comparison of parametric pointer types is
+      possible if they are compatible.
+    </test>
+    <test id="generic79" type="accept" file="Generic79.Mod">
+      Regression test: <code>WITH</code> statement must propagate the
+      correct type value.
+    </test>
+    <test id="generic80" type="accept" file="Generic79.Mod">
+      Regression test: <code>WITH</code> statement must propagate the
+      correct type value.
+    </test>
 
     <test id="iterator1" type="run" file="Iterator1.Mod"
           output="Iterator1.Ref">
@@ -2616,6 +2632,8 @@
         msg="This must be a non-function procedure"/>
     <reject-info id="generic76" pos="ABSTRACT] %INIT"
         msg="This static type-bound procedure cannot be abstract"/>
+    <reject-info id="generic78" pos="x %# l.elements"
+        msg="Incompatible types for operator"/>
 
     <reject-info id="iterator3" pos="IN %x"
         msg="Iterator requires array elements of scalar type"/>

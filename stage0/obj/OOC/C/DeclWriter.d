@@ -63,11 +63,57 @@ RT0__StructDesc _td_OOC_C_DeclWriter__12725 = { (RT0__Struct[]){&RT0__char}, NUL
 RT0__StructDesc _td_OOC_C_DeclWriter__26037 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_C_DeclWriter__26194 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_C_DeclWriter__31171 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:C:DeclWriter", (RT0__Struct[]) { &_td_OOC_C_DeclWriter__Type, &_td_OOC_C_DeclWriter__TypeDesc, &_td_OOC_C_DeclWriter__BasicType, &_td_OOC_C_DeclWriter__BasicTypeDesc, &_td_OOC_C_DeclWriter__Pointer, &_td_OOC_C_DeclWriter__PointerDesc, &_td_OOC_C_DeclWriter__Array, &_td_OOC_C_DeclWriter__ArrayDesc, &_td_OOC_C_DeclWriter__Function, &_td_OOC_C_DeclWriter__FunctionDesc, &_td_OOC_C_DeclWriter__Struct, &_td_OOC_C_DeclWriter__StructDesc, &_td_OOC_C_DeclWriter__TypeRef, &_td_OOC_C_DeclWriter__TypeRefDesc, &_td_OOC_C_DeclWriter__TypeOf, &_td_OOC_C_DeclWriter__TypeOfDesc, &_td_OOC_C_DeclWriter__Declaration, &_td_OOC_C_DeclWriter__DeclarationDesc, &_td_OOC_C_DeclWriter__IncludeModule, &_td_OOC_C_DeclWriter__IncludeModuleDesc, &_td_OOC_C_DeclWriter__Define, &_td_OOC_C_DeclWriter__DefineDesc, &_td_OOC_C_DeclWriter__Writer, &_td_OOC_C_DeclWriter__WriterDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:C:DeclWriter", (RT0__Struct[]) { &_td_OOC_C_DeclWriter__Type, &_td_OOC_C_DeclWriter__TypeDesc, &_td_OOC_C_DeclWriter__BasicType, &_td_OOC_C_DeclWriter__BasicTypeDesc, &_td_OOC_C_DeclWriter__Pointer, &_td_OOC_C_DeclWriter__PointerDesc, &_td_OOC_C_DeclWriter__Array, &_td_OOC_C_DeclWriter__ArrayDesc, &_td_OOC_C_DeclWriter__Function, &_td_OOC_C_DeclWriter__FunctionDesc, &_td_OOC_C_DeclWriter__Struct, &_td_OOC_C_DeclWriter__StructDesc, &_td_OOC_C_DeclWriter__TypeRef, &_td_OOC_C_DeclWriter__TypeRefDesc, &_td_OOC_C_DeclWriter__TypeOf, &_td_OOC_C_DeclWriter__TypeOfDesc, &_td_OOC_C_DeclWriter__Declaration, &_td_OOC_C_DeclWriter__DeclarationDesc, &_td_OOC_C_DeclWriter__IncludeModule, &_td_OOC_C_DeclWriter__IncludeModuleDesc, &_td_OOC_C_DeclWriter__Define, &_td_OOC_C_DeclWriter__DefineDesc, &_td_OOC_C_DeclWriter__Writer, &_td_OOC_C_DeclWriter__WriterDesc, NULL }, 0 };
 
-extern void OOC_OOC_C_DeclWriter_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_C_DeclWriter_init();
+extern void OOC_OOC_C_DeclWriter_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_IntStr_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_IO_TextRider_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_Object_BigInt_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_OOC_Repository_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_Predef_open(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_open(&_mid);
+    OOC_OOC_Repository_FileSystem_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_C_DeclWriter_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_C_DeclWriter_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_C_DeclWriter_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_IntStr_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_IO_TextRider_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_Object_BigInt_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_OOC_Repository_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_Predef_close(&_mid);
+    OOC_OOC_SymbolTable_TypeRules_close(&_mid);
+    OOC_OOC_Repository_FileSystem_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

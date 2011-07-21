@@ -699,4 +699,7 @@ void OOC_URI_Authority_ServerBased_init(void) {
   ;
 }
 
+void OOC_URI_Authority_ServerBased_destroy(void) {
+}
+
 /* --- */

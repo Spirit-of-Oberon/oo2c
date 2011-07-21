@@ -547,4 +547,7 @@ void OOC_Msg_init(void) {
   ;
 }
 
+void OOC_Msg_destroy(void) {
+}
+
 /* --- */

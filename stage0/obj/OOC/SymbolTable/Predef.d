@@ -22,11 +22,43 @@ RT0__StructDesc _td_OOC_SymbolTable_Predef__7348 = { (RT0__Struct[]){&RT0__char}
 RT0__StructDesc _td_OOC_SymbolTable_Predef__7687 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SymbolTable_Predef__8476 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SymbolTable_Predef__15084 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Predef", (RT0__Struct[]) { NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:Predef", (RT0__Struct[]) { NULL }, 0 };
 
-extern void OOC_OOC_SymbolTable_Predef_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_SymbolTable_Predef_init();
+extern void OOC_OOC_SymbolTable_Predef_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Strings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Object_Boxed_open(&_mid);
+    OOC_Object_BigInt_open(&_mid);
+    OOC_OOC_Config_Autoconf_open(&_mid);
+    OOC_OOC_SymbolTable_open(&_mid);
+    OOC_OOC_SymbolTable_Builder_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_SymbolTable_Predef_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_SymbolTable_Predef_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_SymbolTable_Predef_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Strings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Object_Boxed_close(&_mid);
+    OOC_Object_BigInt_close(&_mid);
+    OOC_OOC_Config_Autoconf_close(&_mid);
+    OOC_OOC_SymbolTable_close(&_mid);
+    OOC_OOC_SymbolTable_Builder_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

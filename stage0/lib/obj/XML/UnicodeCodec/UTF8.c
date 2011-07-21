@@ -806,4 +806,7 @@ void OOC_XML_UnicodeCodec_UTF8_init(void) {
   ;
 }
 
+void OOC_XML_UnicodeCodec_UTF8_destroy(void) {
+}
+
 /* --- */

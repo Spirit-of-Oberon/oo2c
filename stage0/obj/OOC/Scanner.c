@@ -1687,4 +1687,7 @@ void OOC_OOC_Scanner_init(void) {
   ;
 }
 
+void OOC_OOC_Scanner_destroy(void) {
+}
+
 /* --- */

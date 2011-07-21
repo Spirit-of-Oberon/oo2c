@@ -76,7 +76,9 @@ typedef Config__StringVar (*_TBP_Config__StringVarDesc_Clone)(Config__StringVar 
 extern void Config__SetPrototype(ADT_Dictionary__Dictionary map, Object__String name, Config__Variable prototype);
 extern Config__Variable Config__GetClone(ADT_Dictionary__Dictionary map, Object__String prototypeName);
 extern void OOC_Config_init(void);
-extern void OOC_Config_init0(void);
+extern void OOC_Config_open(RT0__Module client);
+extern void OOC_Config_destroy(void);
+extern void OOC_Config_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Config__Config;

@@ -21,7 +21,9 @@ typedef struct ConvTypes__ScanDesc {
   void (*p)(OOC_CHAR8 ch, OOC_INT8 *cl, ConvTypes__ScanState *st);
 } ConvTypes__ScanDesc;
 extern void OOC_ConvTypes_init(void);
-extern void OOC_ConvTypes_init0(void);
+extern void OOC_ConvTypes_open(RT0__Module client);
+extern void OOC_ConvTypes_destroy(void);
+extern void OOC_ConvTypes_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ConvTypes__ScanState;

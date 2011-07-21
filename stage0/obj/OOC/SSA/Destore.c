@@ -1683,4 +1683,7 @@ void OOC_OOC_SSA_Destore_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Destore_destroy(void) {
+}
+
 /* --- */

@@ -22,4 +22,7 @@ void OOC_NoDescriptor1_init(void) {
   ;
 }
 
+void OOC_NoDescriptor1_destroy(void) {
+}
+
 /* --- */

@@ -806,4 +806,7 @@ void OOC_IO_BinaryRider_init(void) {
   ;
 }
 
+void OOC_IO_BinaryRider_destroy(void) {
+}
+
 /* --- */

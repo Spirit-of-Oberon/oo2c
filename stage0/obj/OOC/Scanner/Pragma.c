@@ -1463,4 +1463,7 @@ void OOC_OOC_Scanner_Pragma_init(void) {
   ;
 }
 
+void OOC_OOC_Scanner_Pragma_destroy(void) {
+}
+
 /* --- */

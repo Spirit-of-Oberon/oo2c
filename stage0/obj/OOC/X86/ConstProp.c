@@ -548,4 +548,7 @@ void OOC_OOC_X86_ConstProp_init(void) {
   ;
 }
 
+void OOC_OOC_X86_ConstProp_destroy(void) {
+}
+
 /* --- */

@@ -72,7 +72,9 @@ extern void OOC_SSA_XML__WriterDesc_WriteSchedule(OOC_SSA_XML__Writer w, OOC_SSA
 typedef void (*_TBP_OOC_SSA_XML__WriterDesc_WriteSchedule)(OOC_SSA_XML__Writer w, OOC_SSA_Schedule__Block domRoot);
 extern void OOC_SSA_XML__WriteSchedule(IO__ByteChannel cw, OOC_SSA_Schedule__Block domRoot);
 extern void OOC_OOC_SSA_XML_init(void);
-extern void OOC_OOC_SSA_XML_init0(void);
+extern void OOC_OOC_SSA_XML_open(RT0__Module client);
+extern void OOC_OOC_SSA_XML_destroy(void);
+extern void OOC_OOC_SSA_XML_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_XML__Writer;

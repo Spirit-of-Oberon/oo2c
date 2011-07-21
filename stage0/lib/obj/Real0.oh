@@ -24,7 +24,9 @@ extern void Real0__NormalizeFloat(OOC_CHAR8 s[], OOC_LEN s_0d);
 extern void Real0__FormatForEng(OOC_CHAR8 s[], OOC_LEN s_0d);
 extern void Real0__FormatForFixed(OOC_CHAR8 s[], OOC_LEN s_0d, OOC_INT16 place);
 extern void OOC_Real0_init(void);
-extern void OOC_Real0_init0(void);
+extern void OOC_Real0_open(RT0__Module client);
+extern void OOC_Real0_destroy(void);
+extern void OOC_Real0_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_Real0__3861;

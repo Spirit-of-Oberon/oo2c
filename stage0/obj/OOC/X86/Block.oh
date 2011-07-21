@@ -9,7 +9,9 @@
 #include <Exception.oh>
 extern void OOC_X86_Block__ArrangeInstructions(OOC_X86_SSA__FunctionBlock fctBlock);
 extern void OOC_OOC_X86_Block_init(void);
-extern void OOC_OOC_X86_Block_init0(void);
+extern void OOC_OOC_X86_Block_open(RT0__Module client);
+extern void OOC_OOC_X86_Block_destroy(void);
+extern void OOC_OOC_X86_Block_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_X86_Block_ */

@@ -85,4 +85,7 @@ void OOC_OOC_Make_TranslateToX86_init(void) {
   ;
 }
 
+void OOC_OOC_Make_TranslateToX86_destroy(void) {
+}
+
 /* --- */

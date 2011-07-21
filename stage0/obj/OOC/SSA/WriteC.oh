@@ -118,7 +118,9 @@ extern void OOC_SSA_WriteC__TranslatorDesc_SetProcedureList(OOC_SSA_WriteC__Tran
 #define _TBN_OOC_SSA_WriteC__TranslatorDesc_SetProcedureList 1
 typedef void (*_TBP_OOC_SSA_WriteC__TranslatorDesc_SetProcedureList)(OOC_SSA_WriteC__Translator t, OOC_IR__ProcedureList procList);
 extern void OOC_OOC_SSA_WriteC_init(void);
-extern void OOC_OOC_SSA_WriteC_init0(void);
+extern void OOC_OOC_SSA_WriteC_open(RT0__Module client);
+extern void OOC_OOC_SSA_WriteC_destroy(void);
+extern void OOC_OOC_SSA_WriteC_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_WriteC__RegisterSwap;

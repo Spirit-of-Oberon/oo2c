@@ -59,7 +59,9 @@ extern void OOC_X86_Debug__Log(const OOC_CHAR8 msg__ref[], OOC_LEN msg_0d, OOC_X
 extern void OOC_X86_Debug__Log2(const OOC_CHAR8 msg1__ref[], OOC_LEN msg1_0d, OOC_X86_SSA__Node node1, const OOC_CHAR8 msg2__ref[], OOC_LEN msg2_0d, OOC_X86_SSA__Node node2);
 extern void OOC_X86_Debug__ValidateAllocation(OOC_X86_SSA__FunctionBlock b);
 extern void OOC_OOC_X86_Debug_init(void);
-extern void OOC_OOC_X86_Debug_init0(void);
+extern void OOC_OOC_X86_Debug_open(RT0__Module client);
+extern void OOC_OOC_X86_Debug_destroy(void);
+extern void OOC_OOC_X86_Debug_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_X86_Debug__Output;

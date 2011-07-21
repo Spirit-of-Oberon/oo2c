@@ -312,4 +312,7 @@ void OOC_OOC_Logger_init(void) {
   ;
 }
 
+void OOC_OOC_Logger_destroy(void) {
+}
+
 /* --- */

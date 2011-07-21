@@ -146,4 +146,7 @@ void OOC_CharClass_init(void) {
   ;
 }
 
+void OOC_CharClass_destroy(void) {
+}
+
 /* --- */

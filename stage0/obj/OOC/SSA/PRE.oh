@@ -11,7 +11,9 @@
 extern void OOC_SSA_PRE__Transform(OOC_SSA__ProcBlock pb);
 extern void OOC_SSA_PRE__ResolveEquiv(OOC_SSA__ProcBlock pb);
 extern void OOC_OOC_SSA_PRE_init(void);
-extern void OOC_OOC_SSA_PRE_init0(void);
+extern void OOC_OOC_SSA_PRE_open(RT0__Module client);
+extern void OOC_OOC_SSA_PRE_destroy(void);
+extern void OOC_OOC_SSA_PRE_close(RT0__Module client);
 
 /* run-time meta data */
 #endif /* _MODULE_OOC_SSA_PRE_ */

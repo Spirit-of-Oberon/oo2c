@@ -76,11 +76,51 @@ static ADT_StringBuffer__StringBuffer OOC_Config_CCompiler__SetCommand(Object__S
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Config:CCompiler", (RT0__Struct[]) { NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Config:CCompiler", (RT0__Struct[]) { NULL }, 0 };
 
-extern void OOC_OOC_Config_CCompiler_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Config_CCompiler_init();
+extern void OOC_OOC_Config_CCompiler_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_ADT_StringBuffer_open(&_mid);
+    OOC_URI_open(&_mid);
+    OOC_URI_Scheme_File_open(&_mid);
+    OOC_OS_Path_open(&_mid);
+    OOC_Config_open(&_mid);
+    OOC_Config_Section_Options_open(&_mid);
+    OOC_OOC_Logger_open(&_mid);
+    OOC_OOC_Config_open(&_mid);
+    OOC_OOC_Package_open(&_mid);
+    OOC_OOC_Repository_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Config_CCompiler_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Config_CCompiler_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Config_CCompiler_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_ADT_StringBuffer_close(&_mid);
+    OOC_URI_close(&_mid);
+    OOC_URI_Scheme_File_close(&_mid);
+    OOC_OS_Path_close(&_mid);
+    OOC_Config_close(&_mid);
+    OOC_Config_Section_Options_close(&_mid);
+    OOC_OOC_Logger_close(&_mid);
+    OOC_OOC_Config_close(&_mid);
+    OOC_OOC_Package_close(&_mid);
+    OOC_OOC_Repository_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

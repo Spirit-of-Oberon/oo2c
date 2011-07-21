@@ -648,4 +648,7 @@ void OOC_Config_Section_Options_init(void) {
   ;
 }
 
+void OOC_Config_Section_Options_destroy(void) {
+}
+
 /* --- */

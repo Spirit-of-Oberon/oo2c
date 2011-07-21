@@ -40,11 +40,51 @@ RT0__StructDesc _td_Config_Source_CmdLine__13487 = { (RT0__Struct[]){&RT0__char}
 RT0__StructDesc _td_Config_Source_CmdLine__13690 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 3, 3, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_Config_Source_CmdLine__13739 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Config_Source_CmdLine__19908 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1024, 1024, (1<<RT0__flagAtomic), RT0__strArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Config:Source:CmdLine", (RT0__Struct[]) { &_td_Config_Source_CmdLine__OptionTemplate, &_td_Config_Source_CmdLine__NameArray, &_td_Config_Source_CmdLine__OptionTemplateDesc, &_td_Config_Source_CmdLine__Command, &_td_Config_Source_CmdLine__ArgList, &_td_Config_Source_CmdLine__CommandDesc, &_td_Config_Source_CmdLine__CmdLine, &_td_Config_Source_CmdLine__CmdLineDesc, &_td_Config_Source_CmdLine__ErrorContext, &_td_Config_Source_CmdLine__ErrorContextDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Config:Source:CmdLine", (RT0__Struct[]) { &_td_Config_Source_CmdLine__OptionTemplate, &_td_Config_Source_CmdLine__NameArray, &_td_Config_Source_CmdLine__OptionTemplateDesc, &_td_Config_Source_CmdLine__Command, &_td_Config_Source_CmdLine__ArgList, &_td_Config_Source_CmdLine__CommandDesc, &_td_Config_Source_CmdLine__CmdLine, &_td_Config_Source_CmdLine__CmdLineDesc, &_td_Config_Source_CmdLine__ErrorContext, &_td_Config_Source_CmdLine__ErrorContextDesc, NULL }, 0 };
 
-extern void OOC_Config_Source_CmdLine_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_Config_Source_CmdLine_init();
+extern void OOC_Config_Source_CmdLine_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_Object_open(&_mid);
+    OOC_CharClass_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_LongStrings_open(&_mid);
+    OOC_Msg_open(&_mid);
+    OOC_Channel_open(&_mid);
+    OOC_TextRider_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_IO_TextRider_open(&_mid);
+    OOC_Config_Source_open(&_mid);
+    OOC_Config_Parser_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_Config_Source_CmdLine_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_Config_Source_CmdLine_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_Config_Source_CmdLine_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_Object_close(&_mid);
+    OOC_CharClass_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_LongStrings_close(&_mid);
+    OOC_Msg_close(&_mid);
+    OOC_Channel_close(&_mid);
+    OOC_TextRider_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_IO_TextRider_close(&_mid);
+    OOC_Config_Source_close(&_mid);
+    OOC_Config_Parser_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

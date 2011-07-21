@@ -30,11 +30,29 @@ RT0__StructDesc _td_Object__12271 = { (RT0__Struct[]){&RT0__longchar}, NULL, NUL
 RT0__StructDesc _td_Object__12823 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Object__14591 = { (RT0__Struct[]){&RT0__ucs4char}, NULL, NULL, &_mid, NULL, 4, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Object__15669 = { (RT0__Struct[]){&RT0__ucs4char}, NULL, NULL, &_mid, NULL, 4, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Object", (RT0__Struct[]) { &_td_Object__Object, &_td_Object__ObjectArray, &_td_Object__ObjectArrayPtr, &_td_Object__ObjectDesc, &_td_Object__String, &_td_Object__StringArray, &_td_Object__StringArrayPtr, &_td_Object__StringDesc, &_td_Object__CharsLatin1, &_td_Object__CharsUTF16, &_td_Object__String8, &_td_Object__String8Desc, &_td_Object__String16, &_td_Object__String16Desc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Object", (RT0__Struct[]) { &_td_Object__Object, &_td_Object__ObjectArray, &_td_Object__ObjectArrayPtr, &_td_Object__ObjectDesc, &_td_Object__String, &_td_Object__StringArray, &_td_Object__StringArrayPtr, &_td_Object__StringDesc, &_td_Object__CharsLatin1, &_td_Object__CharsUTF16, &_td_Object__String8, &_td_Object__String8Desc, &_td_Object__String16, &_td_Object__String16Desc, NULL }, 0 };
 
-extern void OOC_Object_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_Object_init();
+extern void OOC_Object_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_RT0_open(&_mid);
+    OOC_HashCode_open(&_mid);
+    OOC_RT0_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_Object_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_Object_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_Object_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_RT0_close(&_mid);
+    OOC_HashCode_close(&_mid);
+    OOC_RT0_close(&_mid);
+  }
 }
 
 /* --- */

@@ -525,4 +525,7 @@ void OOC_OOC_SSA_Algebraic_init(void) {
   ;
 }
 
+void OOC_OOC_SSA_Algebraic_destroy(void) {
+}
+
 /* --- */

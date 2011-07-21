@@ -38,4 +38,7 @@ void OOC_PRE3_init(void) {
   ;
 }
 
+void OOC_PRE3_destroy(void) {
+}
+
 /* --- */

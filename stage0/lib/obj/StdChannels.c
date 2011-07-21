@@ -157,4 +157,7 @@ void OOC_StdChannels_init(void) {
   ;
 }
 
+void OOC_StdChannels_destroy(void) {
+}
+
 /* --- */

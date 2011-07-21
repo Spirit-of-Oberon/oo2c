@@ -96,11 +96,45 @@ RT0__StructDesc _td_OOC_Doc__31376 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, 
 RT0__StructDesc _td_OOC_Doc__32621 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_Doc__33856 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_Doc__34757 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Doc", (RT0__Struct[]) { &_td_OOC_Doc__Position, &_td_OOC_Doc__Element, &_td_OOC_Doc__ElementDesc, &_td_OOC_Doc__InlineElement, &_td_OOC_Doc__InlineElementDesc, &_td_OOC_Doc__BlockElement, &_td_OOC_Doc__BlockElementDesc, &_td_OOC_Doc__Document, &_td_OOC_Doc__DocumentDesc, &_td_OOC_Doc__InlineList, &_td_OOC_Doc__InlineListDesc, &_td_OOC_Doc__BlockList, &_td_OOC_Doc__BlockListDesc, &_td_OOC_Doc__Glyph, &_td_OOC_Doc__GlyphDesc, &_td_OOC_Doc__Text, &_td_OOC_Doc__TextDesc, &_td_OOC_Doc__MarkedInline, &_td_OOC_Doc__MarkedInlineDesc, &_td_OOC_Doc__OberonRef, &_td_OOC_Doc__OberonRefDesc, &_td_OOC_Doc__Email, &_td_OOC_Doc__EmailDesc, &_td_OOC_Doc__Uref, &_td_OOC_Doc__UrefDesc, &_td_OOC_Doc__Paragraph, &_td_OOC_Doc__ParagraphDesc, &_td_OOC_Doc__Example, &_td_OOC_Doc__ExampleDesc, &_td_OOC_Doc__PreCond, &_td_OOC_Doc__PreCondDesc, &_td_OOC_Doc__PostCond, &_td_OOC_Doc__PostCondDesc, &_td_OOC_Doc__Item, &_td_OOC_Doc__ItemDesc, &_td_OOC_Doc__Itemize, &_td_OOC_Doc__ItemizeDesc, &_td_OOC_Doc__Enumerate, &_td_OOC_Doc__EnumerateDesc, &_td_OOC_Doc__FirstColumn, &_td_OOC_Doc__FirstColumnDesc, &_td_OOC_Doc__TableRow, &_td_OOC_Doc__TableRowDesc, &_td_OOC_Doc__Table, &_td_OOC_Doc__TableDesc, NULL } };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:Doc", (RT0__Struct[]) { &_td_OOC_Doc__Position, &_td_OOC_Doc__Element, &_td_OOC_Doc__ElementDesc, &_td_OOC_Doc__InlineElement, &_td_OOC_Doc__InlineElementDesc, &_td_OOC_Doc__BlockElement, &_td_OOC_Doc__BlockElementDesc, &_td_OOC_Doc__Document, &_td_OOC_Doc__DocumentDesc, &_td_OOC_Doc__InlineList, &_td_OOC_Doc__InlineListDesc, &_td_OOC_Doc__BlockList, &_td_OOC_Doc__BlockListDesc, &_td_OOC_Doc__Glyph, &_td_OOC_Doc__GlyphDesc, &_td_OOC_Doc__Text, &_td_OOC_Doc__TextDesc, &_td_OOC_Doc__MarkedInline, &_td_OOC_Doc__MarkedInlineDesc, &_td_OOC_Doc__OberonRef, &_td_OOC_Doc__OberonRefDesc, &_td_OOC_Doc__Email, &_td_OOC_Doc__EmailDesc, &_td_OOC_Doc__Uref, &_td_OOC_Doc__UrefDesc, &_td_OOC_Doc__Paragraph, &_td_OOC_Doc__ParagraphDesc, &_td_OOC_Doc__Example, &_td_OOC_Doc__ExampleDesc, &_td_OOC_Doc__PreCond, &_td_OOC_Doc__PreCondDesc, &_td_OOC_Doc__PostCond, &_td_OOC_Doc__PostCondDesc, &_td_OOC_Doc__Item, &_td_OOC_Doc__ItemDesc, &_td_OOC_Doc__Itemize, &_td_OOC_Doc__ItemizeDesc, &_td_OOC_Doc__Enumerate, &_td_OOC_Doc__EnumerateDesc, &_td_OOC_Doc__FirstColumn, &_td_OOC_Doc__FirstColumnDesc, &_td_OOC_Doc__TableRow, &_td_OOC_Doc__TableRowDesc, &_td_OOC_Doc__Table, &_td_OOC_Doc__TableDesc, NULL }, 0 };
 
-extern void OOC_OOC_Doc_init0() {
-  RT0__RegisterModule(&_mid);
-  OOC_OOC_Doc_init();
+extern void OOC_OOC_Doc_open(RT0__Module client) {
+  if (_mid.openCount == 0) {
+    OOC_CharClass_open(&_mid);
+    OOC_Strings_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_ADT_Storable_open(&_mid);
+    OOC_ADT_ArrayList_open(&_mid);
+    OOC_IO_open(&_mid);
+    OOC_OOC_Doc_Decoration_open(&_mid);
+    OOC_OOC_Scanner_InputBuffer_open(&_mid);
+    OOC_RT0_open(&_mid);
+    OOC_Object_open(&_mid);
+    OOC_Exception_open(&_mid);
+
+    RT0__RegisterModule(&_mid);
+    OOC_OOC_Doc_init();
+  }
+  _mid.openCount++;
+}
+extern void OOC_OOC_Doc_close(RT0__Module client) {
+  _mid.openCount--;
+  if (_mid.openCount == 0) { 
+    OOC_OOC_Doc_destroy();
+    RT0__UnregisterModule(&_mid);
+
+    OOC_CharClass_close(&_mid);
+    OOC_Strings_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_ADT_Storable_close(&_mid);
+    OOC_ADT_ArrayList_close(&_mid);
+    OOC_IO_close(&_mid);
+    OOC_OOC_Doc_Decoration_close(&_mid);
+    OOC_OOC_Scanner_InputBuffer_close(&_mid);
+    OOC_RT0_close(&_mid);
+    OOC_Object_close(&_mid);
+    OOC_Exception_close(&_mid);
+  }
 }
 
 /* --- */

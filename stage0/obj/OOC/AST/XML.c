@@ -826,4 +826,7 @@ void OOC_OOC_AST_XML_init(void) {
   ;
 }
 
+void OOC_OOC_AST_XML_destroy(void) {
+}
+
 /* --- */

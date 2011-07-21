@@ -197,4 +197,7 @@ void OOC_OOC_SymbolTable_GetClass_init(void) {
   ;
 }
 
+void OOC_OOC_SymbolTable_GetClass_destroy(void) {
+}
+
 /* --- */

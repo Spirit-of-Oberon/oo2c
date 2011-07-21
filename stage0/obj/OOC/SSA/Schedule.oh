@@ -156,7 +156,9 @@ extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__SwitchBlockDesc_DefaultTarget(O
 typedef OOC_SSA_Schedule__Block (*_TBP_OOC_SSA_Schedule__SwitchBlockDesc_DefaultTarget)(OOC_SSA_Schedule__SwitchBlock b);
 extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__Schedule(OOC_SSA__ProcBlock pb);
 extern void OOC_OOC_SSA_Schedule_init(void);
-extern void OOC_OOC_SSA_Schedule_init0(void);
+extern void OOC_OOC_SSA_Schedule_open(RT0__Module client);
+extern void OOC_OOC_SSA_Schedule_destroy(void);
+extern void OOC_OOC_SSA_Schedule_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SSA_Schedule__Block;

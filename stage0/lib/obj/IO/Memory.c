@@ -215,4 +215,7 @@ void OOC_IO_Memory_init(void) {
   ;
 }
 
+void OOC_IO_Memory_destroy(void) {
+}
+
 /* --- */

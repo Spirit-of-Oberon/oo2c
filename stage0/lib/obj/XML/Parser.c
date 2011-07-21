@@ -7309,4 +7309,7 @@ void OOC_XML_Parser_init(void) {
   ;
 }
 
+void OOC_XML_Parser_destroy(void) {
+}
+
 /* --- */

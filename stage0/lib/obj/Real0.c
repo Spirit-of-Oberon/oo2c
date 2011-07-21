@@ -1149,4 +1149,7 @@ void OOC_Real0_init(void) {
   ;
 }
 
+void OOC_Real0_destroy(void) {
+}
+
 /* --- */

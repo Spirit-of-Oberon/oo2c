@@ -104,7 +104,9 @@ extern OOC_CHAR8 ADT_ArrayList__IterElementsDesc_Next(ADT_ArrayList__IterElement
 #define _TBN_ADT_ArrayList__IterElementsDesc_Next 1
 typedef OOC_CHAR8 (*_TBP_ADT_ArrayList__IterElementsDesc_Next)(ADT_ArrayList__IterElements iter, Object__Object *elem);
 extern void OOC_ADT_ArrayList_init(void);
-extern void OOC_ADT_ArrayList_init0(void);
+extern void OOC_ADT_ArrayList_open(RT0__Module client);
+extern void OOC_ADT_ArrayList_destroy(void);
+extern void OOC_ADT_ArrayList_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_ArrayList__1017;

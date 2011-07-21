@@ -210,7 +210,9 @@ extern void OOC_IR_ConstFold__ConstFoldDesc_VisitModule(OOC_IR_ConstFold__ConstF
 #define _TBN_OOC_IR_ConstFold__ConstFoldDesc_VisitModule 61
 typedef void (*_TBP_OOC_IR_ConstFold__ConstFoldDesc_VisitModule)(OOC_IR_ConstFold__ConstFold c, OOC_IR__Module module);
 extern void OOC_OOC_IR_ConstFold_init(void);
-extern void OOC_OOC_IR_ConstFold_init0(void);
+extern void OOC_OOC_IR_ConstFold_open(RT0__Module client);
+extern void OOC_OOC_IR_ConstFold_destroy(void);
+extern void OOC_OOC_IR_ConstFold_close(RT0__Module client);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_IR_ConstFold__ConstFold;

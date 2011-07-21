@@ -2856,4 +2856,7 @@ void OOC_OOC_Package_init(void) {
   ;
 }
 
+void OOC_OOC_Package_destroy(void) {
+}
+
 /* --- */
