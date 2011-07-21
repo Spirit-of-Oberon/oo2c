@@ -47,6 +47,7 @@ typedef struct OOC_Make__RulesDesc {
 } OOC_Make__RulesDesc;
 #define OOC_Make__backendNone 0
 #define OOC_Make__backendSSAtoC 1
+#define OOC_Make__backendSSAtoX86 2
 extern StringSearch__Matcher OOC_Make__inspectProc;
 extern StringSearch__Matcher OOC_Make__inspectStage;
 extern OOC_CHAR8 OOC_Make__writeAST;
@@ -142,18 +143,21 @@ typedef OOC_CHAR8 (*_TBP_OOC_Make__RulesDesc_UpdateObjectFileLib)(OOC_Make__Rule
 extern OOC_CHAR8 OOC_Make__RulesDesc_UpdateMainFileC(OOC_Make__Rules r, OOC_Repository__Module module);
 #define _TBN_OOC_Make__RulesDesc_UpdateMainFileC 26
 typedef OOC_CHAR8 (*_TBP_OOC_Make__RulesDesc_UpdateMainFileC)(OOC_Make__Rules r, OOC_Repository__Module module);
+extern OOC_CHAR8 OOC_Make__RulesDesc_UpdateMainFileX86(OOC_Make__Rules r, OOC_Repository__Module module);
+#define _TBN_OOC_Make__RulesDesc_UpdateMainFileX86 27
+typedef OOC_CHAR8 (*_TBP_OOC_Make__RulesDesc_UpdateMainFileX86)(OOC_Make__Rules r, OOC_Repository__Module module);
 extern OOC_CHAR8 OOC_Make__RulesDesc_UpdateMainObjectFile(OOC_Make__Rules r, OOC_Repository__Module module);
-#define _TBN_OOC_Make__RulesDesc_UpdateMainObjectFile 27
+#define _TBN_OOC_Make__RulesDesc_UpdateMainObjectFile 28
 typedef OOC_CHAR8 (*_TBP_OOC_Make__RulesDesc_UpdateMainObjectFile)(OOC_Make__Rules r, OOC_Repository__Module module);
 extern OOC_Make__ModuleList OOC_Make__ModuleClosure(OOC_Repository__Module module);
 extern OOC_CHAR8 OOC_Make__RulesDesc_UpdateExecutable(OOC_Make__Rules r, OOC_Repository__Module module);
-#define _TBN_OOC_Make__RulesDesc_UpdateExecutable 28
+#define _TBN_OOC_Make__RulesDesc_UpdateExecutable 29
 typedef OOC_CHAR8 (*_TBP_OOC_Make__RulesDesc_UpdateExecutable)(OOC_Make__Rules r, OOC_Repository__Module module);
 extern OOC_CHAR8 OOC_Make__RulesDesc_UpdateLibrary(OOC_Make__Rules r, OOC_Repository__Module module);
-#define _TBN_OOC_Make__RulesDesc_UpdateLibrary 29
+#define _TBN_OOC_Make__RulesDesc_UpdateLibrary 30
 typedef OOC_CHAR8 (*_TBP_OOC_Make__RulesDesc_UpdateLibrary)(OOC_Make__Rules r, OOC_Repository__Module module);
 extern OOC_CHAR8 OOC_Make__RulesDesc_Update(OOC_Make__Rules r, OOC_Repository__Module module, OOC_INT8 fileId);
-#define _TBN_OOC_Make__RulesDesc_Update 30
+#define _TBN_OOC_Make__RulesDesc_Update 31
 typedef OOC_CHAR8 (*_TBP_OOC_Make__RulesDesc_Update)(OOC_Make__Rules r, OOC_Repository__Module module, OOC_INT8 fileId);
 extern void OOC_OOC_Make_init(void);
 extern void OOC_OOC_Make_init0(void);
@@ -161,17 +165,17 @@ extern void OOC_OOC_Make_init0(void);
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_Make__ModuleInfo;
 extern RT0__StructDesc _td_OOC_Make__ModuleInfoDesc;
-extern RT0__StructDesc _td_OOC_Make__1704;
-extern RT0__StructDesc _td_OOC_Make__1756;
-extern RT0__StructDesc _td_OOC_Make__1883;
+extern RT0__StructDesc _td_OOC_Make__1782;
+extern RT0__StructDesc _td_OOC_Make__1834;
+extern RT0__StructDesc _td_OOC_Make__1961;
 extern RT0__StructDesc _td_OOC_Make__ModuleList;
 extern RT0__StructDesc _td_OOC_Make__Rules;
 extern RT0__StructDesc _td_OOC_Make__RulesDesc;
-extern RT0__StructDesc _td_OOC_Make__3504;
-extern RT0__StructDesc _td_OOC_Make__3479;
+extern RT0__StructDesc _td_OOC_Make__3606;
+extern RT0__StructDesc _td_OOC_Make__3581;
 extern RT0__StructDesc _td_OOC_Make__ErrorContext;
 extern RT0__StructDesc _td_OOC_Make__ErrorContextDesc;
-extern RT0__StructDesc _td_OOC_Make__4639;
+extern RT0__StructDesc _td_OOC_Make__4741;
 #endif /* _MODULE_OOC_Make_ */
 
 /* --- */

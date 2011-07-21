@@ -1,4 +1,4 @@
-(* 	$Id: RuntimeData.Mod,v 1.26 2004/01/20 06:59:57 sgreenhill Exp $	 *)
+(* 	$Id: RuntimeData.Mod,v 1.27 2004/06/06 20:33:45 mva Exp $	 *)
 MODULE OOC:C:RuntimeData;
 (*  Writes C code for run-time data like type descriptors.
     Copyright (C) 2002, 2003  Michael van Acken
@@ -23,9 +23,9 @@ MODULE OOC:C:RuntimeData;
 
 IMPORT
   IO:TextRider, ADT:ArrayList, ADT:StringBuffer,
-  OOC:Config, Sym := OOC:SymbolTable,
+  OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:SymbolTable:Namespace, TR := OOC:SymbolTable:TypeRules,
-  OOC:C:Naming, OOC:C:DeclWriter, Strings;
+  OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
   structTypeDesc = Config.runtimeModule+"__StructDesc";
@@ -59,54 +59,6 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
     VAR
       output : BOOLEAN;    (* TRUE iff output has been generated yet. *)
 
-    PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
-      (* This should be declared public somewhere since it is used from various
-         places: SymbolTable:Builder, SymbolTable.Predef, here, ... *)
-      VAR
-        n: Sym.Name;
-        str: Sym.NameString;
-      BEGIN
-        NEW (n);
-        NEW (str, Strings.Length (name)+1);
-        COPY (name, str^);
-        Sym.InitName (n, str, 0, 1, 0);
-        RETURN n
-      END GetName;
-    
-    PROCEDURE ImplementsFinalize(t : Sym.Record) : BOOLEAN;
-      (* Determine if record @oparam{t} overrides RT0:ObjectDesc.Finalize. *) 
-      CONST
-        name = "Finalize";
-        class = "ObjectDesc";
-        module = "RT0";
-      VAR 
-        decl : Sym.Declaration;   (* method declaration *)
-        root : Sym.Type;          (* root class for @oparam{t} *)
-        impl : Sym.Type;          (* implementing class for Finalize method *)
-      BEGIN
-        decl := t.ns.Identify(t, GetName(name), TRUE);
-        IF (decl # NIL) & (decl IS Sym.ProcDecl) THEN
-          (* @oparam{t} implements procedure Finalize *)
-  
-          (* Find the root type that this record implements. *)
-          root := t.Deparam();
-          WHILE (root IS Sym.Record) & (root(Sym.Record).baseType # NIL) DO
-            root := root(Sym.Record).baseType.Deparam();
-          END;
-  
-          (* Find the record type to which Finalize is bound. *) 
-          impl := decl(Sym.ProcDecl).formalPars.receiver.type.Deparam();
-          impl := impl(Sym.Pointer).baseType.Deparam();
-  
-          RETURN (impl # root) &
-            (root.namingDecl.name.str^ = class) &
-            (root.namingDecl.parent IS Sym.Module) &
-            (root.namingDecl.parent(Sym.Module).name.str^ = module);
-        ELSE
-          RETURN FALSE;
-        END;
-      END ImplementsFinalize;
-  
     PROCEDURE OutFlag(name : ARRAY OF CHAR);
       BEGIN
         IF output THEN
@@ -130,7 +82,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
             OutFlag("RT0__flagAtomic");
           END;
     
-          IF ImplementsFinalize(type) THEN
+          IF Predef.ImplementsFinalize(type) THEN
             OutFlag("RT0__flagFinalize");
           END;
         | type : Sym.Array DO

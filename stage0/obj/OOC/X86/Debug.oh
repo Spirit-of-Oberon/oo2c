@@ -1,0 +1,75 @@
+#ifndef _MODULE_OOC_X86_Debug_
+#define _MODULE_OOC_X86_Debug_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <ADT/Dictionary.oh>
+#include <OOC/X86/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_X86_Debug__OutputDesc *OOC_X86_Debug__Output;
+typedef struct OOC_X86_Debug__OutputDesc {
+  OOC_X86_SSA__Block b;
+  Object__String name;
+  ADT_Dictionary__Dictionary codeDict;
+  OOC_INT32 codeCount;
+} OOC_X86_Debug__OutputDesc;
+typedef struct OOC_X86_Debug__StateDesc *OOC_X86_Debug__State;
+typedef struct OOC_X86_Debug__StateDesc {
+  OOC_X86_SSA__Block block;
+  OOC_X86_SSA__Instr instr;
+  OOC_X86_SSA__Instr controlCP;
+  OOC_X86_SSA__Result reg[9];
+  OOC_INT32 mergeCount;
+  OOC_X86_SSA__Instr undef;
+  OOC_X86_Debug__State next;
+} OOC_X86_Debug__StateDesc;
+extern void OOC_X86_Debug__OutputDesc_INIT(OOC_X86_Debug__Output out, OOC_X86_SSA__Block b, Object__String name);
+#define _TBN_OOC_X86_Debug__OutputDesc_INIT 0
+typedef void (*_TBP_OOC_X86_Debug__OutputDesc_INIT)(OOC_X86_Debug__Output out, OOC_X86_SSA__Block b, Object__String name);
+extern void OOC_X86_Debug__StateDesc_INIT(OOC_X86_Debug__State s, OOC_X86_SSA__Block block);
+#define _TBN_OOC_X86_Debug__StateDesc_INIT 4
+typedef void (*_TBP_OOC_X86_Debug__StateDesc_INIT)(OOC_X86_Debug__State s, OOC_X86_SSA__Block block);
+extern OOC_X86_Debug__State OOC_X86_Debug__StateDesc_Copy(OOC_X86_Debug__State s);
+#define _TBN_OOC_X86_Debug__StateDesc_Copy 5
+typedef OOC_X86_Debug__State (*_TBP_OOC_X86_Debug__StateDesc_Copy)(OOC_X86_Debug__State s);
+extern Object__String OOC_X86_Debug__Opcode(OOC_X86_SSA__Instr instr);
+extern Object__String OOC_X86_Debug__Register(OOC_INT8 reg);
+extern Object__String OOC_X86_Debug__OutputDesc_GetInstrCode(OOC_X86_Debug__Output out, OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_Debug__OutputDesc_GetInstrCode 1
+typedef Object__String (*_TBP_OOC_X86_Debug__OutputDesc_GetInstrCode)(OOC_X86_Debug__Output out, OOC_X86_SSA__Instr instr);
+extern Object__String OOC_X86_Debug__OutputDesc_Label(OOC_X86_Debug__Output out, OOC_X86_SSA__Node node);
+#define _TBN_OOC_X86_Debug__OutputDesc_Label 2
+typedef Object__String (*_TBP_OOC_X86_Debug__OutputDesc_Label)(OOC_X86_Debug__Output out, OOC_X86_SSA__Node node);
+extern void OOC_X86_Debug__OutputDesc_Result(OOC_X86_Debug__Output out, Object__String msg, OOC_X86_SSA__Result res);
+#define _TBN_OOC_X86_Debug__OutputDesc_Result 3
+typedef void (*_TBP_OOC_X86_Debug__OutputDesc_Result)(OOC_X86_Debug__Output out, Object__String msg, OOC_X86_SSA__Result res);
+extern void OOC_X86_Debug__OutputDesc_Instr(OOC_X86_Debug__Output out, Object__String msg, OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_Debug__OutputDesc_Instr 4
+typedef void (*_TBP_OOC_X86_Debug__OutputDesc_Instr)(OOC_X86_Debug__Output out, Object__String msg, OOC_X86_SSA__Instr instr);
+extern void OOC_X86_Debug__OutputDesc_WriteFunction(OOC_X86_Debug__Output out);
+#define _TBN_OOC_X86_Debug__OutputDesc_WriteFunction 5
+typedef void (*_TBP_OOC_X86_Debug__OutputDesc_WriteFunction)(OOC_X86_Debug__Output out);
+extern void OOC_X86_Debug__WriteFunctionAgain(void);
+extern void OOC_X86_Debug__WriteFunction(OOC_X86_SSA__FunctionBlock b);
+extern Object__String OOC_X86_Debug__Label(OOC_X86_SSA__Node node);
+extern void OOC_X86_Debug__Log(const OOC_CHAR8 msg__ref[], OOC_LEN msg_0d, OOC_X86_SSA__Node node);
+extern void OOC_X86_Debug__Log2(const OOC_CHAR8 msg1__ref[], OOC_LEN msg1_0d, OOC_X86_SSA__Node node1, const OOC_CHAR8 msg2__ref[], OOC_LEN msg2_0d, OOC_X86_SSA__Node node2);
+extern void OOC_X86_Debug__ValidateAllocation(OOC_X86_SSA__FunctionBlock b);
+extern void OOC_OOC_X86_Debug_init(void);
+extern void OOC_OOC_X86_Debug_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_X86_Debug__Output;
+extern RT0__StructDesc _td_OOC_X86_Debug__OutputDesc;
+extern RT0__StructDesc _td_OOC_X86_Debug__State;
+extern RT0__StructDesc _td_OOC_X86_Debug__StateDesc;
+extern RT0__StructDesc _td_OOC_X86_Debug__508;
+extern RT0__StructDesc _td_OOC_X86_Debug__11553;
+extern RT0__StructDesc _td_OOC_X86_Debug__11657;
+extern RT0__StructDesc _td_OOC_X86_Debug__11709;
+#endif /* _MODULE_OOC_X86_Debug_ */
+
+/* --- */

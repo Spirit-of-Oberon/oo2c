@@ -1,0 +1,22 @@
+#ifndef _MODULE_OOC_X86_Aliasing_
+#define _MODULE_OOC_X86_Aliasing_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/X86/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 OOC_X86_Aliasing__Id;
+#define OOC_X86_Aliasing__noAliasing 0
+#define OOC_X86_Aliasing__completelyCovered 1
+#define OOC_X86_Aliasing__partiallyCovered 2
+#define OOC_X86_Aliasing__mayAlias 3
+extern OOC_INT8 OOC_X86_Aliasing__DesignatorAlias(OOC_X86_SSA__Designator instr, OOC_X86_SSA__Designator reference);
+extern void OOC_OOC_X86_Aliasing_init(void);
+extern void OOC_OOC_X86_Aliasing_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_X86_Aliasing_ */
+
+/* --- */

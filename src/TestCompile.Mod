@@ -21,6 +21,7 @@ VAR
   writeAST: Options.Option;
   writeIR: Options.Option;
   useSSA: Options.Option;
+  translateX86: Options.Option;
   inspectProc: Options.Option;
   inspectStage: Options.Option;
   
@@ -51,6 +52,7 @@ PROCEDURE NewConfig;
     writeAST := Config.AddOption ("write-ast",CfgData.NewBooleanVar(FALSE));
     writeIR := Config.AddOption ("write-ir",CfgData.NewBooleanVar(FALSE));
     useSSA := Config.AddOption ("use-ssa",CfgData.NewBooleanVar(FALSE));
+    translateX86 := Config.AddOption ("translate-x86",CfgData.NewBooleanVar(FALSE));
     inspectProc := Config.AddOption ("inspect-proc",CfgData.NewStringVar("$"));
     inspectStage := Config.AddOption ("inspect-stage",CfgData.NewStringVar("$"));
     
@@ -62,8 +64,8 @@ PROCEDURE NewConfig;
                  "<options><set name='make'>TRUE</set></options>");
     Config.AddCmdLine ("--use-ssa",
                  "<options><set name='use-ssa'>TRUE</set></options>");
-    Config.AddCmdLine ("--ia32",
-                 "<options><set name='translate-ia32'>TRUE</set><set name='use-ssa'>TRUE</set></options>");
+    Config.AddCmdLine ("--x86",
+                 "<options><set name='translate-x86'>TRUE</set><set name='use-ssa'>TRUE</set></options>");
     Config.AddCmdLine ("--write-ast",
                  "<options><set name='write-ast'>TRUE</set></options>");
     Config.AddCmdLine ("--write-ir",
@@ -89,6 +91,8 @@ BEGIN
   
   IF make. value(CfgData.BooleanVar). boolean THEN
     mode := Rep.modExecutable
+  ELSIF translateX86. value(CfgData.BooleanVar). boolean THEN
+    mode := Rep.modObjectFile;
   ELSE
     mode := Rep.modCodeFileC
   END;
@@ -109,11 +113,13 @@ BEGIN
     HALT (1)
   END;*)
   IF (Config.arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestCompile [--config <cfg-file>] {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
+    Out.String ("Usage: TestCompile [--config <cfg-file>] {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa|--x86][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
     HALT (1)
   ELSE
     makeRules := Make.NewRules();
-    IF useSSA.value(CfgData.BooleanVar).boolean THEN
+    IF translateX86.value(CfgData.BooleanVar).boolean THEN
+      makeRules.SetBackend(Make.backendSSAtoX86);
+    ELSE
       makeRules.SetBackend(Make.backendSSAtoC);
     END;
     makeRules.SetErrOut(StdChannels.stderr);

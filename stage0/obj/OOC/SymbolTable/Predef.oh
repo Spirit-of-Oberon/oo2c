@@ -74,6 +74,7 @@
 #define OOC_SymbolTable_Predef__initMethod "INIT"
 extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__nameStringModule;
 extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__nameStringType;
+extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__GetName(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
 extern OOC_SymbolTable__Module OOC_SymbolTable_Predef__CreatePredef(OOC_SymbolTable_Builder__Builder stb, OOC_SymbolTable__VarDecl *exception);
 extern OOC_SymbolTable__Module OOC_SymbolTable_Predef__CreateSYSTEM(OOC_SymbolTable_Builder__Builder stb);
 extern OOC_SymbolTable__PredefType OOC_SymbolTable_Predef__GetType(OOC_INT16 id);
@@ -81,6 +82,7 @@ extern Object_Boxed__Object OOC_SymbolTable_Predef__GetMin(OOC_SymbolTable__Type
 extern Object_Boxed__Object OOC_SymbolTable_Predef__GetMax(OOC_SymbolTable__Type type);
 extern OOC_SymbolTable__Type OOC_SymbolTable_Predef__SmallestIntType(Object_BigInt__BigInt value);
 extern OOC_CHAR8 OOC_SymbolTable_Predef__IsStaticMethod(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
+extern OOC_CHAR8 OOC_SymbolTable_Predef__ImplementsFinalize(OOC_SymbolTable__Record t);
 extern void OOC_OOC_SymbolTable_Predef_init(void);
 extern void OOC_OOC_SymbolTable_Predef_init0(void);
 

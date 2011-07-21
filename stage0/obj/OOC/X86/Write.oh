@@ -1,0 +1,112 @@
+#ifndef _MODULE_OOC_X86_Write_
+#define _MODULE_OOC_X86_Write_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <ADT/Dictionary.oh>
+#include <ADT/ArrayList.oh>
+#include <ADT/StringBuffer.oh>
+#include <IO.oh>
+#include <IO/TextRider.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/X86/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_X86_Write__ArcDesc *OOC_X86_Write__Arc;
+typedef struct OOC_X86_Write__BlockDesc *OOC_X86_Write__Block;
+typedef struct OOC_X86_Write__ArcDesc {
+  OOC_X86_Write__Block from;
+  OOC_X86_Write__Block to;
+  OOC_INT8 type;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad10;
+  OOC_CHAR8 __pad11;
+  OOC_X86_Write__Arc nextIncoming;
+} OOC_X86_Write__ArcDesc;
+typedef struct OOC_X86_Write__BlockDesc {
+  ADT_StringBuffer__StringBuffer instructions;
+  OOC_X86_Write__Arc incomingList;
+  OOC_X86_Write__Arc branch;
+  OOC_X86_Write__Arc jump;
+  OOC_X86_SSA__Block blockInstr;
+  OOC_INT32 label;
+} OOC_X86_Write__BlockDesc;
+typedef struct OOC_X86_Write__WriterDesc *OOC_X86_Write__Writer;
+typedef ADT_Dictionary__Dictionary OOC_X86_Write__StringToLabel;
+typedef struct OOC_X86_Write__WriterDesc {
+  OOC_SymbolTable__Module module;
+  IO_TextRider__Writer w;
+  ADT_ArrayList__ArrayList blocks;
+  ADT_Dictionary__Dictionary blockMap;
+  OOC_INT32 blockCount;
+  ADT_Dictionary__Dictionary strings[3];
+  ADT_ArrayList__ArrayList stringList[3];
+  OOC_X86_SSA__FunctionBlock fctBlock;
+  Object__String name;
+  Object__String labelExit;
+} OOC_X86_Write__WriterDesc;
+extern void OOC_X86_Write__BlockDesc_INIT(OOC_X86_Write__Block block, OOC_X86_SSA__Block blockInstr);
+#define _TBN_OOC_X86_Write__BlockDesc_INIT 4
+typedef void (*_TBP_OOC_X86_Write__BlockDesc_INIT)(OOC_X86_Write__Block block, OOC_X86_SSA__Block blockInstr);
+extern OOC_CHAR8 OOC_X86_Write__BlockDesc_IsEmpty(OOC_X86_Write__Block block);
+#define _TBN_OOC_X86_Write__BlockDesc_IsEmpty 5
+typedef OOC_CHAR8 (*_TBP_OOC_X86_Write__BlockDesc_IsEmpty)(OOC_X86_Write__Block block);
+extern void OOC_X86_Write__BlockDesc_SetArc(OOC_X86_Write__Block block, OOC_X86_Write__Arc *arc, OOC_X86_Write__Block to, OOC_INT8 type, OOC_INT8 opcode);
+#define _TBN_OOC_X86_Write__BlockDesc_SetArc 6
+typedef void (*_TBP_OOC_X86_Write__BlockDesc_SetArc)(OOC_X86_Write__Block block, OOC_X86_Write__Arc *arc, OOC_X86_Write__Block to, OOC_INT8 type, OOC_INT8 opcode);
+extern void OOC_X86_Write__ArcDesc_ReplaceTo(OOC_X86_Write__Arc arc, OOC_X86_Write__Block to);
+#define _TBN_OOC_X86_Write__ArcDesc_ReplaceTo 0
+typedef void (*_TBP_OOC_X86_Write__ArcDesc_ReplaceTo)(OOC_X86_Write__Arc arc, OOC_X86_Write__Block to);
+extern void OOC_X86_Write__WriterDesc_INIT(OOC_X86_Write__Writer w, OOC_SymbolTable__Module module, IO__ByteChannel ch);
+#define _TBN_OOC_X86_Write__WriterDesc_INIT 0
+typedef void (*_TBP_OOC_X86_Write__WriterDesc_INIT)(OOC_X86_Write__Writer w, OOC_SymbolTable__Module module, IO__ByteChannel ch);
+extern OOC_X86_Write__Block OOC_X86_Write__WriterDesc_GetBlock(OOC_X86_Write__Writer w, OOC_X86_SSA__Block b);
+#define _TBN_OOC_X86_Write__WriterDesc_GetBlock 1
+typedef OOC_X86_Write__Block (*_TBP_OOC_X86_Write__WriterDesc_GetBlock)(OOC_X86_Write__Writer w, OOC_X86_SSA__Block b);
+extern void OOC_X86_Write__WriterDesc_RuntimeData(OOC_X86_Write__Writer w);
+#define _TBN_OOC_X86_Write__WriterDesc_RuntimeData 2
+typedef void (*_TBP_OOC_X86_Write__WriterDesc_RuntimeData)(OOC_X86_Write__Writer w);
+extern void OOC_X86_Write__WriterDesc_ModuleVariables(OOC_X86_Write__Writer w);
+#define _TBN_OOC_X86_Write__WriterDesc_ModuleVariables 3
+typedef void (*_TBP_OOC_X86_Write__WriterDesc_ModuleVariables)(OOC_X86_Write__Writer w);
+extern Object__String OOC_X86_Write__WriterDesc_StringSymbol(OOC_X86_Write__Writer w, Object__String value, OOC_INT16 type);
+#define _TBN_OOC_X86_Write__WriterDesc_StringSymbol 4
+typedef Object__String (*_TBP_OOC_X86_Write__WriterDesc_StringSymbol)(OOC_X86_Write__Writer w, Object__String value, OOC_INT16 type);
+extern void OOC_X86_Write__WriterDesc_StringConstants(OOC_X86_Write__Writer w);
+#define _TBN_OOC_X86_Write__WriterDesc_StringConstants 5
+typedef void (*_TBP_OOC_X86_Write__WriterDesc_StringConstants)(OOC_X86_Write__Writer w);
+extern void OOC_X86_Write__WriterDesc_EndFile(OOC_X86_Write__Writer w);
+#define _TBN_OOC_X86_Write__WriterDesc_EndFile 6
+typedef void (*_TBP_OOC_X86_Write__WriterDesc_EndFile)(OOC_X86_Write__Writer w);
+extern OOC_X86_Write__Block OOC_X86_Write__WriterDesc_WriteBlock(OOC_X86_Write__Writer w, OOC_X86_SSA__Block b);
+#define _TBN_OOC_X86_Write__WriterDesc_WriteBlock 7
+typedef OOC_X86_Write__Block (*_TBP_OOC_X86_Write__WriterDesc_WriteBlock)(OOC_X86_Write__Writer w, OOC_X86_SSA__Block b);
+extern void OOC_X86_Write__WriterDesc_WriteFunction(OOC_X86_Write__Writer w, OOC_X86_SSA__FunctionBlock b);
+#define _TBN_OOC_X86_Write__WriterDesc_WriteFunction 8
+typedef void (*_TBP_OOC_X86_Write__WriterDesc_WriteFunction)(OOC_X86_Write__Writer w, OOC_X86_SSA__FunctionBlock b);
+extern void OOC_OOC_X86_Write_init(void);
+extern void OOC_OOC_X86_Write_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_X86_Write__Arc;
+extern RT0__StructDesc _td_OOC_X86_Write__Block;
+extern RT0__StructDesc _td_OOC_X86_Write__ArcDesc;
+extern RT0__StructDesc _td_OOC_X86_Write__BlockDesc;
+extern RT0__StructDesc _td_OOC_X86_Write__Writer;
+extern RT0__StructDesc _td_OOC_X86_Write__WriterDesc;
+extern RT0__StructDesc _td_OOC_X86_Write__952;
+extern RT0__StructDesc _td_OOC_X86_Write__994;
+extern RT0__StructDesc _td_OOC_X86_Write__7582;
+extern RT0__StructDesc _td_OOC_X86_Write__7696;
+extern RT0__StructDesc _td_OOC_X86_Write__8374;
+extern RT0__StructDesc _td_OOC_X86_Write__8544;
+extern RT0__StructDesc _td_OOC_X86_Write__8753;
+extern RT0__StructDesc _td_OOC_X86_Write__10494;
+extern RT0__StructDesc _td_OOC_X86_Write__WriterDesc_WriteBlock_FixGatedValues_IO;
+extern RT0__StructDesc _td_OOC_X86_Write__14521;
+extern RT0__StructDesc _td_OOC_X86_Write__14510;
+#endif /* _MODULE_OOC_X86_Write_ */
+
+/* --- */

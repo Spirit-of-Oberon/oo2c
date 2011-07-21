@@ -1,4 +1,4 @@
-(* 	$Id: SymbolTable.Mod,v 1.123 2004/04/13 21:07:11 mva Exp $	 *)
+(* 	$Id: SymbolTable.Mod,v 1.124 2004/06/06 20:32:01 mva Exp $	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
     Copyright (C) 2000-2004  Michael van Acken
@@ -2501,6 +2501,20 @@ PROCEDURE (record: Record) AssignTBProcIndex* (procDecl: ProcDecl);
     procDecl. tbProcIndex := record. tbProcCount;
     INC (record. tbProcCount)
   END AssignTBProcIndex;
+
+PROCEDURE (record: Record) ExtensionLevel*(): LONGINT;
+(**A record without a base type has a level of @samp{0}.  Every extension level
+   increments this level by one.  *)
+  VAR
+    level: LONGINT;
+  BEGIN
+    level := 0;
+    WHILE (record.baseType # NIL) DO
+      record := record.baseType(Record);
+      INC(level);
+    END;
+    RETURN level;
+  END ExtensionLevel;
 
 
 PROCEDURE InitTypeVar* (typeVar: TypeVar; parent: Item;

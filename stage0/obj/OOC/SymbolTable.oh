@@ -951,6 +951,9 @@ typedef void (*_TBP_OOC_SymbolTable__RecordDesc_SetNamespace)(OOC_SymbolTable__R
 extern void OOC_SymbolTable__RecordDesc_AssignTBProcIndex(OOC_SymbolTable__Record record, OOC_SymbolTable__ProcDecl procDecl);
 #define _TBN_OOC_SymbolTable__RecordDesc_AssignTBProcIndex 21
 typedef void (*_TBP_OOC_SymbolTable__RecordDesc_AssignTBProcIndex)(OOC_SymbolTable__Record record, OOC_SymbolTable__ProcDecl procDecl);
+extern OOC_INT32 OOC_SymbolTable__RecordDesc_ExtensionLevel(OOC_SymbolTable__Record record);
+#define _TBN_OOC_SymbolTable__RecordDesc_ExtensionLevel 22
+typedef OOC_INT32 (*_TBP_OOC_SymbolTable__RecordDesc_ExtensionLevel)(OOC_SymbolTable__Record record);
 extern void OOC_SymbolTable__InitTypeVar(OOC_SymbolTable__TypeVar typeVar, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type bound);
 extern void OOC_SymbolTable__TypeVarDesc_Store(OOC_SymbolTable__TypeVar typeVar, ADT_Storable__Writer w);
 #define _TBN_OOC_SymbolTable__TypeVarDesc_Store 4

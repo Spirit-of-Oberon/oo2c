@@ -1,0 +1,31 @@
+#ifndef _MODULE_OOC_X86_Destore_
+#define _MODULE_OOC_X86_Destore_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <OOC/X86/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_X86_Destore__MemAccessDesc *OOC_X86_Destore__MemAccess;
+typedef struct OOC_X86_Destore__MemAccessDesc {
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Result address;
+  OOC_INT8 type;
+} OOC_X86_Destore__MemAccessDesc;
+extern void OOC_X86_Destore__MemAccessDesc_INIT(OOC_X86_Destore__MemAccess memAccess, OOC_INT8 type, OOC_X86_SSA__Designator designator, OOC_X86_SSA__Result address);
+#define _TBN_OOC_X86_Destore__MemAccessDesc_INIT 4
+typedef void (*_TBP_OOC_X86_Destore__MemAccessDesc_INIT)(OOC_X86_Destore__MemAccess memAccess, OOC_INT8 type, OOC_X86_SSA__Designator designator, OOC_X86_SSA__Result address);
+extern void OOC_X86_Destore__Transform(OOC_X86_SSA__FunctionBlock fctBlock);
+extern void OOC_OOC_X86_Destore_init(void);
+extern void OOC_OOC_X86_Destore_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_X86_Destore__Worklist;
+extern RT0__StructDesc _td_OOC_X86_Destore__WorklistDesc;
+extern RT0__StructDesc _td_OOC_X86_Destore__MemAccess;
+extern RT0__StructDesc _td_OOC_X86_Destore__MemAccessDesc;
+#endif /* _MODULE_OOC_X86_Destore_ */
+
+/* --- */

@@ -13,8 +13,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_Exception34 lib_Exception35
-  lib_Exception36 lib_Exception37 lib_Exception38">-->
+  select ="prepare_out_module lib_rt1 lib_STRING8">-->
   
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
@@ -551,6 +550,10 @@
       Conversion is done if source is a string constant, and target
       an instance of <code>Object.Object</code>.
     </test>
+    <test id="lib_STRING8" type="reject" file="LibSTRING8.Mod">
+      Strings are not compatible to non-<code>STRING</code> extensions
+      of <code>Object.Object</code>.
+    </test>
     
     <test id="lib_Exception1" type="run"
           file="LibException1.Mod" output="LibException1.Ref">
@@ -746,6 +749,8 @@
   <processor-info processor-name="oo2c">
     <reject-info id="lib_STRING2" pos="Write(%&quot;abc"
       msg="This must be a variable"/>
+    <reject-info id="lib_STRING8" pos="Write(%&quot;bar"
+      msg="Argument not compatible with formal type `LibSTRING8.MyObject'"/>
 
     <reject-info id="lib_Exception6" pos="CATCH Exception.%CheckedDesc:"
       msg="Type is not an extension of `Exception.Exception'"/>

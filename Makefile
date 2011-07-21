@@ -32,6 +32,7 @@ TEST_SUBDIRS=\
   tests/ssa \
   tests/lib \
   tests/ssa-c-output \
+  tests/ssa-x86-output \
 
 top_builddir=$(OOC_DEV_ROOT)
 

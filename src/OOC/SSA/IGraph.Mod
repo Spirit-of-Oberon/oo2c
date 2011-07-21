@@ -1,7 +1,7 @@
-(* 	$Id: IGraph.Mod,v 1.6 2004/05/21 13:45:40 mva Exp $	 *)
+(* 	$Id: IGraph.Mod,v 1.8 2004/07/01 19:12:57 mva Exp $	 *)
 MODULE OOC:SSA:IGraph;
 (*  Manipulation of interference graph of values' life ranges.
-    Copyright (C) 2001-2003  Michael van Acken
+    Copyright (C) 2001-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -20,6 +20,9 @@ MODULE OOC:SSA:IGraph;
     Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
+IMPORT
+  Log, Exception;
+  
 TYPE
   SetType = SET;
   BitMatrix = POINTER TO ARRAY OF ARRAY OF SetType;
@@ -176,6 +179,21 @@ PROCEDURE (g: Graph) Conflicts* (i, j: LONGINT): BOOLEAN;
     RETURN (j MOD bitsPerSet IN m[i, j DIV bitsPerSet]);
   END Conflicts;
 
+PROCEDURE (g: Graph) NumberOfConflicts* (i: LONGINT): LONGINT;
+  VAR
+    m: BitMatrix;
+    j, c: LONGINT;
+  BEGIN
+    m := g.m;
+    c := 0;
+    FOR j := 0 TO g.size-1 DO
+      IF g.Conflicts(i, j) THEN
+        INC(c);
+      END;
+    END;
+    RETURN c;
+  END NumberOfConflicts;
+
 PROCEDURE (g: Graph) MergeVector* (source, dest: Vector);
 (**Stores the union of the elements in @oparam{source} and @oparam{dest}
    in @oparam{dest}.  *)
@@ -213,6 +231,23 @@ PROCEDURE (g: Graph) SymmetricMatrix*;
       EXCL (m[y, y DIV bitsPerSet], y MOD bitsPerSet)
     END
   END SymmetricMatrix;
+
+PROCEDURE (g: Graph) AssertSymmetricMatrix();
+  VAR
+    x, y: LONGINT;
+    m: BitMatrix;
+  BEGIN
+    m := g.m;
+    FOR y := 0 TO LEN(m^)-1 DO
+      FOR x := 0 TO LEN(m^)-1 DO
+        IF (x MOD bitsPerSet IN m[y, x DIV bitsPerSet]) THEN
+          ASSERT((y MOD bitsPerSet) IN m[x, y DIV bitsPerSet]);
+        ELSE
+          ASSERT(~((y MOD bitsPerSet) IN m[x, y DIV bitsPerSet]));
+        END
+      END;
+    END;
+  END AssertSymmetricMatrix;
 
 
 
@@ -261,5 +296,151 @@ PROCEDURE (g: Graph) ColorGraphSimple*(): ColorArray;
     END;
     RETURN ca
   END ColorGraphSimple;
+
+PROCEDURE (g: Graph) ColorGraphCombinatorial*(): ColorArray;
+(**Also known as the combinatorial exploder---slow and limited, but thorough.
+   Examines all possible combinations to produce a @var{k}-coloring with
+   minimal @var{k}.
+
+   @precond
+   The number of non-coalesced life ranges does not exceed @code{MAX(set)}.
+   @end precond  *)
+  CONST
+    sizeSet = MAX(SET)+1;
+  VAR
+    i, j, k, best, size: LONGINT;
+    ca: ColorArray;
+    colorAvailableFor: ARRAY sizeSet OF SET;
+    p: POINTER TO ARRAY OF LONGINT;
+    m: ARRAY sizeSet OF SET;
+    done: BOOLEAN;
+    
+  PROCEDURE Try(index: LONGINT)
+  RAISES Exception.Checked;
+    VAR
+      color, i: LONGINT;
+      oldAvail: SET;
+    BEGIN
+      IF (index = size) THEN             (* all colored: success *)
+        RAISE(NEW(Exception.Checked, ""));
+      ELSE
+        FOR color := 0 TO k-1 DO
+          IF (index IN colorAvailableFor[color]) THEN
+            ca[index] := color;
+            FOR i := 0 TO index-1 DO
+              IF (index IN m[i]) THEN
+                ASSERT(ca[i] # color);
+              END;
+            END;
+            oldAvail := colorAvailableFor[color];
+            colorAvailableFor[color] := colorAvailableFor[color] - m[index];
+            Try(index+1);
+            colorAvailableFor[color] := oldAvail;
+          END;
+        END;
+      END;
+    END Try;
+
+  PROCEDURE Swap(i, j: LONGINT);
+    VAR
+      x: LONGINT;
+    BEGIN
+      x := p[i]; p[i] := p[j]; p[j] := x;
+    END Swap;
+
+  PROCEDURE Invert(caInverted: ARRAY OF Color);
+    VAR
+      i: LONGINT;
+    BEGIN
+      FOR i := 0 TO g.size-1 DO
+        ca[p[i]] := caInverted[i];
+      END;
+    END Invert;
+  
+  BEGIN
+    (* create permutation that sorts live ranges by number of conflicts *)
+    NEW(p, g.size);
+    FOR i := 0 TO g.size-1 DO
+      p[i] := i;
+    END;
+    FOR i := 0 TO g.size-1 DO
+      best := i;
+      FOR j := i+1 TO g.size-1 DO
+        IF g.NumberOfConflicts(p[j]) > g.NumberOfConflicts(p[best]) THEN
+          best := j;
+        END;
+      END;
+      Swap(i, best);
+    END;
+
+    (* find out where the ranges with non-zero conflicts end *)
+    size := 0;
+    WHILE (size # g.size) & (g.NumberOfConflicts(p[size]) > 0) DO
+      INC(size);
+    END;
+
+    (* create our own interference matrix based on the permutation *)
+    g.AssertSymmetricMatrix();
+    FOR i := 0 TO sizeSet-1 DO
+      m[i] := {};
+    END;
+    FOR i := 0 TO size-1 DO
+      FOR j := 0 TO size-1 DO
+        IF g.Conflicts(p[i], p[j]) THEN
+          INCL(m[j], i);
+        END;
+      END;
+    END;
+
+    Log.Int("### g.size", g.size);
+    Log.Int("### size", size);
+    ASSERT(size <= sizeSet);
+    
+    NEW (ca, g.size);
+    IF (size # 0) THEN
+      (* find a k-coloring for our reduced graph *)
+      ca[0] := 0;            (* first life range has always color 0 *)
+      k := 3;
+      done := FALSE;
+      REPEAT
+        FOR i := 0 TO k-1 DO
+          colorAvailableFor[i] := {0 .. size-1};
+        END;
+        colorAvailableFor[0] := colorAvailableFor[0] - m[0];
+        
+        TRY
+          Try(1);
+        CATCH Exception.Checked:
+          done := TRUE;
+        END;
+        INC(k);                       (* try again with more colors *)
+      UNTIL done;
+    END;
+
+    (* verify coloring on reduced matrix *)
+    FOR i := 0 TO size-1 DO
+      FOR j := 0 TO size-1 DO
+        IF i IN m[j] THEN
+          ASSERT(ca[i] # ca[j]);
+        END;
+      END;
+    END;
+    
+    FOR i := size TO g.size-1 DO         (* map all coalesced ranges to 0 *)
+      ca[i] := 0;
+    END;
+    Invert(ca^);
+
+    (* verify coloring *)
+    FOR i := 0 TO g.size-1 DO
+      FOR j := 0 TO g.size-1 DO
+        IF g.Conflicts(i, j) THEN
+          ASSERT(ca[i] # ca[j]);
+        END;
+      END;
+    END;
+    
+    RETURN ca;
+  END ColorGraphCombinatorial;
 
 END OOC:SSA:IGraph.

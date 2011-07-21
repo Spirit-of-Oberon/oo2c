@@ -14,6 +14,7 @@ extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsScalarType(OOC_SymbolTable__Type t
 extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsCharType(OOC_SymbolTable__Type type);
 extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsStringConst(OOC_SymbolTable__Type type);
 extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsObject(OOC_SymbolTable__Type type);
+extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsObjectType(OOC_SymbolTable__Type type);
 extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsException(OOC_SymbolTable__Type type);
 extern OOC_CHAR8 OOC_SymbolTable_TypeRules__IsSTRING(OOC_SymbolTable__Type type);
 extern OOC_SymbolTable__PredefType OOC_SymbolTable_TypeRules__BaseCharType(OOC_SymbolTable__Type type);
@@ -68,6 +69,7 @@ extern void OOC_OOC_SymbolTable_TypeRules_init0(void);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_TypeRules__3257;
+extern RT0__StructDesc _td_OOC_SymbolTable_TypeRules__3872;
 #endif /* _MODULE_OOC_SymbolTable_TypeRules_ */
 
 /* --- */

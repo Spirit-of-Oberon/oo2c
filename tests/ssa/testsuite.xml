@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; constfold20">-->
+  select ="&SetupTestCasesWithOut; assign17">-->
 
   &TestSetupWithOut;
     
@@ -176,6 +176,12 @@
     </test>
     <test id="assign18" type="reject" file="Assign18.Mod">
       Right hand side is too large to fit into a <code>HUGEINT</code>.
+    </test>
+    <test id="assign19" type="run" file="Assign19.Mod" output="Assign19.Ref">
+      Test read/write of differently sized integers.
+    </test>
+    <test id="assign20" type="run" file="Assign20.Mod" output="Assign20.Ref">
+      Variation of <code>assign19</code> using variable parameters.
     </test>
     
     <test id="return1" type="reject" file="Return1.Mod">

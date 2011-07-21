@@ -1,4 +1,4 @@
-(* 	$Id: TypeRules.Mod,v 1.73 2004/03/21 16:09:17 mva Exp $	 *)
+(* 	$Id: TypeRules.Mod,v 1.74 2004/06/29 09:02:49 mva Exp $	 *)
 MODULE OOC:SymbolTable:TypeRules;
 (*  Defines the type rules of the language.
     Copyright (C) 2000-2004  Michael van Acken
@@ -105,12 +105,36 @@ PROCEDURE ExtendsLibType(type: Sym.Type; module, recordName: ARRAY OF CHAR): BOO
     END;
   END ExtendsLibType;
 
+PROCEDURE IsPointerType(type: Sym.Type; module, recordName: ARRAY OF CHAR): BOOLEAN;
+  VAR
+    r: Sym.Type;
+  BEGIN
+    IF (type IS Sym.Pointer) &
+       (type(Sym.Pointer).baseType IS Sym.Record) THEN
+      r := type(Sym.Pointer).baseType;
+      RETURN (r # NIL) &
+             (r.namingDecl # NIL) & 
+             (r.namingDecl.name.str^ = recordName) & 
+             (r.namingDecl.parent IS Sym.Module) & 
+             (r.namingDecl.parent(Sym.Module).name.str^ = module);
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsPointerType;
+
 PROCEDURE IsObject*(type: Sym.Type): BOOLEAN;
 (**Return @code{TRUE} if @oparam{type} is the library type
    @otype{*Object.Object}, or an extension of this type.  *)
   BEGIN
     RETURN ExtendsLibType(type, "Object", "ObjectDesc");
   END IsObject;
+
+PROCEDURE IsObjectType*(type: Sym.Type): BOOLEAN;
+(**Return @code{TRUE} if @oparam{type} is the library type
+   @otype{*Object.Object}, but @emph{not} an extension thereof.  *)
+  BEGIN
+    RETURN IsPointerType(type, "Object", "ObjectDesc");
+  END IsObjectType;
 
 PROCEDURE IsException*(type: Sym.Type): BOOLEAN;
 (**Return @code{TRUE} if @oparam{type} is an extension of

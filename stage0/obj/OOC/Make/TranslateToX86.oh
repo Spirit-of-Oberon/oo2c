@@ -1,0 +1,20 @@
+#ifndef _MODULE_OOC_Make_TranslateToX86_
+#define _MODULE_OOC_Make_TranslateToX86_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <OOC/Error.oh>
+#include <OOC/Repository.oh>
+#include <OOC/SymbolTable/Uses.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern OOC_Error__List OOC_Make_TranslateToX86__Run(OOC_Repository__Module m, Object__String libraryName, OOC_CHAR8 analysisOnly, OOC_SymbolTable_Uses__Uses uses, OOC_CHAR8 writeAST, OOC_CHAR8 writeIR);
+extern void OOC_OOC_Make_TranslateToX86_init(void);
+extern void OOC_OOC_Make_TranslateToX86_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_Make_TranslateToX86_ */
+
+/* --- */

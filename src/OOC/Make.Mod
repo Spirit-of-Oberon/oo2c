@@ -1,4 +1,4 @@
-(* 	$Id: Make.Mod,v 1.69 2004/04/01 20:36:12 mva Exp $	 *)
+(* 	$Id: Make.Mod,v 1.70 2004/06/02 08:55:41 mva Exp $	 *)
 MODULE OOC:Make;
 (*  Builds object files, libraries, binaries, and the like.
     Copyright (C) 2002, 2003, 2004  Michael van Acken
@@ -34,8 +34,9 @@ IMPORT
   OOC:SymbolTable:InterfaceDescr, OOC:SymbolTable:InterfaceXML,
   OOC:SymbolTable:Uses, OOC:Auxiliary:ParseModule, OOC:Make:LinkProgramC,
   
-  OOC:Config:CCompiler, OOC:Make:TranslateToC,
-      OOC:Make:WriteMainFileC, SSAtoC := OOC:SSA:WriteC;
+  OOC:Config:CCompiler, OOC:Make:TranslateToC, OOC:Make:WriteMainFileC,
+  SSAtoC := OOC:SSA:WriteC, OOC:Config:Assembler, OOC:Make:TranslateToX86,
+  OOC:Make:WriteMainFileAssembler;
 
 TYPE
   ModuleInfo = POINTER TO ModuleInfoDesc;
@@ -90,6 +91,7 @@ CONST
   stylesheetPath = "xml/interface-description.xsl";
   backendNone* = 0;
   backendSSAtoC* = 1;
+  backendSSAtoX86* = 2;
   
 VAR
   fileIdNames: ARRAY Rep.maxFileId+1 OF ARRAY 24 OF CHAR;
@@ -449,13 +451,13 @@ RAISES IO.Error;
     b: LONGINT;
   BEGIN
     b := r.backend;
-    (*IF r.GetImports(module) THEN
-      IF (b = backendSSAtoIA32) &
+    IF r.GetImports(module) THEN
+      IF (b = backendSSAtoX86) &
          ((module.ifData.class = Sym.mcForeign) OR
           (module.ifData.class = Sym.mcInterface)) THEN
         b := backendSSAtoC;
       END;
-    END;*)
+    END;
     RETURN b;
   END SelectBackend;
 
@@ -493,6 +495,13 @@ RAISES IO.Error;
                               writeAST, writeIR, t);
     END DoSSAtoC;
   
+  PROCEDURE DoSSAtoX86(libraryName: STRING): Error.List
+  RAISES IO.Error;
+    BEGIN
+      RETURN TranslateToX86.Run(module, libraryName, analysisOnly, r.uses,
+                                writeAST, writeIR);
+    END DoSSAtoX86;
+  
   BEGIN
     mInfo := r.GetModuleInfo(module);
     IF mInfo.compiled THEN
@@ -515,6 +524,8 @@ RAISES IO.Error;
         errList := DoEmptyBackend(libraryName);
       | backendSSAtoC:
         errList := DoSSAtoC(libraryName);
+      | backendSSAtoX86:
+        errList := DoSSAtoX86(libraryName);
       END;
 
       success := (errList = NIL) OR errList.NoErrors();
@@ -880,15 +891,27 @@ RAISES IO.Error;
       RETURN TRUE;
     END;
     
-    success := r.Update(module, Rep.modCodeFileC);
-    IF success & ~CCompiler.SkipCallCC() &
-       DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
-      module.CreateOutputDir (Rep.modObjectFile);
-      cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
-                                      module.GetURI(Rep.modObjectFile, TRUE),
-                                      FALSE);
-      Logger.ShellCommand(cmd);
-      success := (ProcessManagement.system(cmd) = 0);
+    IF (r.SelectBackend(module) = backendSSAtoX86) THEN
+      success := r.Update(module, Rep.modAssemblerFile);
+      IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modAssemblerFile) THEN
+        module.CreateOutputDir (Rep.modObjectFile);
+        cmd := Assembler.AssembleFileCmd(module.GetURI(Rep.modAssemblerFile, TRUE),
+                                  module.GetURI(Rep.modObjectFile, TRUE));
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system (cmd) = 0);
+      END;
+      
+    ELSE
+      success := r.Update(module, Rep.modCodeFileC);
+      IF success & ~CCompiler.SkipCallCC() &
+         DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
+        module.CreateOutputDir (Rep.modObjectFile);
+        cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
+                                        module.GetURI(Rep.modObjectFile, TRUE),
+                                        FALSE);
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system(cmd) = 0);
+      END;
     END;
     RETURN success;
   END UpdateObjectFile;
@@ -953,6 +976,31 @@ RAISES IO.Error;
     RETURN success;
   END UpdateMainFileC;
 
+PROCEDURE (r: Rules) UpdateMainFileX86(module: Rep.Module): BOOLEAN
+RAISES IO.Error;
+  VAR
+    success, isUpToDate: BOOLEAN;
+    i: LONGINT;
+  BEGIN  (* pre: symbol files of all imports[x] are up to date *)
+    success := r.Update(module, Rep.modSymbolFile); (* also updates import data *)
+    IF success THEN
+      isUpToDate := Exists(module, Rep.modMainFileAssembler);
+      i := 0;
+      WHILE isUpToDate & (i # LEN(r.imports^)) DO
+        IF DerivedIsOlder2(module, Rep.modMainFileAssembler,
+                           r.imports[i], Rep.modSymbolFile) THEN
+          isUpToDate := FALSE;
+        END;
+        INC(i);
+      END;
+      
+      IF ~isUpToDate THEN
+        WriteMainFileAssembler.WriteFile(module, r.imports^);
+      END;
+    END;
+    RETURN success;
+  END UpdateMainFileX86;
+
 PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN
 RAISES IO.Error;
 (* Produce a new object file with the main function if the file does not
@@ -965,15 +1013,28 @@ RAISES IO.Error;
     cmd: STRING;
     success: BOOLEAN;
   BEGIN
-    success := r.Update(module, Rep.modMainFileC);
-    IF ~CCompiler.SkipCallCC() &
-       DerivedIsOlder(module, Rep.modMainObjectFile, Rep.modMainFileC) THEN
-      module.CreateOutputDir (Rep.modMainObjectFile);
-      cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC, TRUE),
-                                      module.GetURI(Rep.modMainObjectFile, TRUE),
-                                      FALSE);
-      Logger.ShellCommand(cmd);
-      success := (ProcessManagement.system(cmd) = 0);
+    IF (r.backend = backendSSAtoX86) THEN
+      success := r.Update(module, Rep.modMainFileAssembler);
+      IF DerivedIsOlder(module, Rep.modMainObjectFile,
+                        Rep.modMainFileAssembler) THEN
+        module.CreateOutputDir (Rep.modMainObjectFile);
+        cmd := Assembler.AssembleFileCmd(module.GetURI(Rep.modMainFileAssembler, TRUE),
+                                  module.GetURI(Rep.modMainObjectFile, TRUE));
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system(cmd) = 0);
+      END;
+      
+    ELSE
+      success := r.Update(module, Rep.modMainFileC);
+      IF ~CCompiler.SkipCallCC() &
+         DerivedIsOlder(module, Rep.modMainObjectFile, Rep.modMainFileC) THEN
+        module.CreateOutputDir (Rep.modMainObjectFile);
+        cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC, TRUE),
+                                        module.GetURI(Rep.modMainObjectFile, TRUE),
+                                        FALSE);
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system(cmd) = 0);
+      END;
     END;
     RETURN success;
   END UpdateMainObjectFile;
@@ -1172,6 +1233,8 @@ RAISES IO.Error;
         res := r.UpdateMainObjectFile(module);
       | Rep.modMainFileC:
         res := r.UpdateMainFileC(module);
+      | Rep.modMainFileAssembler:
+        res := r.UpdateMainFileX86(module);
       | Rep.modObjectFile:
         res := r.UpdateObjectFile(module);
       | Rep.modObjectFileLib:

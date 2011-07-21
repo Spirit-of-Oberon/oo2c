@@ -1,0 +1,62 @@
+#ifndef _MODULE_OOC_X86_RuntimeData_
+#define _MODULE_OOC_X86_RuntimeData_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/StringBuffer.oh>
+#include <OOC/SymbolTable.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_X86_RuntimeData__DataWriterDesc *OOC_X86_RuntimeData__DataWriter;
+typedef struct OOC_X86_RuntimeData__DataWriterDesc {
+  ADT_StringBuffer__StringBuffer sb;
+  OOC_INT32 align;
+  OOC_INT32 objectPosition;
+} OOC_X86_RuntimeData__DataWriterDesc;
+extern void OOC_X86_RuntimeData__DataWriterDesc_INIT(OOC_X86_RuntimeData__DataWriter dw, ADT_StringBuffer__StringBuffer sb, OOC_INT32 align);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_INIT 0
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_INIT)(OOC_X86_RuntimeData__DataWriter dw, ADT_StringBuffer__StringBuffer sb, OOC_INT32 align);
+extern void OOC_X86_RuntimeData__DataWriterDesc_Align(OOC_X86_RuntimeData__DataWriter dw);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_Align 1
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_Align)(OOC_X86_RuntimeData__DataWriter dw);
+extern void OOC_X86_RuntimeData__DataWriterDesc_Object(OOC_X86_RuntimeData__DataWriter dw, Object__String name, OOC_INT32 size, OOC_CHAR8 global);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_Object 2
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_Object)(OOC_X86_RuntimeData__DataWriter dw, Object__String name, OOC_INT32 size, OOC_CHAR8 global);
+extern void OOC_X86_RuntimeData__DataWriterDesc_Pad(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 bytes);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_Pad 3
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_Pad)(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 bytes);
+extern void OOC_X86_RuntimeData__DataWriterDesc_PadTo(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 pos);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_PadTo 4
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_PadTo)(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 pos);
+extern void OOC_X86_RuntimeData__DataWriterDesc_FixAlign(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 size);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_FixAlign 5
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_FixAlign)(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 size);
+extern void OOC_X86_RuntimeData__DataWriterDesc_Adr(OOC_X86_RuntimeData__DataWriter dw, Object__String symbol);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_Adr 6
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_Adr)(OOC_X86_RuntimeData__DataWriter dw, Object__String symbol);
+extern void OOC_X86_RuntimeData__DataWriterDesc_Null(OOC_X86_RuntimeData__DataWriter dw);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_Null 7
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_Null)(OOC_X86_RuntimeData__DataWriter dw);
+extern void OOC_X86_RuntimeData__DataWriterDesc_LongInt(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 x);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_LongInt 8
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_LongInt)(OOC_X86_RuntimeData__DataWriter dw, OOC_INT32 x);
+extern void OOC_X86_RuntimeData__DataWriterDesc_ShortInt(OOC_X86_RuntimeData__DataWriter dw, OOC_INT8 x);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_ShortInt 9
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_ShortInt)(OOC_X86_RuntimeData__DataWriter dw, OOC_INT8 x);
+extern void OOC_X86_RuntimeData__DataWriterDesc_StringObject(OOC_X86_RuntimeData__DataWriter dw, Object__String name, Object__String value);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_StringObject 10
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_StringObject)(OOC_X86_RuntimeData__DataWriter dw, Object__String name, Object__String value);
+extern void OOC_X86_RuntimeData__DataWriterDesc_TypeFlags(OOC_X86_RuntimeData__DataWriter dw, OOC_SymbolTable__Type type);
+#define _TBN_OOC_X86_RuntimeData__DataWriterDesc_TypeFlags 11
+typedef void (*_TBP_OOC_X86_RuntimeData__DataWriterDesc_TypeFlags)(OOC_X86_RuntimeData__DataWriter dw, OOC_SymbolTable__Type type);
+extern void OOC_X86_RuntimeData__Write(ADT_StringBuffer__StringBuffer sb, OOC_SymbolTable__Module symTab);
+extern void OOC_OOC_X86_RuntimeData_init(void);
+extern void OOC_OOC_X86_RuntimeData_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_X86_RuntimeData__DataWriter;
+extern RT0__StructDesc _td_OOC_X86_RuntimeData__DataWriterDesc;
+#endif /* _MODULE_OOC_X86_RuntimeData_ */
+
+/* --- */

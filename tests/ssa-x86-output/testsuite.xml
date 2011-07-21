@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
+
+<testsuite-ext profile="Tests code emitted by SSA/x86 back-end">
+  <!--&TestSetupWithOut;-->
+    
+  <testcases profile="OOC/SSA: Quality Check x86 Code" default-lang="O2">
+    <test id="t0" type="accept" file="T0.Mod">
+    </test>
+    <test id="t1" type="accept" file="T1.Mod">
+    </test>
+    <test id="t2" type="accept" file="T2.Mod">
+    </test>
+    <test id="t3" type="accept" file="T3.Mod">
+    </test>
+    <test id="t4" type="accept" file="T4.Mod">
+    </test>
+    <test id="t5" type="accept" file="T5.Mod">
+    </test>
+    <test id="t6" type="accept" file="T6.Mod">
+    </test>
+    <test id="t6a" type="accept" file="T6a.Mod">
+    </test>
+    <test id="t6b" type="accept" file="T6b.Mod">
+    </test>
+    <test id="t7" type="accept" file="T7.Mod">
+    </test>
+    <test id="t7a" type="accept" file="T7a.Mod">
+    </test>
+    <test id="t7b" type="accept" file="T7b.Mod">
+    </test>
+    <test id="t8a" type="accept" file="T8a.Mod">
+    </test>
+    <test id="t8b" type="accept" file="T8b.Mod">
+    </test>
+    <test id="t8c" type="accept" file="T8c.Mod">
+    </test>
+    <test id="t8d" type="accept" file="T8d.Mod">
+    </test>
+    
+    <test id="c1" type="accept" file="C1.Mod">
+    </test>
+    
+    <test id="l1" type="accept" file="L1.Mod">
+    </test>
+  </testcases>
+</testsuite-ext>

@@ -1,0 +1,8 @@
+MODULE T2;
+
+PROCEDURE f*(a, b: LONGINT): LONGINT;
+  BEGIN
+    RETURN a-b;
+  END f;
+
+END T2.

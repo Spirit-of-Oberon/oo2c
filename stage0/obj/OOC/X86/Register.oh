@@ -1,0 +1,54 @@
+#ifndef _MODULE_OOC_X86_Register_
+#define _MODULE_OOC_X86_Register_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <ADT/ArrayList.oh>
+#include <ADT/Dictionary.oh>
+#include <OOC/X86/SSA.oh>
+#include <OOC/SSA/IGraph.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_X86_Register__RegisterFileDesc *OOC_X86_Register__RegisterFile;
+typedef struct OOC_X86_Register__RegisterFileDesc {
+  OOC_INT8 registerType;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  ADT_ArrayList__ArrayList resultList;
+  OOC_SSA_IGraph__Graph iGraph;
+  OOC_INT32 maxColor;
+  OOC_X86_SSA__Result prelocatedRep[9];
+  ADT_Dictionary__Dictionary doneBranches;
+} OOC_X86_Register__RegisterFileDesc;
+typedef struct OOC_X86_Register__LiveDataDesc *OOC_X86_Register__LiveData;
+typedef struct OOC_X86_Register__LiveDataDesc {
+  OOC_X86_SSA__Block block;
+  OOC_X86_SSA__Instr position;
+  OOC_INT32 remainingInput;
+  OOC_SSA_IGraph__Vector live;
+} OOC_X86_Register__LiveDataDesc;
+extern void OOC_X86_Register__RegisterFileDesc_INIT(OOC_X86_Register__RegisterFile rf, OOC_INT8 registerType);
+#define _TBN_OOC_X86_Register__RegisterFileDesc_INIT 4
+typedef void (*_TBP_OOC_X86_Register__RegisterFileDesc_INIT)(OOC_X86_Register__RegisterFile rf, OOC_INT8 registerType);
+extern void OOC_X86_Register__LiveDataDesc_INIT(OOC_X86_Register__LiveData ld, OOC_X86_SSA__Block block, OOC_X86_SSA__Instr position, OOC_INT32 remainingInput, OOC_SSA_IGraph__Vector live);
+#define _TBN_OOC_X86_Register__LiveDataDesc_INIT 4
+typedef void (*_TBP_OOC_X86_Register__LiveDataDesc_INIT)(OOC_X86_Register__LiveData ld, OOC_X86_SSA__Block block, OOC_X86_SSA__Instr position, OOC_INT32 remainingInput, OOC_SSA_IGraph__Vector live);
+extern void OOC_X86_Register__AssignRegisters(OOC_X86_SSA__FunctionBlock b);
+extern void OOC_OOC_X86_Register_init(void);
+extern void OOC_OOC_X86_Register_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_X86_Register__RegisterFile;
+extern RT0__StructDesc _td_OOC_X86_Register__381;
+extern RT0__StructDesc _td_OOC_X86_Register__RegisterFiles;
+extern RT0__StructDesc _td_OOC_X86_Register__RegisterFileDesc;
+extern RT0__StructDesc _td_OOC_X86_Register__597;
+extern RT0__StructDesc _td_OOC_X86_Register__LiveData;
+extern RT0__StructDesc _td_OOC_X86_Register__LiveDataDesc;
+extern RT0__StructDesc _td_OOC_X86_Register__11102;
+#endif /* _MODULE_OOC_X86_Register_ */
+
+/* --- */

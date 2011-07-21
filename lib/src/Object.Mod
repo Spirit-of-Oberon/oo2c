@@ -1,4 +1,4 @@
-(* 	$Id: Object.Mod,v 1.28 2004/01/16 22:00:06 mva Exp $	 *)
+(* 	$Id: Object.Mod,v 1.29 2004/07/01 19:09:02 mva Exp $	 *)
 MODULE Object;
 (*  Low-level object and string implementation.
     Copyright (C) 2002,2003  Michael van Acken
@@ -70,9 +70,6 @@ CONST
      
 TYPE
   String* = POINTER TO StringDesc;
-  StringArray* = ARRAY OF String;
-  StringArrayPtr* = POINTER TO StringArray;
-  StringDesc = RECORD [ABSTRACT]
   (**A string is a sequence of Unicode characters.  Each character holds a
      Unicode code point in the range @samp{[U+0000, U+10FFFF}.  Values from the
      surrogate code ranges @samp{[U+DC00, U+DFFF} are not allowed.
@@ -86,6 +83,9 @@ TYPE
 
      @emph{Note}: The predefined type name @code{STRING} is an alias for
      @otype{String}.  *)
+  StringArray* = ARRAY OF String;
+  StringArrayPtr* = POINTER TO StringArray;
+  StringDesc = RECORD [ABSTRACT]
     (ObjectDesc)
     length-: LONGINT;
     (**Number of words points in the sequence.  For an instance of
@@ -105,8 +105,8 @@ TYPE
   
 TYPE
   String8* = POINTER TO String8Desc;
-  String8Desc = RECORD
   (**Concrete class for 8-bit strings.  *)
+  String8Desc = RECORD
     (StringDesc)
     data: CharsLatin1;
     (**Holds a sequence of Unicode code points in the range @samp{U+0000} to
@@ -116,8 +116,8 @@ TYPE
   
 TYPE
   String16* = POINTER TO String16Desc;
-  String16Desc = RECORD
   (**Concrete class for 32-bit strings.  *)
+  String16Desc = RECORD
     (StringDesc) 
     data: CharsUTF16;
     (**Holds a sequence of Unicode code points in the range @samp{U+0000} to

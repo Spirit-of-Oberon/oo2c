@@ -1,4 +1,4 @@
-(* 	$Id: IRtoSSA.Mod,v 1.133 2004/05/23 23:36:51 mva Exp $	 *)
+(* 	$Id: IRtoSSA.Mod,v 1.134 2004/06/28 19:17:36 mva Exp $	 *)
 MODULE OOC:SSA:IRtoSSA;
 (*  Converts the IR of a procedure into its SSA representation.
     Copyright (C) 2001-2004  Michael van Acken
@@ -1329,7 +1329,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr: SSA.Instr;
         cmpClass: Opcode.Class;
       BEGIN
-        IF (forStatm. step(IR.Const). value(BigInt.BigInt). Sign() >= 0) THEN
+        IF forStatm.PositiveStep() THEN
           cmpClass := Opcode.leq;
         ELSE
           cmpClass := Opcode.geq;

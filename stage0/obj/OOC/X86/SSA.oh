@@ -1,0 +1,926 @@
+#ifndef _MODULE_OOC_X86_SSA_
+#define _MODULE_OOC_X86_SSA_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Object/Boxed.oh>
+#include <Object/BigInt.oh>
+#include <ADT/Dictionary/IntValue.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/SymbolTable/Predef.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 OOC_X86_SSA__Opcode;
+typedef OOC_INT8 OOC_X86_SSA__Register;
+typedef OOC_INT8 OOC_X86_SSA__AdrMode;
+typedef OOC_INT8 OOC_X86_SSA__Type;
+typedef OOC_INT8 OOC_X86_SSA__DepType;
+#define OOC_X86_SSA__sp 0
+#define OOC_X86_SSA__fp 1
+#define OOC_X86_SSA__cc 2
+#define OOC_X86_SSA__gp0 3
+#define OOC_X86_SSA__gp1 4
+#define OOC_X86_SSA__gp2 5
+#define OOC_X86_SSA__gp3 6
+#define OOC_X86_SSA__gp4 7
+#define OOC_X86_SSA__gp5 8
+#define OOC_X86_SSA__resultRegister 3
+#define OOC_X86_SSA__lastRegister 8
+#define OOC_X86_SSA__callerSaved 56
+#define OOC_X86_SSA__calleeSaved 451
+#define OOC_X86_SSA__lastFpRegister 7
+#define OOC_X86_SSA__register 0
+#define OOC_X86_SSA__indirect 1
+#define OOC_X86_SSA__noLocation (-1)
+#define OOC_X86_SSA__const 0
+#define OOC_X86_SSA__add 1
+#define OOC_X86_SSA__sub 2
+#define OOC_X86_SSA__mul 3
+#define OOC_X86_SSA__div 4
+#define OOC_X86_SSA__neg 5
+#define OOC_X86_SSA__asr 6
+#define OOC_X86_SSA__asl 7
+#define OOC_X86_SSA__indexed 8
+#define OOC_X86_SSA__eql 9
+#define OOC_X86_SSA__neq 10
+#define OOC_X86_SSA__lss 11
+#define OOC_X86_SSA__leq 12
+#define OOC_X86_SSA__gtr 13
+#define OOC_X86_SSA__geq 14
+#define OOC_X86_SSA__setBool 15
+#define OOC_X86_SSA__typeConv 16
+#define OOC_X86_SSA__enter 17
+#define OOC_X86_SSA__exit 18
+#define OOC_X86_SSA__return 19
+#define OOC_X86_SSA__call 20
+#define OOC_X86_SSA__function 21
+#define OOC_X86_SSA__allocateStack 22
+#define OOC_X86_SSA__standin 23
+#define OOC_X86_SSA__get 24
+#define OOC_X86_SSA__set 25
+#define OOC_X86_SSA__copy 26
+#define OOC_X86_SSA__push 27
+#define OOC_X86_SSA__pop 28
+#define OOC_X86_SSA__leave 29
+#define OOC_X86_SSA__getLengthParam 30
+#define OOC_X86_SSA__getLengthHeap 31
+#define OOC_X86_SSA__setStack 32
+#define OOC_X86_SSA__typeTag 33
+#define OOC_X86_SSA__branch 34
+#define OOC_X86_SSA__guard 35
+#define OOC_X86_SSA__merge 36
+#define OOC_X86_SSA__jump 37
+#define OOC_X86_SSA__gate 38
+#define OOC_X86_SSA__designatorGate 39
+#define OOC_X86_SSA__loopStart 40
+#define OOC_X86_SSA__loopEnd 41
+#define OOC_X86_SSA__loopExit 42
+#define OOC_X86_SSA__loopBackedge 43
+#define OOC_X86_SSA__noType 0
+#define OOC_X86_SSA__signed8 1
+#define OOC_X86_SSA__signed16 2
+#define OOC_X86_SSA__signed32 3
+#define OOC_X86_SSA__signed64 4
+#define OOC_X86_SSA__unsigned8 5
+#define OOC_X86_SSA__unsigned16 6
+#define OOC_X86_SSA__unsigned32 7
+#define OOC_X86_SSA__unsigned64 8
+#define OOC_X86_SSA__address 9
+#define OOC_X86_SSA__boolean 5
+#define OOC_X86_SSA__length 3
+#define OOC_X86_SSA__real32 10
+#define OOC_X86_SSA__real64 11
+#define OOC_X86_SSA__gpRegisterType 3
+typedef struct OOC_X86_SSA__NodeDesc *OOC_X86_SSA__Node;
+typedef struct OOC_X86_SSA__OpndDesc *OOC_X86_SSA__Opnd;
+typedef struct OOC_X86_SSA__ResultDesc *OOC_X86_SSA__Result;
+typedef struct OOC_X86_SSA__InstrDesc *OOC_X86_SSA__Instr;
+typedef Object__ObjectArrayPtr OOC_X86_SSA__InstrList;
+typedef struct OOC_X86_SSA__BlockDesc *OOC_X86_SSA__Block;
+typedef Object__ObjectArrayPtr OOC_X86_SSA__BlockList;
+typedef struct OOC_X86_SSA__SelectorDesc *OOC_X86_SSA__Selector;
+typedef OOC_X86_SSA__Selector *OOC_X86_SSA__Designator;
+typedef struct OOC_X86_SSA__SelectorDesc {
+  char __dummy;
+} OOC_X86_SSA__SelectorDesc;
+typedef struct OOC_X86_SSA__GlobalDesc *OOC_X86_SSA__Global;
+typedef struct OOC_X86_SSA__GlobalDesc {
+  char __dummy;
+} OOC_X86_SSA__GlobalDesc;
+typedef struct OOC_X86_SSA__VarDesc *OOC_X86_SSA__Var;
+typedef struct OOC_X86_SSA__VarDesc {
+  OOC_SymbolTable__VarDecl decl;
+} OOC_X86_SSA__VarDesc;
+typedef struct OOC_X86_SSA__ProcDesc *OOC_X86_SSA__Proc;
+typedef struct OOC_X86_SSA__ProcDesc {
+  OOC_SymbolTable__ProcDecl decl;
+} OOC_X86_SSA__ProcDesc;
+typedef struct OOC_X86_SSA__ProcNameDesc *OOC_X86_SSA__ProcName;
+typedef struct OOC_X86_SSA__ProcNameDesc {
+  Object__String name;
+} OOC_X86_SSA__ProcNameDesc;
+typedef struct OOC_X86_SSA__TypeDescrDesc *OOC_X86_SSA__TypeDescr;
+typedef struct OOC_X86_SSA__TypeDescrDesc {
+  OOC_SymbolTable__Type type;
+} OOC_X86_SSA__TypeDescrDesc;
+typedef struct OOC_X86_SSA__ModuleDescrDesc *OOC_X86_SSA__ModuleDescr;
+typedef struct OOC_X86_SSA__ModuleDescrDesc {
+  char __dummy;
+} OOC_X86_SSA__ModuleDescrDesc;
+typedef struct OOC_X86_SSA__ConstDesc *OOC_X86_SSA__Const;
+typedef struct OOC_X86_SSA__ConstDesc {
+  Object_Boxed__Object value;
+  OOC_INT16 type;
+} OOC_X86_SSA__ConstDesc;
+typedef struct OOC_X86_SSA__HeapObjDesc *OOC_X86_SSA__HeapObj;
+typedef struct OOC_X86_SSA__HeapObjDesc {
+  OOC_SymbolTable__Type type;
+  OOC_X86_SSA__Instr adrStandin;
+} OOC_X86_SSA__HeapObjDesc;
+typedef struct OOC_X86_SSA__IndexDesc *OOC_X86_SSA__Index;
+typedef struct OOC_X86_SSA__IndexDesc {
+  OOC_X86_SSA__Instr indexStandin;
+} OOC_X86_SSA__IndexDesc;
+typedef struct OOC_X86_SSA__FieldDesc *OOC_X86_SSA__Field;
+typedef struct OOC_X86_SSA__FieldDesc {
+  OOC_SymbolTable__FieldDecl field;
+} OOC_X86_SSA__FieldDesc;
+typedef struct OOC_X86_SSA__NodeDesc {
+  char __dummy;
+} OOC_X86_SSA__NodeDesc;
+typedef struct OOC_X86_SSA__OpndDesc {
+  OOC_X86_SSA__Result arg;
+  OOC_X86_SSA__Opnd nextOpnd;
+  OOC_X86_SSA__Instr instr;
+  OOC_X86_SSA__Opnd nextUse;
+  OOC_CHAR8 immediate;
+} OOC_X86_SSA__OpndDesc;
+typedef struct OOC_X86_SSA__ResultDesc {
+  OOC_X86_SSA__Result nextResult;
+  OOC_X86_SSA__Instr instr;
+  OOC_X86_SSA__Opnd useList;
+  OOC_INT8 type;
+  OOC_INT8 _register;
+  OOC_INT8 adrMode;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 displacement;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+} OOC_X86_SSA__ResultDesc;
+typedef struct OOC_X86_SSA__IterResultUsesDesc *OOC_X86_SSA__IterResultUses;
+typedef struct OOC_X86_SSA__IterResultUsesDesc {
+  OOC_X86_SSA__Opnd next;
+} OOC_X86_SSA__IterResultUsesDesc;
+#define OOC_X86_SSA__depControl 0
+#define OOC_X86_SSA__depMemory 1
+#define OOC_X86_SSA__depRegion 2
+#define OOC_X86_SSA__depAny (-1)
+typedef struct OOC_X86_SSA__DepDesc *OOC_X86_SSA__Dep;
+typedef struct OOC_X86_SSA__DepDesc {
+  OOC_X86_SSA__Instr before;
+  OOC_X86_SSA__Dep nextBefore;
+  OOC_INT8 type;
+  OOC_CHAR8 __pad9;
+  OOC_CHAR8 __pad10;
+  OOC_CHAR8 __pad11;
+  OOC_X86_SSA__Instr instr;
+  OOC_X86_SSA__Dep nextAfter;
+} OOC_X86_SSA__DepDesc;
+typedef struct OOC_X86_SSA__InstrDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+} OOC_X86_SSA__InstrDesc;
+typedef struct OOC_X86_SSA__IterOperandsDesc *OOC_X86_SSA__IterOperands;
+typedef struct OOC_X86_SSA__IterOperandsDesc {
+  char __dummy;
+} OOC_X86_SSA__IterOperandsDesc;
+typedef struct OOC_X86_SSA__IterInstrOperandsDesc *OOC_X86_SSA__IterInstrOperands;
+typedef struct OOC_X86_SSA__IterInstrOperandsDesc {
+  OOC_X86_SSA__Opnd next;
+} OOC_X86_SSA__IterInstrOperandsDesc;
+typedef struct OOC_X86_SSA__IterInstrResultsDesc *OOC_X86_SSA__IterInstrResults;
+typedef struct OOC_X86_SSA__IterInstrResultsDesc {
+  OOC_X86_SSA__Result next;
+} OOC_X86_SSA__IterInstrResultsDesc;
+typedef struct OOC_X86_SSA__IterJumpGateOperandsDesc *OOC_X86_SSA__IterJumpGateOperands;
+typedef struct OOC_X86_SSA__IterJumpGateOperandsDesc {
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_INT32 index;
+} OOC_X86_SSA__IterJumpGateOperandsDesc;
+typedef struct OOC_X86_SSA__IterInstrBeforeListDesc *OOC_X86_SSA__IterInstrBeforeList;
+typedef struct OOC_X86_SSA__IterInstrBeforeListDesc {
+  OOC_X86_SSA__Dep next;
+  OOC_UINT32 types;
+} OOC_X86_SSA__IterInstrBeforeListDesc;
+typedef struct OOC_X86_SSA__IterInstrAfterListDesc *OOC_X86_SSA__IterInstrAfterList;
+typedef struct OOC_X86_SSA__IterInstrAfterListDesc {
+  OOC_X86_SSA__Dep next;
+  OOC_UINT32 types;
+} OOC_X86_SSA__IterInstrAfterListDesc;
+typedef struct OOC_X86_SSA__BlockDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  OOC_X86_SSA__Instr instrList;
+  OOC_X86_SSA__Instr instrTail;
+} OOC_X86_SSA__BlockDesc;
+typedef struct OOC_X86_SSA__IterBlockInstructionsDesc *OOC_X86_SSA__IterBlockInstructions;
+typedef struct OOC_X86_SSA__IterBlockInstructionsDesc {
+  OOC_X86_SSA__Instr next;
+} OOC_X86_SSA__IterBlockInstructionsDesc;
+typedef struct OOC_X86_SSA__IterBlockAllInstructionsDesc *OOC_X86_SSA__IterBlockAllInstructions;
+typedef struct OOC_X86_SSA__IterBlockAllInstructionsDesc {
+  OOC_X86_SSA__Instr next;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+} OOC_X86_SSA__IterBlockAllInstructionsDesc;
+typedef struct OOC_X86_SSA__BranchInstrDesc *OOC_X86_SSA__BranchInstr;
+typedef struct OOC_X86_SSA__MergeInstrDesc *OOC_X86_SSA__MergeInstr;
+typedef struct OOC_X86_SSA__BranchInstrDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  OOC_X86_SSA__Instr instrList;
+  OOC_X86_SSA__Instr instrTail;
+  Object__ObjectArrayPtr paths;
+} OOC_X86_SSA__BranchInstrDesc;
+typedef struct OOC_X86_SSA__MergeInstrDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  OOC_X86_SSA__Instr instrList;
+  OOC_X86_SSA__Instr instrTail;
+  Object__ObjectArrayPtr jumps;
+} OOC_X86_SSA__MergeInstrDesc;
+typedef struct OOC_X86_SSA__GateInstrDesc *OOC_X86_SSA__GateInstr;
+typedef struct OOC_X86_SSA__GateInstrDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  OOC_X86_SSA__Block merge;
+} OOC_X86_SSA__GateInstrDesc;
+typedef struct OOC_X86_SSA__LoopStartInstrDesc *OOC_X86_SSA__LoopStartInstr;
+typedef struct OOC_X86_SSA__LoopStartInstrDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  OOC_X86_SSA__Instr instrList;
+  OOC_X86_SSA__Instr instrTail;
+  OOC_X86_SSA__Instr backedge;
+  OOC_X86_SSA__Instr end;
+} OOC_X86_SSA__LoopStartInstrDesc;
+typedef struct OOC_X86_SSA__LoopBackedgeInstrDesc *OOC_X86_SSA__LoopBackedgeInstr;
+typedef struct OOC_X86_SSA__LoopBackedgeInstrDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  OOC_X86_SSA__LoopStartInstr start;
+} OOC_X86_SSA__LoopBackedgeInstrDesc;
+typedef struct OOC_X86_SSA__ExitInstrDesc *OOC_X86_SSA__ExitInstr;
+typedef struct OOC_X86_SSA__ExitInstrDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  Object__ObjectArrayPtr returns;
+} OOC_X86_SSA__ExitInstrDesc;
+typedef struct OOC_X86_SSA__FunctionBlockDesc *OOC_X86_SSA__FunctionBlock;
+typedef struct OOC_X86_SSA__FunctionBlockDesc {
+  OOC_X86_SSA__Opnd opndList;
+  OOC_X86_SSA__Result resultList;
+  OOC_X86_SSA__Instr nextInstr;
+  OOC_X86_SSA__Instr prevInstr;
+  OOC_X86_SSA__Block block;
+  OOC_INT8 opcode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 pos;
+  OOC_X86_SSA__Designator designator;
+  OOC_X86_SSA__Dep beforeList;
+  OOC_X86_SSA__Dep afterList;
+  OOC_X86_SSA__Node info;
+  OOC_INT32 marker;
+  OOC_X86_SSA__Instr instrList;
+  OOC_X86_SSA__Instr instrTail;
+  OOC_SymbolTable__ProcDecl procDecl;
+  OOC_X86_SSA__Instr enter;
+  OOC_X86_SSA__ExitInstr exit;
+  ADT_Dictionary_IntValue__Dictionary localVars;
+  OOC_INT32 sizeLocalVars;
+  OOC_INT32 maxSizeCallStack;
+  OOC_CHAR8 checkFunctionResult;
+} OOC_X86_SSA__FunctionBlockDesc;
+#define OOC_X86_SSA__alignStackTo 4
+extern OOC_CHAR8 OOC_X86_SSA__IsUnsigned(OOC_INT8 type);
+extern void OOC_X86_SSA__SelectorDesc_INIT(OOC_X86_SSA__Selector s);
+#define _TBN_OOC_X86_SSA__SelectorDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__SelectorDesc_INIT)(OOC_X86_SSA__Selector s);
+extern OOC_CHAR8 OOC_X86_SSA__SelectorDesc_SameSelector(OOC_X86_SSA__Selector s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__SelectorDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__SelectorDesc_SameSelector)(OOC_X86_SSA__Selector s, OOC_X86_SSA__Selector sel);
+extern OOC_SymbolTable__Type OOC_X86_SSA__SelectorDesc_Type(OOC_X86_SSA__Selector s);
+#define _TBN_OOC_X86_SSA__SelectorDesc_Type 2
+typedef OOC_SymbolTable__Type (*_TBP_OOC_X86_SSA__SelectorDesc_Type)(OOC_X86_SSA__Selector s);
+extern void OOC_X86_SSA__VarDesc_INIT(OOC_X86_SSA__Var s, OOC_SymbolTable__VarDecl var);
+#define _TBN_OOC_X86_SSA__VarDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__VarDesc_INIT)(OOC_X86_SSA__Var s, OOC_SymbolTable__VarDecl var);
+extern OOC_CHAR8 OOC_X86_SSA__VarDesc_SameSelector(OOC_X86_SSA__Var s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__VarDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__VarDesc_SameSelector)(OOC_X86_SSA__Var s, OOC_X86_SSA__Selector sel);
+extern OOC_CHAR8 OOC_X86_SSA__VarDesc_IsGlobalVar(OOC_X86_SSA__Var s);
+#define _TBN_OOC_X86_SSA__VarDesc_IsGlobalVar 3
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__VarDesc_IsGlobalVar)(OOC_X86_SSA__Var s);
+extern OOC_SymbolTable__Type OOC_X86_SSA__VarDesc_Type(OOC_X86_SSA__Var s);
+#define _TBN_OOC_X86_SSA__VarDesc_Type 2
+typedef OOC_SymbolTable__Type (*_TBP_OOC_X86_SSA__VarDesc_Type)(OOC_X86_SSA__Var s);
+extern void OOC_X86_SSA__ProcDesc_INIT(OOC_X86_SSA__Proc s, OOC_SymbolTable__ProcDecl decl);
+#define _TBN_OOC_X86_SSA__ProcDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__ProcDesc_INIT)(OOC_X86_SSA__Proc s, OOC_SymbolTable__ProcDecl decl);
+extern OOC_CHAR8 OOC_X86_SSA__ProcDesc_SameSelector(OOC_X86_SSA__Proc s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__ProcDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ProcDesc_SameSelector)(OOC_X86_SSA__Proc s, OOC_X86_SSA__Selector sel);
+extern void OOC_X86_SSA__ProcNameDesc_INIT(OOC_X86_SSA__ProcName s, Object__String name);
+#define _TBN_OOC_X86_SSA__ProcNameDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__ProcNameDesc_INIT)(OOC_X86_SSA__ProcName s, Object__String name);
+extern OOC_CHAR8 OOC_X86_SSA__ProcNameDesc_SameSelector(OOC_X86_SSA__ProcName s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__ProcNameDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ProcNameDesc_SameSelector)(OOC_X86_SSA__ProcName s, OOC_X86_SSA__Selector sel);
+extern void OOC_X86_SSA__TypeDescrDesc_INIT(OOC_X86_SSA__TypeDescr s, OOC_SymbolTable__Type type);
+#define _TBN_OOC_X86_SSA__TypeDescrDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__TypeDescrDesc_INIT)(OOC_X86_SSA__TypeDescr s, OOC_SymbolTable__Type type);
+extern OOC_CHAR8 OOC_X86_SSA__TypeDescrDesc_SameSelector(OOC_X86_SSA__TypeDescr s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__TypeDescrDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__TypeDescrDesc_SameSelector)(OOC_X86_SSA__TypeDescr s, OOC_X86_SSA__Selector sel);
+extern void OOC_X86_SSA__ModuleDescrDesc_INIT(OOC_X86_SSA__ModuleDescr s);
+#define _TBN_OOC_X86_SSA__ModuleDescrDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__ModuleDescrDesc_INIT)(OOC_X86_SSA__ModuleDescr s);
+extern OOC_CHAR8 OOC_X86_SSA__ModuleDescrDesc_SameSelector(OOC_X86_SSA__ModuleDescr s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__ModuleDescrDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ModuleDescrDesc_SameSelector)(OOC_X86_SSA__ModuleDescr s, OOC_X86_SSA__Selector sel);
+extern void OOC_X86_SSA__ConstDesc_INIT(OOC_X86_SSA__Const s, Object_Boxed__Object value, OOC_INT16 type);
+#define _TBN_OOC_X86_SSA__ConstDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__ConstDesc_INIT)(OOC_X86_SSA__Const s, Object_Boxed__Object value, OOC_INT16 type);
+extern OOC_CHAR8 OOC_X86_SSA__ConstDesc_SameSelector(OOC_X86_SSA__Const s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__ConstDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ConstDesc_SameSelector)(OOC_X86_SSA__Const s, OOC_X86_SSA__Selector sel);
+extern void OOC_X86_SSA__HeapObjDesc_INIT(OOC_X86_SSA__HeapObj s, OOC_X86_SSA__FunctionBlock fctBlock, OOC_SymbolTable__Type type, OOC_X86_SSA__Result adr);
+#define _TBN_OOC_X86_SSA__HeapObjDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__HeapObjDesc_INIT)(OOC_X86_SSA__HeapObj s, OOC_X86_SSA__FunctionBlock fctBlock, OOC_SymbolTable__Type type, OOC_X86_SSA__Result adr);
+extern OOC_CHAR8 OOC_X86_SSA__HeapObjDesc_SameSelector(OOC_X86_SSA__HeapObj s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__HeapObjDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__HeapObjDesc_SameSelector)(OOC_X86_SSA__HeapObj s, OOC_X86_SSA__Selector sel);
+extern OOC_SymbolTable__Type OOC_X86_SSA__HeapObjDesc_Type(OOC_X86_SSA__HeapObj s);
+#define _TBN_OOC_X86_SSA__HeapObjDesc_Type 2
+typedef OOC_SymbolTable__Type (*_TBP_OOC_X86_SSA__HeapObjDesc_Type)(OOC_X86_SSA__HeapObj s);
+extern void OOC_X86_SSA__IndexDesc_INIT(OOC_X86_SSA__Index s, OOC_X86_SSA__FunctionBlock fctBlock, OOC_X86_SSA__Result index);
+#define _TBN_OOC_X86_SSA__IndexDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__IndexDesc_INIT)(OOC_X86_SSA__Index s, OOC_X86_SSA__FunctionBlock fctBlock, OOC_X86_SSA__Result index);
+extern OOC_CHAR8 OOC_X86_SSA__IndexDesc_SameSelector(OOC_X86_SSA__Index s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__IndexDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IndexDesc_SameSelector)(OOC_X86_SSA__Index s, OOC_X86_SSA__Selector sel);
+extern void OOC_X86_SSA__FieldDesc_INIT(OOC_X86_SSA__Field s, OOC_SymbolTable__FieldDecl field);
+#define _TBN_OOC_X86_SSA__FieldDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__FieldDesc_INIT)(OOC_X86_SSA__Field s, OOC_SymbolTable__FieldDecl field);
+extern OOC_CHAR8 OOC_X86_SSA__FieldDesc_SameSelector(OOC_X86_SSA__Field s, OOC_X86_SSA__Selector sel);
+#define _TBN_OOC_X86_SSA__FieldDesc_SameSelector 1
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__FieldDesc_SameSelector)(OOC_X86_SSA__Field s, OOC_X86_SSA__Selector sel);
+extern OOC_CHAR8 OOC_X86_SSA__SameDesignator(OOC_X86_SSA__Designator _d1, OOC_X86_SSA__Designator _d2);
+extern void OOC_X86_SSA__NodeDesc_INIT(OOC_X86_SSA__Node node);
+#define _TBN_OOC_X86_SSA__NodeDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__NodeDesc_INIT)(OOC_X86_SSA__Node node);
+extern void OOC_X86_SSA__OpndDesc_INIT(OOC_X86_SSA__Opnd opnd, OOC_X86_SSA__Result arg);
+#define _TBN_OOC_X86_SSA__OpndDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__OpndDesc_INIT)(OOC_X86_SSA__Opnd opnd, OOC_X86_SSA__Result arg);
+extern void OOC_X86_SSA__OpndDesc_DeleteOpnd(OOC_X86_SSA__Opnd opnd);
+#define _TBN_OOC_X86_SSA__OpndDesc_DeleteOpnd 5
+typedef void (*_TBP_OOC_X86_SSA__OpndDesc_DeleteOpnd)(OOC_X86_SSA__Opnd opnd);
+extern void OOC_X86_SSA__OpndDesc_ReplaceArg(OOC_X86_SSA__Opnd opnd, OOC_X86_SSA__Result arg);
+#define _TBN_OOC_X86_SSA__OpndDesc_ReplaceArg 6
+typedef void (*_TBP_OOC_X86_SSA__OpndDesc_ReplaceArg)(OOC_X86_SSA__Opnd opnd, OOC_X86_SSA__Result arg);
+extern OOC_INT32 OOC_X86_SSA__OpndDesc_OpndIndex(OOC_X86_SSA__Opnd opnd);
+#define _TBN_OOC_X86_SSA__OpndDesc_OpndIndex 7
+typedef OOC_INT32 (*_TBP_OOC_X86_SSA__OpndDesc_OpndIndex)(OOC_X86_SSA__Opnd opnd);
+extern OOC_CHAR8 OOC_X86_SSA__OpndDesc_IsBackedgeOpnd(OOC_X86_SSA__Opnd opnd);
+#define _TBN_OOC_X86_SSA__OpndDesc_IsBackedgeOpnd 8
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__OpndDesc_IsBackedgeOpnd)(OOC_X86_SSA__Opnd opnd);
+extern OOC_CHAR8 OOC_X86_SSA__OpndDesc_IsConst(OOC_X86_SSA__Opnd opnd);
+#define _TBN_OOC_X86_SSA__OpndDesc_IsConst 9
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__OpndDesc_IsConst)(OOC_X86_SSA__Opnd opnd);
+extern void OOC_X86_SSA__ResultDesc_INIT(OOC_X86_SSA__Result res, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__ResultDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__ResultDesc_INIT)(OOC_X86_SSA__Result res, OOC_INT8 type);
+extern void OOC_X86_SSA__ResultDesc_SetType(OOC_X86_SSA__Result res, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__ResultDesc_SetType 5
+typedef void (*_TBP_OOC_X86_SSA__ResultDesc_SetType)(OOC_X86_SSA__Result res, OOC_INT8 type);
+extern OOC_CHAR8 OOC_X86_SSA__ResultDesc_NonImmediateUses(OOC_X86_SSA__Result res);
+#define _TBN_OOC_X86_SSA__ResultDesc_NonImmediateUses 6
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ResultDesc_NonImmediateUses)(OOC_X86_SSA__Result res);
+extern OOC_CHAR8 OOC_X86_SSA__ResultDesc_SameLocation(OOC_X86_SSA__Result res, OOC_X86_SSA__Result res2);
+#define _TBN_OOC_X86_SSA__ResultDesc_SameLocation 7
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ResultDesc_SameLocation)(OOC_X86_SSA__Result res, OOC_X86_SSA__Result res2);
+extern void OOC_X86_SSA__ResultDesc_DeleteResult(OOC_X86_SSA__Result res);
+#define _TBN_OOC_X86_SSA__ResultDesc_DeleteResult 8
+typedef void (*_TBP_OOC_X86_SSA__ResultDesc_DeleteResult)(OOC_X86_SSA__Result res);
+extern void OOC_X86_SSA__ResultDesc_ReplaceUses(OOC_X86_SSA__Result res, OOC_X86_SSA__Result with);
+#define _TBN_OOC_X86_SSA__ResultDesc_ReplaceUses 9
+typedef void (*_TBP_OOC_X86_SSA__ResultDesc_ReplaceUses)(OOC_X86_SSA__Result res, OOC_X86_SSA__Result with);
+extern OOC_SymbolTable__ProcDecl OOC_X86_SSA__ResultDesc_CalledProc(OOC_X86_SSA__Result calledAdr);
+#define _TBN_OOC_X86_SSA__ResultDesc_CalledProc 10
+typedef OOC_SymbolTable__ProcDecl (*_TBP_OOC_X86_SSA__ResultDesc_CalledProc)(OOC_X86_SSA__Result calledAdr);
+extern OOC_CHAR8 OOC_X86_SSA__ResultDesc_IsFalse(OOC_X86_SSA__Result res);
+#define _TBN_OOC_X86_SSA__ResultDesc_IsFalse 11
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ResultDesc_IsFalse)(OOC_X86_SSA__Result res);
+extern OOC_CHAR8 OOC_X86_SSA__ResultDesc_IsTrue(OOC_X86_SSA__Result res);
+#define _TBN_OOC_X86_SSA__ResultDesc_IsTrue 12
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__ResultDesc_IsTrue)(OOC_X86_SSA__Result res);
+extern Object_Boxed__Object OOC_X86_SSA__ResultDesc_GetConst(OOC_X86_SSA__Result res);
+#define _TBN_OOC_X86_SSA__ResultDesc_GetConst 13
+typedef Object_Boxed__Object (*_TBP_OOC_X86_SSA__ResultDesc_GetConst)(OOC_X86_SSA__Result res);
+extern OOC_X86_SSA__IterResultUses OOC_X86_SSA__ResultDesc_Uses(OOC_X86_SSA__Result res);
+#define _TBN_OOC_X86_SSA__ResultDesc_Uses 14
+typedef OOC_X86_SSA__IterResultUses (*_TBP_OOC_X86_SSA__ResultDesc_Uses)(OOC_X86_SSA__Result res);
+extern OOC_CHAR8 OOC_X86_SSA__IterResultUsesDesc_Next(OOC_X86_SSA__IterResultUses iter, OOC_X86_SSA__Opnd *use);
+#define _TBN_OOC_X86_SSA__IterResultUsesDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterResultUsesDesc_Next)(OOC_X86_SSA__IterResultUses iter, OOC_X86_SSA__Opnd *use);
+extern void OOC_X86_SSA__DepDesc_INIT(OOC_X86_SSA__Dep dep, OOC_INT8 type, OOC_X86_SSA__Instr before, OOC_X86_SSA__Instr after);
+#define _TBN_OOC_X86_SSA__DepDesc_INIT 0
+typedef void (*_TBP_OOC_X86_SSA__DepDesc_INIT)(OOC_X86_SSA__Dep dep, OOC_INT8 type, OOC_X86_SSA__Instr before, OOC_X86_SSA__Instr after);
+extern void OOC_X86_SSA__DepDesc_DeleteDep(OOC_X86_SSA__Dep dep);
+#define _TBN_OOC_X86_SSA__DepDesc_DeleteDep 1
+typedef void (*_TBP_OOC_X86_SSA__DepDesc_DeleteDep)(OOC_X86_SSA__Dep dep);
+extern void OOC_X86_SSA__InstrDesc_INIT(OOC_X86_SSA__Instr instr, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__InstrDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_INIT)(OOC_X86_SSA__Instr instr, OOC_INT8 opcode);
+extern void OOC_X86_SSA__InstrDesc_SetOpcode(OOC_X86_SSA__Instr instr, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__InstrDesc_SetOpcode 5
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_SetOpcode)(OOC_X86_SSA__Instr instr, OOC_INT8 opcode);
+extern OOC_CHAR8 OOC_X86_SSA__InstrDesc_NonImmediateUses(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_NonImmediateUses 6
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__InstrDesc_NonImmediateUses)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__InstrDesc_IsLive(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_IsLive 7
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__InstrDesc_IsLive)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__InstrDesc_Unchecked(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_Unchecked 8
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__InstrDesc_Unchecked)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__InstrDesc_IsLoopEndGate(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_IsLoopEndGate 9
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__InstrDesc_IsLoopEndGate)(OOC_X86_SSA__Instr instr);
+extern OOC_X86_SSA__MergeInstr OOC_X86_SSA__InstrDesc_TopLevelMerge(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_TopLevelMerge 10
+typedef OOC_X86_SSA__MergeInstr (*_TBP_OOC_X86_SSA__InstrDesc_TopLevelMerge)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__InstrDesc_AllOpndsSameValue(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_AllOpndsSameValue 11
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__InstrDesc_AllOpndsSameValue)(OOC_X86_SSA__Instr instr);
+extern OOC_INT32 OOC_X86_SSA__InstrDesc_SizeOpndList(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_SizeOpndList 12
+typedef OOC_INT32 (*_TBP_OOC_X86_SSA__InstrDesc_SizeOpndList)(OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__InstrDesc_SetDesignator(OOC_X86_SSA__Instr instr, OOC_X86_SSA__Designator designator);
+#define _TBN_OOC_X86_SSA__InstrDesc_SetDesignator 13
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_SetDesignator)(OOC_X86_SSA__Instr instr, OOC_X86_SSA__Designator designator);
+extern void OOC_X86_SSA__InstrDesc_ExtendDesignator(OOC_X86_SSA__Instr instr, OOC_X86_SSA__Selector selector);
+#define _TBN_OOC_X86_SSA__InstrDesc_ExtendDesignator 14
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_ExtendDesignator)(OOC_X86_SSA__Instr instr, OOC_X86_SSA__Selector selector);
+extern void OOC_X86_SSA__InstrDesc_AddOpnd(OOC_X86_SSA__Instr instr, OOC_X86_SSA__Result arg);
+#define _TBN_OOC_X86_SSA__InstrDesc_AddOpnd 15
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_AddOpnd)(OOC_X86_SSA__Instr instr, OOC_X86_SSA__Result arg);
+extern OOC_X86_SSA__Result OOC_X86_SSA__InstrDesc_AddResult(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_AddResult 16
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__InstrDesc_AddResult)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern OOC_INT8 OOC_X86_SSA__MapType(OOC_SymbolTable__Type type);
+extern OOC_INT32 OOC_X86_SSA__TypeSize(OOC_INT8 type);
+extern OOC_X86_SSA__Result OOC_X86_SSA__InstrDesc_AddResultExpr(OOC_X86_SSA__Instr instr, OOC_SymbolTable__Type type);
+#define _TBN_OOC_X86_SSA__InstrDesc_AddResultExpr 17
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__InstrDesc_AddResultExpr)(OOC_X86_SSA__Instr instr, OOC_SymbolTable__Type type);
+extern OOC_X86_SSA__Result OOC_X86_SSA__InstrDesc_AddResultReg(OOC_X86_SSA__Instr instr, OOC_INT8 type, OOC_INT8 reg);
+#define _TBN_OOC_X86_SSA__InstrDesc_AddResultReg 18
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__InstrDesc_AddResultReg)(OOC_X86_SSA__Instr instr, OOC_INT8 type, OOC_INT8 reg);
+extern OOC_X86_SSA__Opnd OOC_X86_SSA__InstrDesc_NthOpnd(OOC_X86_SSA__Instr instr, OOC_INT32 nth);
+#define _TBN_OOC_X86_SSA__InstrDesc_NthOpnd 19
+typedef OOC_X86_SSA__Opnd (*_TBP_OOC_X86_SSA__InstrDesc_NthOpnd)(OOC_X86_SSA__Instr instr, OOC_INT32 nth);
+extern OOC_X86_SSA__Result OOC_X86_SSA__InstrDesc_NthArg(OOC_X86_SSA__Instr instr, OOC_INT32 nth);
+#define _TBN_OOC_X86_SSA__InstrDesc_NthArg 20
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__InstrDesc_NthArg)(OOC_X86_SSA__Instr instr, OOC_INT32 nth);
+extern OOC_INT32 OOC_X86_SSA__InstrDesc_IncomingPaths(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_IncomingPaths 21
+typedef OOC_INT32 (*_TBP_OOC_X86_SSA__InstrDesc_IncomingPaths)(OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__InstrDesc_AddDep(OOC_X86_SSA__Instr instr, OOC_INT8 type, OOC_X86_SSA__Instr beforeInstr);
+#define _TBN_OOC_X86_SSA__InstrDesc_AddDep 22
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_AddDep)(OOC_X86_SSA__Instr instr, OOC_INT8 type, OOC_X86_SSA__Instr beforeInstr);
+extern OOC_X86_SSA__Dep OOC_X86_SSA__InstrDesc_GetDep(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_GetDep 23
+typedef OOC_X86_SSA__Dep (*_TBP_OOC_X86_SSA__InstrDesc_GetDep)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern void OOC_X86_SSA__InstrDesc_DeleteDep(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_DeleteDep 24
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_DeleteDep)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern OOC_X86_SSA__Instr OOC_X86_SSA__InstrDesc_GetBeforeInstr(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_GetBeforeInstr 25
+typedef OOC_X86_SSA__Instr (*_TBP_OOC_X86_SSA__InstrDesc_GetBeforeInstr)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern OOC_X86_SSA__Instr OOC_X86_SSA__InstrDesc_GetAfterInstr(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_GetAfterInstr 26
+typedef OOC_X86_SSA__Instr (*_TBP_OOC_X86_SSA__InstrDesc_GetAfterInstr)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern OOC_X86_SSA__Instr OOC_X86_SSA__InstrDesc_GetAfterInstrOpcode(OOC_X86_SSA__Instr instr, OOC_INT8 type, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__InstrDesc_GetAfterInstrOpcode 27
+typedef OOC_X86_SSA__Instr (*_TBP_OOC_X86_SSA__InstrDesc_GetAfterInstrOpcode)(OOC_X86_SSA__Instr instr, OOC_INT8 type, OOC_INT8 opcode);
+extern OOC_X86_SSA__BranchInstr OOC_X86_SSA__InstrDesc_GetBranchBeforeInstr(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_GetBranchBeforeInstr 28
+typedef OOC_X86_SSA__BranchInstr (*_TBP_OOC_X86_SSA__InstrDesc_GetBranchBeforeInstr)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern OOC_X86_SSA__MergeInstr OOC_X86_SSA__InstrDesc_JumpTarget(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_JumpTarget 29
+typedef OOC_X86_SSA__MergeInstr (*_TBP_OOC_X86_SSA__InstrDesc_JumpTarget)(OOC_X86_SSA__Instr instr);
+extern OOC_X86_SSA__Block OOC_X86_SSA__InstrDesc_MergingTarget(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_MergingTarget 30
+typedef OOC_X86_SSA__Block (*_TBP_OOC_X86_SSA__InstrDesc_MergingTarget)(OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__InstrDesc_TransferDeps(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_TransferDeps 31
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_TransferDeps)(OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__InstrDesc_DesignatorGateToGate(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_DesignatorGateToGate 32
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_DesignatorGateToGate)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__IterOperandsDesc_Next(OOC_X86_SSA__IterOperands iter, OOC_X86_SSA__Opnd *opnd);
+#define _TBN_OOC_X86_SSA__IterOperandsDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterOperandsDesc_Next)(OOC_X86_SSA__IterOperands iter, OOC_X86_SSA__Opnd *opnd);
+extern OOC_X86_SSA__IterInstrOperands OOC_X86_SSA__InstrDesc_Operands(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_Operands 33
+typedef OOC_X86_SSA__IterInstrOperands (*_TBP_OOC_X86_SSA__InstrDesc_Operands)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__IterInstrOperandsDesc_Next(OOC_X86_SSA__IterInstrOperands iter, OOC_X86_SSA__Opnd *opnd);
+#define _TBN_OOC_X86_SSA__IterInstrOperandsDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterInstrOperandsDesc_Next)(OOC_X86_SSA__IterInstrOperands iter, OOC_X86_SSA__Opnd *opnd);
+extern OOC_X86_SSA__IterInstrResults OOC_X86_SSA__InstrDesc_Results(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_Results 34
+typedef OOC_X86_SSA__IterInstrResults (*_TBP_OOC_X86_SSA__InstrDesc_Results)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__IterInstrResultsDesc_Next(OOC_X86_SSA__IterInstrResults iter, OOC_X86_SSA__Result *res);
+#define _TBN_OOC_X86_SSA__IterInstrResultsDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterInstrResultsDesc_Next)(OOC_X86_SSA__IterInstrResults iter, OOC_X86_SSA__Result *res);
+extern OOC_X86_SSA__IterJumpGateOperands OOC_X86_SSA__InstrDesc_GateOperands(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_GateOperands 35
+typedef OOC_X86_SSA__IterJumpGateOperands (*_TBP_OOC_X86_SSA__InstrDesc_GateOperands)(OOC_X86_SSA__Instr instr);
+extern OOC_CHAR8 OOC_X86_SSA__IterJumpGateOperandsDesc_Next(OOC_X86_SSA__IterJumpGateOperands iter, OOC_X86_SSA__Opnd *opnd);
+#define _TBN_OOC_X86_SSA__IterJumpGateOperandsDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterJumpGateOperandsDesc_Next)(OOC_X86_SSA__IterJumpGateOperands iter, OOC_X86_SSA__Opnd *opnd);
+extern OOC_X86_SSA__IterInstrBeforeList OOC_X86_SSA__InstrDesc_BeforeList(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_BeforeList 36
+typedef OOC_X86_SSA__IterInstrBeforeList (*_TBP_OOC_X86_SSA__InstrDesc_BeforeList)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern OOC_CHAR8 OOC_X86_SSA__IterInstrBeforeListDesc_Next(OOC_X86_SSA__IterInstrBeforeList iter, OOC_X86_SSA__Dep *dep);
+#define _TBN_OOC_X86_SSA__IterInstrBeforeListDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterInstrBeforeListDesc_Next)(OOC_X86_SSA__IterInstrBeforeList iter, OOC_X86_SSA__Dep *dep);
+extern OOC_X86_SSA__IterInstrAfterList OOC_X86_SSA__InstrDesc_AfterList(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__InstrDesc_AfterList 37
+typedef OOC_X86_SSA__IterInstrAfterList (*_TBP_OOC_X86_SSA__InstrDesc_AfterList)(OOC_X86_SSA__Instr instr, OOC_INT8 type);
+extern OOC_CHAR8 OOC_X86_SSA__IterInstrAfterListDesc_Next(OOC_X86_SSA__IterInstrAfterList iter, OOC_X86_SSA__Dep *dep);
+#define _TBN_OOC_X86_SSA__IterInstrAfterListDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterInstrAfterListDesc_Next)(OOC_X86_SSA__IterInstrAfterList iter, OOC_X86_SSA__Dep *dep);
+extern void OOC_X86_SSA__BlockDesc_INIT(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__BlockDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__BlockDesc_INIT)(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+extern void OOC_X86_SSA__BlockDesc_Add(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__BlockDesc_Add 40
+typedef void (*_TBP_OOC_X86_SSA__BlockDesc_Add)(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__BlockDesc_AddInFront(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddInFront 41
+typedef void (*_TBP_OOC_X86_SSA__BlockDesc_AddInFront)(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__BlockDesc_MoveBehind(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr before, OOC_X86_SSA__Instr after);
+#define _TBN_OOC_X86_SSA__BlockDesc_MoveBehind 42
+typedef void (*_TBP_OOC_X86_SSA__BlockDesc_MoveBehind)(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr before, OOC_X86_SSA__Instr after);
+extern void OOC_X86_SSA__BlockDesc_Remove(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__BlockDesc_Remove 43
+typedef void (*_TBP_OOC_X86_SSA__BlockDesc_Remove)(OOC_X86_SSA__Block b, OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__InstrDesc_MoveToFront(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_MoveToFront 38
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_MoveToFront)(OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__InstrDesc_Delete(OOC_X86_SSA__Instr instr);
+#define _TBN_OOC_X86_SSA__InstrDesc_Delete 39
+typedef void (*_TBP_OOC_X86_SSA__InstrDesc_Delete)(OOC_X86_SSA__Instr instr);
+extern void OOC_X86_SSA__BlockDesc_RemoveAll(OOC_X86_SSA__Block b);
+#define _TBN_OOC_X86_SSA__BlockDesc_RemoveAll 44
+typedef void (*_TBP_OOC_X86_SSA__BlockDesc_RemoveAll)(OOC_X86_SSA__Block b);
+extern OOC_INT32 OOC_X86_SSA__BlockDesc_NestingDepth(OOC_X86_SSA__Block b);
+#define _TBN_OOC_X86_SSA__BlockDesc_NestingDepth 45
+typedef OOC_INT32 (*_TBP_OOC_X86_SSA__BlockDesc_NestingDepth)(OOC_X86_SSA__Block b);
+extern OOC_INT32 OOC_X86_SSA__BlockDesc_Count(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__BlockDesc_Count 46
+typedef OOC_INT32 (*_TBP_OOC_X86_SSA__BlockDesc_Count)(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+extern OOC_X86_SSA__IterBlockInstructions OOC_X86_SSA__BlockDesc_Instructions(OOC_X86_SSA__Block b);
+#define _TBN_OOC_X86_SSA__BlockDesc_Instructions 47
+typedef OOC_X86_SSA__IterBlockInstructions (*_TBP_OOC_X86_SSA__BlockDesc_Instructions)(OOC_X86_SSA__Block b);
+extern OOC_CHAR8 OOC_X86_SSA__IterBlockInstructionsDesc_Next(OOC_X86_SSA__IterBlockInstructions iter, OOC_X86_SSA__Instr *instr);
+#define _TBN_OOC_X86_SSA__IterBlockInstructionsDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterBlockInstructionsDesc_Next)(OOC_X86_SSA__IterBlockInstructions iter, OOC_X86_SSA__Instr *instr);
+extern OOC_X86_SSA__IterBlockAllInstructions OOC_X86_SSA__BlockDesc_AllInstructions(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__BlockDesc_AllInstructions 48
+typedef OOC_X86_SSA__IterBlockAllInstructions (*_TBP_OOC_X86_SSA__BlockDesc_AllInstructions)(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+extern OOC_CHAR8 OOC_X86_SSA__IterBlockAllInstructionsDesc_Next(OOC_X86_SSA__IterBlockAllInstructions iter, OOC_X86_SSA__Instr *instr);
+#define _TBN_OOC_X86_SSA__IterBlockAllInstructionsDesc_Next 0
+typedef OOC_CHAR8 (*_TBP_OOC_X86_SSA__IterBlockAllInstructionsDesc_Next)(OOC_X86_SSA__IterBlockAllInstructions iter, OOC_X86_SSA__Instr *instr);
+extern OOC_X86_SSA__Instr OOC_X86_SSA__BlockDesc_AddInstr0(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddInstr0 49
+typedef OOC_X86_SSA__Instr (*_TBP_OOC_X86_SSA__BlockDesc_AddInstr0)(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+extern OOC_X86_SSA__Instr OOC_X86_SSA__BlockDesc_AddInstr1(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddInstr1 50
+typedef OOC_X86_SSA__Instr (*_TBP_OOC_X86_SSA__BlockDesc_AddInstr1)(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1);
+extern OOC_X86_SSA__Instr OOC_X86_SSA__BlockDesc_AddInstr2(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1, OOC_X86_SSA__Result arg2);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddInstr2 51
+typedef OOC_X86_SSA__Instr (*_TBP_OOC_X86_SSA__BlockDesc_AddInstr2)(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1, OOC_X86_SSA__Result arg2);
+extern OOC_X86_SSA__Instr OOC_X86_SSA__BlockDesc_AddInstr3(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1, OOC_X86_SSA__Result arg2, OOC_X86_SSA__Result arg3);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddInstr3 52
+typedef OOC_X86_SSA__Instr (*_TBP_OOC_X86_SSA__BlockDesc_AddInstr3)(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1, OOC_X86_SSA__Result arg2, OOC_X86_SSA__Result arg3);
+extern OOC_X86_SSA__Block OOC_X86_SSA__BlockDesc_AddBlock0(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddBlock0 53
+typedef OOC_X86_SSA__Block (*_TBP_OOC_X86_SSA__BlockDesc_AddBlock0)(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+extern OOC_X86_SSA__Block OOC_X86_SSA__BlockDesc_AddBlock1(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddBlock1 54
+typedef OOC_X86_SSA__Block (*_TBP_OOC_X86_SSA__BlockDesc_AddBlock1)(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddConstType(OOC_X86_SSA__Block b, OOC_X86_SSA__Const selector, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddConstType 55
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddConstType)(OOC_X86_SSA__Block b, OOC_X86_SSA__Const selector, OOC_INT8 type);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddConst(OOC_X86_SSA__Block b, OOC_X86_SSA__Const selector, OOC_SymbolTable__Type type);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddConst 56
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddConst)(OOC_X86_SSA__Block b, OOC_X86_SSA__Const selector, OOC_SymbolTable__Type type);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddConstBool(OOC_X86_SSA__Block b, OOC_CHAR8 value);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddConstBool 57
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddConstBool)(OOC_X86_SSA__Block b, OOC_CHAR8 value);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddConstInt(OOC_X86_SSA__Block b, Object_BigInt__BigInt value, OOC_SymbolTable__Type type);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddConstInt 58
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddConstInt)(OOC_X86_SSA__Block b, Object_BigInt__BigInt value, OOC_SymbolTable__Type type);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddConstDim(OOC_X86_SSA__Block b, OOC_INT32 dim);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddConstDim 59
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddConstDim)(OOC_X86_SSA__Block b, OOC_INT32 dim);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddConstLength(OOC_X86_SSA__Block b, OOC_INT32 dim);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddConstLength 60
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddConstLength)(OOC_X86_SSA__Block b, OOC_INT32 dim);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddAdr(OOC_X86_SSA__Block b, OOC_X86_SSA__Global selector);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddAdr 61
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddAdr)(OOC_X86_SSA__Block b, OOC_X86_SSA__Global selector);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddAdrRT(OOC_X86_SSA__Block b, Object__String name);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddAdrRT 62
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddAdrRT)(OOC_X86_SSA__Block b, Object__String name);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddAdrTypeDescr(OOC_X86_SSA__Block b, OOC_SymbolTable__Type type);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddAdrTypeDescr 63
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddAdrTypeDescr)(OOC_X86_SSA__Block b, OOC_SymbolTable__Type type);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddAdrModuleDescr(OOC_X86_SSA__Block b);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddAdrModuleDescr 64
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddAdrModuleDescr)(OOC_X86_SSA__Block b);
+extern OOC_X86_SSA__Result OOC_X86_SSA__BlockDesc_AddFramePointerOffset(OOC_X86_SSA__Block b, OOC_SymbolTable__VarDecl varDecl);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddFramePointerOffset 65
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__BlockDesc_AddFramePointerOffset)(OOC_X86_SSA__Block b, OOC_SymbolTable__VarDecl varDecl);
+extern void OOC_X86_SSA__OpndDesc_InsertCopy(OOC_X86_SSA__Opnd opnd);
+#define _TBN_OOC_X86_SSA__OpndDesc_InsertCopy 10
+typedef void (*_TBP_OOC_X86_SSA__OpndDesc_InsertCopy)(OOC_X86_SSA__Opnd opnd);
+extern void OOC_X86_SSA__BranchInstrDesc_INIT(OOC_X86_SSA__BranchInstr instr);
+#define _TBN_OOC_X86_SSA__BranchInstrDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__BranchInstrDesc_INIT)(OOC_X86_SSA__BranchInstr instr);
+extern void OOC_X86_SSA__BranchInstrDesc_SetPaths2(OOC_X86_SSA__BranchInstr instr, OOC_X86_SSA__Block pathTrue, OOC_X86_SSA__Block pathFalse);
+#define _TBN_OOC_X86_SSA__BranchInstrDesc_SetPaths2 75
+typedef void (*_TBP_OOC_X86_SSA__BranchInstrDesc_SetPaths2)(OOC_X86_SSA__BranchInstr instr, OOC_X86_SSA__Block pathTrue, OOC_X86_SSA__Block pathFalse);
+extern OOC_X86_SSA__BranchInstr OOC_X86_SSA__BlockDesc_AddBranch(OOC_X86_SSA__Block b, OOC_X86_SSA__Result select);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddBranch 66
+typedef OOC_X86_SSA__BranchInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddBranch)(OOC_X86_SSA__Block b, OOC_X86_SSA__Result select);
+extern void OOC_X86_SSA__MergeInstrDesc_INIT(OOC_X86_SSA__MergeInstr instr, OOC_INT8 opcode, Object__ObjectArrayPtr jumps);
+#define _TBN_OOC_X86_SSA__MergeInstrDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__MergeInstrDesc_INIT)(OOC_X86_SSA__MergeInstr instr, OOC_INT8 opcode, Object__ObjectArrayPtr jumps);
+extern void OOC_X86_SSA__MergeInstrDesc_AddJump(OOC_X86_SSA__MergeInstr instr, OOC_X86_SSA__Instr jump);
+#define _TBN_OOC_X86_SSA__MergeInstrDesc_AddJump 75
+typedef void (*_TBP_OOC_X86_SSA__MergeInstrDesc_AddJump)(OOC_X86_SSA__MergeInstr instr, OOC_X86_SSA__Instr jump);
+extern OOC_X86_SSA__MergeInstr OOC_X86_SSA__BlockDesc_AddMerge(OOC_X86_SSA__Block b, OOC_INT8 opcode, Object__ObjectArrayPtr jumps);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddMerge 67
+typedef OOC_X86_SSA__MergeInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddMerge)(OOC_X86_SSA__Block b, OOC_INT8 opcode, Object__ObjectArrayPtr jumps);
+extern OOC_X86_SSA__MergeInstr OOC_X86_SSA__BlockDesc_AddMerge0(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddMerge0 68
+typedef OOC_X86_SSA__MergeInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddMerge0)(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Result arg1);
+extern OOC_X86_SSA__MergeInstr OOC_X86_SSA__BlockDesc_AddMerge2(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Instr jump1, OOC_X86_SSA__Instr jump2);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddMerge2 69
+typedef OOC_X86_SSA__MergeInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddMerge2)(OOC_X86_SSA__Block b, OOC_INT8 opcode, OOC_X86_SSA__Instr jump1, OOC_X86_SSA__Instr jump2);
+extern void OOC_X86_SSA__GateInstrDesc_INIT(OOC_X86_SSA__GateInstr instr, OOC_INT8 opcode, OOC_X86_SSA__Block merge);
+#define _TBN_OOC_X86_SSA__GateInstrDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__GateInstrDesc_INIT)(OOC_X86_SSA__GateInstr instr, OOC_INT8 opcode, OOC_X86_SSA__Block merge);
+extern OOC_X86_SSA__GateInstr OOC_X86_SSA__BlockDesc_AddGate(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddGate 70
+typedef OOC_X86_SSA__GateInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddGate)(OOC_X86_SSA__Block b, OOC_INT8 opcode);
+extern void OOC_X86_SSA__LoopStartInstrDesc_INIT(OOC_X86_SSA__LoopStartInstr instr);
+#define _TBN_OOC_X86_SSA__LoopStartInstrDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__LoopStartInstrDesc_INIT)(OOC_X86_SSA__LoopStartInstr instr);
+extern void OOC_X86_SSA__LoopStartInstrDesc_SetBackedge(OOC_X86_SSA__LoopStartInstr instr, OOC_X86_SSA__Instr backedge);
+#define _TBN_OOC_X86_SSA__LoopStartInstrDesc_SetBackedge 75
+typedef void (*_TBP_OOC_X86_SSA__LoopStartInstrDesc_SetBackedge)(OOC_X86_SSA__LoopStartInstr instr, OOC_X86_SSA__Instr backedge);
+extern void OOC_X86_SSA__LoopStartInstrDesc_SetEnd(OOC_X86_SSA__LoopStartInstr instr, OOC_X86_SSA__Instr end);
+#define _TBN_OOC_X86_SSA__LoopStartInstrDesc_SetEnd 76
+typedef void (*_TBP_OOC_X86_SSA__LoopStartInstrDesc_SetEnd)(OOC_X86_SSA__LoopStartInstr instr, OOC_X86_SSA__Instr end);
+extern OOC_X86_SSA__LoopStartInstr OOC_X86_SSA__BlockDesc_AddLoopStart(OOC_X86_SSA__Block b);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddLoopStart 71
+typedef OOC_X86_SSA__LoopStartInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddLoopStart)(OOC_X86_SSA__Block b);
+extern void OOC_X86_SSA__LoopBackedgeInstrDesc_INIT(OOC_X86_SSA__LoopBackedgeInstr instr, OOC_X86_SSA__LoopStartInstr start);
+#define _TBN_OOC_X86_SSA__LoopBackedgeInstrDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__LoopBackedgeInstrDesc_INIT)(OOC_X86_SSA__LoopBackedgeInstr instr, OOC_X86_SSA__LoopStartInstr start);
+extern OOC_X86_SSA__LoopBackedgeInstr OOC_X86_SSA__BlockDesc_AddLoopBackedge(OOC_X86_SSA__Block b, OOC_X86_SSA__LoopStartInstr start);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddLoopBackedge 72
+typedef OOC_X86_SSA__LoopBackedgeInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddLoopBackedge)(OOC_X86_SSA__Block b, OOC_X86_SSA__LoopStartInstr start);
+extern void OOC_X86_SSA__ExitInstrDesc_INIT(OOC_X86_SSA__ExitInstr instr, OOC_X86_SSA__Result sp, OOC_X86_SSA__Result fp, Object__ObjectArrayPtr returns);
+#define _TBN_OOC_X86_SSA__ExitInstrDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__ExitInstrDesc_INIT)(OOC_X86_SSA__ExitInstr instr, OOC_X86_SSA__Result sp, OOC_X86_SSA__Result fp, Object__ObjectArrayPtr returns);
+extern OOC_X86_SSA__ExitInstr OOC_X86_SSA__BlockDesc_AddExit(OOC_X86_SSA__Block b, OOC_X86_SSA__Result sp, OOC_X86_SSA__Result fp, Object__ObjectArrayPtr returns);
+#define _TBN_OOC_X86_SSA__BlockDesc_AddExit 73
+typedef OOC_X86_SSA__ExitInstr (*_TBP_OOC_X86_SSA__BlockDesc_AddExit)(OOC_X86_SSA__Block b, OOC_X86_SSA__Result sp, OOC_X86_SSA__Result fp, Object__ObjectArrayPtr returns);
+extern void OOC_X86_SSA__BlockDesc_SetMarkers(OOC_X86_SSA__Block b, OOC_X86_SSA__Node newInfo, OOC_INT32 newMarker);
+#define _TBN_OOC_X86_SSA__BlockDesc_SetMarkers 74
+typedef void (*_TBP_OOC_X86_SSA__BlockDesc_SetMarkers)(OOC_X86_SSA__Block b, OOC_X86_SSA__Node newInfo, OOC_INT32 newMarker);
+extern void OOC_X86_SSA__FunctionBlockDesc_INIT(OOC_X86_SSA__FunctionBlock b, OOC_SymbolTable__ProcDecl procDecl, OOC_CHAR8 checkFunctionResult);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_INIT 4
+typedef void (*_TBP_OOC_X86_SSA__FunctionBlockDesc_INIT)(OOC_X86_SSA__FunctionBlock b, OOC_SymbolTable__ProcDecl procDecl, OOC_CHAR8 checkFunctionResult);
+extern void OOC_X86_SSA__FunctionBlockDesc_SetEnter(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__Instr enter);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_SetEnter 75
+typedef void (*_TBP_OOC_X86_SSA__FunctionBlockDesc_SetEnter)(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__Instr enter);
+extern void OOC_X86_SSA__FunctionBlockDesc_SetExit(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__ExitInstr exit);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_SetExit 76
+typedef void (*_TBP_OOC_X86_SSA__FunctionBlockDesc_SetExit)(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__ExitInstr exit);
+extern OOC_X86_SSA__Result OOC_X86_SSA__FunctionBlockDesc_FixType(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__Result arg, OOC_INT8 type);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_FixType 77
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__FunctionBlockDesc_FixType)(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__Result arg, OOC_INT8 type);
+extern void OOC_X86_SSA__FunctionBlockDesc_AllocateLocalVar(OOC_X86_SSA__FunctionBlock b, OOC_SymbolTable__VarDecl varDecl);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_AllocateLocalVar 78
+typedef void (*_TBP_OOC_X86_SSA__FunctionBlockDesc_AllocateLocalVar)(OOC_X86_SSA__FunctionBlock b, OOC_SymbolTable__VarDecl varDecl);
+extern void OOC_X86_SSA__FunctionBlockDesc_SetMaxSizeCallStack(OOC_X86_SSA__FunctionBlock b, OOC_INT32 size);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_SetMaxSizeCallStack 79
+typedef void (*_TBP_OOC_X86_SSA__FunctionBlockDesc_SetMaxSizeCallStack)(OOC_X86_SSA__FunctionBlock b, OOC_INT32 size);
+extern OOC_INT32 OOC_X86_SSA__FunctionBlockDesc_Offset(OOC_X86_SSA__FunctionBlock b, OOC_SymbolTable__VarDecl varDecl);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_Offset 80
+typedef OOC_INT32 (*_TBP_OOC_X86_SSA__FunctionBlockDesc_Offset)(OOC_X86_SSA__FunctionBlock b, OOC_SymbolTable__VarDecl varDecl);
+extern OOC_X86_SSA__Result OOC_X86_SSA__FunctionBlockDesc_AddGetLengthInstr(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__Instr getInstr, OOC_INT32 dim, OOC_SymbolTable__Array dimType);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_AddGetLengthInstr 81
+typedef OOC_X86_SSA__Result (*_TBP_OOC_X86_SSA__FunctionBlockDesc_AddGetLengthInstr)(OOC_X86_SSA__FunctionBlock b, OOC_X86_SSA__Instr getInstr, OOC_INT32 dim, OOC_SymbolTable__Array dimType);
+extern void OOC_X86_SSA__FunctionBlockDesc_DeadCodeElimination(OOC_X86_SSA__FunctionBlock fctBlock);
+#define _TBN_OOC_X86_SSA__FunctionBlockDesc_DeadCodeElimination 82
+typedef void (*_TBP_OOC_X86_SSA__FunctionBlockDesc_DeadCodeElimination)(OOC_X86_SSA__FunctionBlock fctBlock);
+extern void OOC_OOC_X86_SSA_init(void);
+extern void OOC_OOC_X86_SSA_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_X86_SSA__Node;
+extern RT0__StructDesc _td_OOC_X86_SSA__Opnd;
+extern RT0__StructDesc _td_OOC_X86_SSA__Result;
+extern RT0__StructDesc _td_OOC_X86_SSA__Instr;
+extern RT0__StructDesc _td_OOC_X86_SSA__Block;
+extern RT0__StructDesc _td_OOC_X86_SSA__Selector;
+extern RT0__StructDesc _td_OOC_X86_SSA__9896;
+extern RT0__StructDesc _td_OOC_X86_SSA__Designator;
+extern RT0__StructDesc _td_OOC_X86_SSA__SelectorDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__Global;
+extern RT0__StructDesc _td_OOC_X86_SSA__GlobalDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__Var;
+extern RT0__StructDesc _td_OOC_X86_SSA__VarDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__Proc;
+extern RT0__StructDesc _td_OOC_X86_SSA__ProcDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__ProcName;
+extern RT0__StructDesc _td_OOC_X86_SSA__ProcNameDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__TypeDescr;
+extern RT0__StructDesc _td_OOC_X86_SSA__TypeDescrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__ModuleDescr;
+extern RT0__StructDesc _td_OOC_X86_SSA__ModuleDescrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__Const;
+extern RT0__StructDesc _td_OOC_X86_SSA__ConstDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__HeapObj;
+extern RT0__StructDesc _td_OOC_X86_SSA__HeapObjDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__Index;
+extern RT0__StructDesc _td_OOC_X86_SSA__IndexDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__Field;
+extern RT0__StructDesc _td_OOC_X86_SSA__FieldDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__NodeDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__OpndDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__ResultDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterResultUses;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterResultUsesDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__Dep;
+extern RT0__StructDesc _td_OOC_X86_SSA__DepDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__InstrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterOperands;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterOperandsDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrOperands;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrOperandsDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrResults;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrResultsDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterJumpGateOperands;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterJumpGateOperandsDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrBeforeList;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrBeforeListDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrAfterList;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterInstrAfterListDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__BlockDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterBlockInstructions;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterBlockInstructionsDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterBlockAllInstructions;
+extern RT0__StructDesc _td_OOC_X86_SSA__IterBlockAllInstructionsDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__BranchInstr;
+extern RT0__StructDesc _td_OOC_X86_SSA__MergeInstr;
+extern RT0__StructDesc _td_OOC_X86_SSA__BranchInstrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__MergeInstrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__GateInstr;
+extern RT0__StructDesc _td_OOC_X86_SSA__GateInstrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__LoopStartInstr;
+extern RT0__StructDesc _td_OOC_X86_SSA__LoopStartInstrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__LoopBackedgeInstr;
+extern RT0__StructDesc _td_OOC_X86_SSA__LoopBackedgeInstrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__ExitInstr;
+extern RT0__StructDesc _td_OOC_X86_SSA__ExitInstrDesc;
+extern RT0__StructDesc _td_OOC_X86_SSA__FunctionBlock;
+extern RT0__StructDesc _td_OOC_X86_SSA__FunctionBlockDesc;
+#endif /* _MODULE_OOC_X86_SSA_ */
+
+/* --- */

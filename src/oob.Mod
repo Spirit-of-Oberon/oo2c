@@ -1,4 +1,4 @@
-(* 	$Id: oob.Mod,v 1.22 2004/04/01 20:36:12 mva Exp $	 *)
+(* 	$Id: oob.Mod,v 1.23 2004/07/01 19:10:04 mva Exp $	 *)
 MODULE oob;
 (*  Symbol file browser.
     Copyright (C) 2002-2004  Michael van Acken
@@ -35,6 +35,7 @@ VAR
   help, extendRecords: Options.Option;
   arg: STRING;
   symTab: Sym.Module;
+  noDeclDoc: Sym.Declaration;
   
 CONST
   indentString = "  ";
@@ -78,6 +79,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     currentSection: SHORTINT;
     firstImport: BOOLEAN;
     item: Sym.Item;
+    declDoc: Sym.Declaration;
     
   PROCEDURE Newline();
     VAR
@@ -159,7 +161,10 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
   PROCEDURE ^ VarDecl(varDecl: Sym.VarDecl);
   PROCEDURE ^ ProcDecl(procDecl: Sym.ProcDecl);
     
-  PROCEDURE Type(type, srcCodeType: Sym.Type);
+  PROCEDURE Type(type, srcCodeType: Sym.Type; VAR declDoc: Sym.Declaration);
+  (* If @oparam{declDoc} is not @code{NIL} and there is a suitable place
+     to put the documentation, then write it and set the parameter to
+     @code{NIL}.  *)
     VAR
       i: LONGINT;
       name: Sym.NameString;
@@ -170,7 +175,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         Newline;
         IdentDef(fieldDecl);
         Out.String (": ");
-        Type(fieldDecl.type, fieldDecl.srcCodeType);
+        Type(fieldDecl.type, fieldDecl.srcCodeType, noDeclDoc);
         Out.String(";");
       END FieldDecl;
 
@@ -229,7 +234,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
 
       | type: Sym.Pointer DO
         Out.String("POINTER TO ");
-        Type(type.baseType, type.srcCodeBaseType);
+        Type(type.baseType, type.srcCodeBaseType, noDeclDoc);
         
       | type: Sym.FormalPars DO
         Out.String("(");
@@ -245,7 +250,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         Out.String(")");
         IF (type.resultType # NIL) THEN
           Out.String(": ");
-          Type(type.resultType, type.srcCodeResultType);
+          Type(type.resultType, type.srcCodeResultType, noDeclDoc);
         END;
         FOR i := 0 TO LEN(type.raises^)-1 DO
           IF (i = 0) THEN
@@ -253,7 +258,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
           ELSE
             Out.String(", ");
           END;
-          Type(type.raises[i].type, type.raises[i].srcCodeType);
+          Type(type.raises[i].type, type.raises[i].srcCodeType, noDeclDoc);
         END;
         
       | type: Sym.Array DO
@@ -264,7 +269,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
           Out.LongInt(type.length, 0);
           Out.String(" OF ");
         END;
-        Type(type.elementType, type.srcCodeElementType);
+        Type(type.elementType, type.srcCodeElementType, noDeclDoc);
 
       | type: Sym.Record DO
         Out.String("RECORD");
@@ -272,10 +277,13 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         
         IF (type.baseType # NIL) THEN
           Out.String(" (");
-          Type(type.baseType, type.srcCodeBaseType);
+          Type(type.baseType, type.srcCodeBaseType, noDeclDoc);
           Out.String(")");
         END;
-
+        IF (declDoc # NIL) THEN
+          WriteDoc(declDoc);
+          declDoc := NIL;
+        END;
         RecFields(type);
 
         i := 0;
@@ -297,13 +305,13 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         Out.String("END");
 
       | type: Sym.QualType DO
-        Type(type.baseType, type.srcCodeBaseType);
+        Type(type.baseType, type.srcCodeBaseType, noDeclDoc);
         Out.String("(");
         FOR i := 0 TO LEN(type.arguments^)-1 DO
           IF (i # 0) THEN
             Out.String(", ");
           END;
-          Type(type.arguments[i].type, type.arguments[i].srcCodeType);
+          Type(type.arguments[i].type, type.arguments[i].srcCodeType, noDeclDoc);
         END;
         Out.String(")");
       END;
@@ -361,7 +369,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
       IF (typeDecl.type IS Sym.TypeVar) THEN
         Out.String(": ");
         Type(typeDecl.type(Sym.TypeVar).bound,
-             typeDecl.type(Sym.TypeVar).srcCodeBound);
+             typeDecl.type(Sym.TypeVar).srcCodeBound, declDoc);
       ELSE
         IF typeDecl.HasTypeParameters() THEN
           Out.String("(");
@@ -384,7 +392,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         END;
         
         Out.String (" = ");
-        Type(typeDecl.type, typeDecl.srcCodeType);
+        Type(typeDecl.type, typeDecl.srcCodeType, declDoc);
       END;
     END TypeDecl;
 
@@ -395,7 +403,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
       END;
       IdentDef(varDecl);
       Out.String (": ");
-      Type(varDecl.type, varDecl.srcCodeType);
+      Type(varDecl.type, varDecl.srcCodeType, noDeclDoc);
     END VarDecl;
   
   PROCEDURE ProcDecl(procDecl: Sym.ProcDecl);
@@ -408,7 +416,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         Out.String(") ");
       END;
       IdentDef(procDecl);
-      Type(procDecl.formalPars, procDecl.formalPars);
+      Type(procDecl.formalPars, procDecl.formalPars, noDeclDoc);
     END ProcDecl;
 
   PROCEDURE WriteTopLevel(item: Sym.Item): BOOLEAN;
@@ -428,11 +436,13 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     item := symTab.nestedItems;
     WHILE (item # NIL) DO
       IF WriteTopLevel(item) THEN
+        declDoc := item(Sym.Declaration);
         WITH item: Sym.Import DO
           IF (item.name.str[0] # Builder.prefixAutoImport) THEN
             SetSection(import);
             Import(item);
           END;
+          declDoc := NIL;
         | item: Sym.ConstDecl DO
           SetSection(constDecl);
           ConstDecl(item);
@@ -448,7 +458,9 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         END;
         IF ~(item IS Sym.Import) THEN
           Out.String(";");
-          WriteDoc(item(Sym.Declaration))
+        END;
+        IF (declDoc # NIL) THEN
+          WriteDoc(declDoc)
         END;
       END;
       item := item.nextNested;
@@ -492,6 +504,7 @@ PROCEDURE NewConfig;
   END NewConfig;
 
 BEGIN
+  noDeclDoc := NIL;
   Logger.silence := TRUE;
   cfgErrList := E.NewList("");
   NewConfig;

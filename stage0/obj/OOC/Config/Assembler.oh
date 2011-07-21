@@ -1,0 +1,17 @@
+#ifndef _MODULE_OOC_Config_Assembler_
+#define _MODULE_OOC_Config_Assembler_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <URI.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern Object__String OOC_Config_Assembler__AssembleFileCmd(URI__URI in, URI__URI out);
+extern void OOC_OOC_Config_Assembler_init(void);
+extern void OOC_OOC_Config_Assembler_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_Config_Assembler_ */
+
+/* --- */

@@ -1158,6 +1158,9 @@ typedef void (*_TBP_OOC_IR__VisitorDesc_VisitForStatm)(OOC_IR__Visitor v, OOC_IR
 extern void OOC_IR__ForStatmDesc_Accept(OOC_IR__ForStatm forStatm, OOC_IR__Visitor v);
 #define _TBN_OOC_IR__ForStatmDesc_Accept 4
 typedef void (*_TBP_OOC_IR__ForStatmDesc_Accept)(OOC_IR__ForStatm forStatm, OOC_IR__Visitor v);
+extern OOC_CHAR8 OOC_IR__ForStatmDesc_PositiveStep(OOC_IR__ForStatm forStatm);
+#define _TBN_OOC_IR__ForStatmDesc_PositiveStep 5
+typedef OOC_CHAR8 (*_TBP_OOC_IR__ForStatmDesc_PositiveStep)(OOC_IR__ForStatm forStatm);
 extern void OOC_IR__VisitorDesc_VisitIterateArrayStatm(OOC_IR__Visitor v, OOC_IR__IterateArrayStatm iterStatm);
 #define _TBN_OOC_IR__VisitorDesc_VisitIterateArrayStatm 46
 typedef void (*_TBP_OOC_IR__VisitorDesc_VisitIterateArrayStatm)(OOC_IR__Visitor v, OOC_IR__IterateArrayStatm iterStatm);

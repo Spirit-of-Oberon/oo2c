@@ -14,9 +14,8 @@ extern void OOC_OOC_C_RuntimeData_init(void);
 extern void OOC_OOC_C_RuntimeData_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_C_RuntimeData__1998;
-extern RT0__StructDesc _td_OOC_C_RuntimeData__3805;
-extern RT0__StructDesc _td_OOC_C_RuntimeData__4675;
+extern RT0__StructDesc _td_OOC_C_RuntimeData__2006;
+extern RT0__StructDesc _td_OOC_C_RuntimeData__2883;
 #endif /* _MODULE_OOC_C_RuntimeData_ */
 
 /* --- */

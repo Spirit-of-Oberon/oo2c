@@ -1,0 +1,19 @@
+#ifndef _MODULE_OOC_X86_ConstProp_
+#define _MODULE_OOC_X86_ConstProp_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/X86/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern void OOC_X86_ConstProp__Transform(OOC_X86_SSA__FunctionBlock pb);
+extern void OOC_OOC_X86_ConstProp_init(void);
+extern void OOC_OOC_X86_ConstProp_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_X86_ConstProp__Worklist;
+extern RT0__StructDesc _td_OOC_X86_ConstProp__WorklistDesc;
+#endif /* _MODULE_OOC_X86_ConstProp_ */
+
+/* --- */

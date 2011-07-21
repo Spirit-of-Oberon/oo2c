@@ -1,4 +1,4 @@
-(*	$Id: Boxed.Mod,v 1.16 2004/02/15 11:00:17 mva Exp $	*)
+(*	$Id: Boxed.Mod,v 1.17 2004/06/04 08:54:27 mva Exp $	*)
 MODULE Object:Boxed;
 (*  Implements object representations for predefined types.
     Copyright (C) 2002-2004  Michael van Acken
@@ -28,7 +28,7 @@ MODULE Object:Boxed;
    it during their lifetime.  *)
 
 IMPORT
-  IntStr, RealStr, LRealStr, Strings,
+  SYSTEM, IntStr, RealStr, LRealStr, Strings,
   HashCode, Obj := Object, IO, ADT:Storable, ADT:StringBuffer;
 
 TYPE
@@ -510,6 +510,11 @@ PROCEDURE (v: Set) ToString*(): STRING;
     
     RETURN Obj.NewLatin1(str);
   END ToString;
+
+PROCEDURE (v: Set) ToLongInt*(): LONGINT;
+  BEGIN
+    RETURN SYSTEM.VAL(LONGINT, v.value);
+  END ToLongInt;
 
 PROCEDURE (v: Set) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
