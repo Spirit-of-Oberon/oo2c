@@ -59,8 +59,8 @@ RT0__StructDesc _td_OOC_SSA_WriteC__24786 = { (RT0__Struct[]){&RT0__char}, NULL,
 RT0__StructDesc _td_OOC_SSA_WriteC__24989 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_WriteC__26000 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_WriteC__26293 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_SSA_WriteC__41455 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
-RT0__StructDesc _td_OOC_SSA_WriteC__54173 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_SSA_WriteC__41788 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_SSA_WriteC__54506 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:WriteC", (RT0__Struct[]) { &_td_OOC_SSA_WriteC__RegisterSwap, &_td_OOC_SSA_WriteC__SwapArray, &_td_OOC_SSA_WriteC__Translator, &_td_OOC_SSA_WriteC__TranslatorDesc, &_td_OOC_SSA_WriteC__Writer, &_td_OOC_SSA_WriteC__WriterDesc, &_td_OOC_SSA_WriteC__Visitor, &_td_OOC_SSA_WriteC__VisitorDesc, NULL }, 0 };
 
 extern void OOC_OOC_SSA_WriteC_open(RT0__Module client) {

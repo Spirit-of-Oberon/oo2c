@@ -188,7 +188,7 @@ l8_loop:
   i6 = *(OOC_UINT8*)((OOC_INT32)key+(_check_index(i3, key_0d, OOC_UINT16, 4174)));
   i6 = _type_cast_fast(OOC_UINT8, OOC_UINT8, i6);
   old = i6;
-  i5 = _type_cast_fast(OOC_UINT8, OOC_UINT8, (_rot(OOC_UINT8, i5, i4)));
+  i5 = _type_cast_fast(OOC_UINT8, OOC_UINT8, (_rot(OOC_UINT8, OOC_UINT8, i5, i4)));
   _new = i5;
   *(OOC_UINT8*)((OOC_INT32)key+(_check_index(i3, key_0d, OOC_UINT16, 4250))) = (_mod((i6+i5),256));
   i3 = i3+1;

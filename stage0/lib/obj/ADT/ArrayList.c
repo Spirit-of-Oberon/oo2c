@@ -97,7 +97,7 @@ ADT_ArrayList__ArrayList ADT_ArrayList__ArrayListDesc_Copy(ADT_ArrayList__ArrayL
   ADT_ArrayList__ArrayList _new;
   OOC_INT32 i;
 
-  i0 = (OOC_INT32)RT0__NewObject(_td__qtd3.baseTypes[0]);
+  i0 = (OOC_INT32)RT0__NewObject(_td__qtd4.baseTypes[0]);
   i1 = (OOC_INT32)l;
   i2 = *(OOC_INT32*)((_check_pointer(i1, 3016))+4);
   ADT_ArrayList__ArrayListDesc_INIT((ADT_ArrayList__ArrayList)i0, i2);
@@ -770,7 +770,7 @@ void ADT_ArrayList__IterElementsDesc_INIT(ADT_ArrayList__IterElements iter, ADT_
 ADT_ArrayList__IterElements ADT_ArrayList__ArrayListDesc_IterElements(ADT_ArrayList__ArrayList l) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)RT0__NewObject(_td__qtd5.baseTypes[0]);
+  i0 = (OOC_INT32)RT0__NewObject(_td__qtd6.baseTypes[0]);
   i1 = (OOC_INT32)l;
   ADT_ArrayList__IterElementsDesc_INIT((ADT_ArrayList__IterElements)i0, (ADT_ArrayList__ArrayList)i1);
   return (ADT_ArrayList__IterElements)i0;

@@ -286,7 +286,7 @@ l24:
   i3=1u;
 l26:
   if (i3) goto l28;
-  *num = ((_ash((_lsh(OOC_INT32, i2, 25)),(i0-25)))+i1);
+  *num = ((_ash((_lsh(OOC_INT32, OOC_UINT32, i2, 25)),(i0-25)))+i1);
   goto l29;
 l28:
   IO__RaiseFormatError((Object__String)((OOC_INT32)_c8));

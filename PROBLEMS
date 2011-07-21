@@ -61,3 +61,12 @@ needs to be replaced with
     while (1) {
       de = readdir_r(dir, &u.d);
 [I would appreciate if someone could provide an autoconf test for this.]
+
+----
+
+(Static Linking with libtool 1.5.6) Building a statically linked
+program with `--ldflags "-all-static"' may fail due to unresolved
+symbols from the math library, like floor().  The reason for this is
+that libtool somehow drops the dependency of liboo2c on libm.  As a
+workaround, locate the installed libtool file liboo2c.la and add `-lm'
+to the beginning of the variable `dependency_libs'.

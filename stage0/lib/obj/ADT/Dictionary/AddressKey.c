@@ -145,7 +145,7 @@ l17:
 l19:
   return i5;
 l20:
-  i4 = _type_cast_fast(OOC_INT32, OOC_UINT32, ((i4^(_type_cast_fast(OOC_UINT32, OOC_INT32, (_lsh(OOC_INT32, i3, (-3))))))&i2));
+  i4 = _type_cast_fast(OOC_INT32, OOC_UINT32, ((i4^(_type_cast_fast(OOC_UINT32, OOC_INT32, (_lsh(OOC_INT32, OOC_UINT32, i3, (-3))))))&i2));
   incr = i4;
   i6 = i4==0;
   if (!i6) goto l24;

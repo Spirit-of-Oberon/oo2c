@@ -139,8 +139,8 @@ extern RT0__StructDesc _td_OOC_SSA_WriteC__24786;
 extern RT0__StructDesc _td_OOC_SSA_WriteC__24989;
 extern RT0__StructDesc _td_OOC_SSA_WriteC__26000;
 extern RT0__StructDesc _td_OOC_SSA_WriteC__26293;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__41455;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__54173;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__41788;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__54506;
 #endif /* _MODULE_OOC_SSA_WriteC_ */
 
 /* --- */

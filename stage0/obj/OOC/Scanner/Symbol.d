@@ -1,7 +1,7 @@
 #include <OOC/Scanner/Symbol.oh>
 #define OOC_Scanner_Symbol__addOnSymbols 81
-OOC_CHAR8 OOC_Scanner_Symbol__name[81][13];
-OOC_CHAR8 OOC_Scanner_Symbol__representation[81][10];
+typeof(OOC_Scanner_Symbol__name) OOC_Scanner_Symbol__name;
+typeof(OOC_Scanner_Symbol__representation) OOC_Scanner_Symbol__representation;
 static OOC_INT16 OOC_Scanner_Symbol__i;
 
 /* run-time meta data */

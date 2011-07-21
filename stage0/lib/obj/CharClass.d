@@ -1,6 +1,6 @@
 #include <CharClass.oh>
 #include <Ascii.oh>
-OOC_CHAR8 CharClass__systemEol[3];
+typeof(CharClass__systemEol) CharClass__systemEol;
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;

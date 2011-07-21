@@ -231,6 +231,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type;
     str, str2: ARRAY 32 OF CHAR;
     base: Sym.Type;
     dummy: STRING;
+    i: LONGINT;
 
   PROCEDURE AddToQtd(type: Sym.Type): STRING;
     VAR
@@ -280,6 +281,11 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type;
       ELSE
         (* ignore *)
       END;
+      FOR i := 0 TO LEN(type.arguments^)-1 DO
+        (* make sure the type descriptor of the type argument exists *)
+        dummy := NameOfTypeDescriptor(type.arguments[i].type, qtdData);
+      END;
+      
       RETURN AddToQtd(type);
 
     | type: Sym.FormalPars DO

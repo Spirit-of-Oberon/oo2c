@@ -1,4 +1,4 @@
-(* 	$Id: IR.Mod,v 1.288 2005/10/07 08:35:42 mva Exp $	 *)
+(* 	$Id: IR.Mod,v 1.289 2005/10/08 15:52:24 mva Exp $	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
     Copyright (C) 2001-2005  Michael van Acken, Stewart Greenhill
@@ -687,8 +687,7 @@ TYPE
     receiver-: Expression;
     (**If the reference type is a type variable or a type that takes a variable
        as input, then this field refers to the receiver
-       variable that provides the actual value for the type variable.  If there
-       are no type variables involved, then this field is @code{NIL}.  *)
+       variable that provides the actual value for the type variable.  *)
     
     origExpr-: Expression;
     (**Unnormalized value of @ofield{expr}.  *)

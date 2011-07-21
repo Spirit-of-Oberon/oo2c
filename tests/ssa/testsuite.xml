@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic83">-->
+  select ="&SetupTestCasesWithOut; bugExport3">-->
 
   &TestSetupWithOut;
     
@@ -1411,6 +1411,9 @@
     <test id="lsh3" type="reject" file="Lsh3.Mod">
       Calling <code>SYSTEM.LSH</code> with a non-integer offset.
     </test>
+    <test id="lsh4" type="run" file="Lsh4.Mod" output="Lsh4.Ref">
+      Right shift of <code>SHORTINT</code> inserts zeros to the left.
+    </test>
 
     <test id="rot1" type="run" file="Rot1.Mod" output="Rot1.Ref">
       Shifting bits with <code>SYSTEM.ROT</code> for various integer
@@ -1865,7 +1868,8 @@
       Regression test: <code>WITH</code> statement must propagate the
       correct type value.
     </test>
-    <test id="generic81" type="accept" file="Generic81.Mod">
+    <test id="generic81" type="run" file="Generic81.Mod"
+          output="Generic81.Ref">
       Right hand side of type test can contain a variable.
     </test>
     <test id="generic82" type="reject" file="Generic82.Mod">
@@ -2113,6 +2117,10 @@
       Regression test: Create an alias for a predefined type name and
       export it.  Import of this type name should not crash the
       compiler.
+    </test>
+    <test id="bugExport3" type="run" file="BugExport3.Mod">
+      Regression test: Exporting an unnamed variable of record type
+      should generate valid GCC code.
     </test>
 
     <test id="bugTypeDescr1" type="run" file="BugTypeDescr1.Mod">

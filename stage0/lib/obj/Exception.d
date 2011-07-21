@@ -1,6 +1,6 @@
 #include <Exception.oh>
 #define Exception__maxBacktraceSize 21
-Exception__ThreadStatePtr (*Exception__GetThreadState)(void);
+typeof(Exception__GetThreadState) Exception__GetThreadState;
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;

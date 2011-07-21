@@ -1,4 +1,4 @@
-(* 	$Id: RuntimeData.Mod,v 1.31 2005/10/07 08:35:42 mva Exp $	 *)
+(* 	$Id: RuntimeData.Mod,v 1.32 2005/10/08 15:52:24 mva Exp $	 *)
 MODULE OOC:C:RuntimeData;
 (*  Writes C code for run-time data like type descriptors.
     Copyright (C) 2002, 2003, 2004, 2005  Michael van Acken
@@ -144,7 +144,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       name: STRING;
     BEGIN
       type := type.Deparam();
-      IF (type IS Sym.TypeVar) THEN
+      IF (type IS Sym.TypeVar) & (type(Sym.TypeVar).parameterIndex < 0) THEN
         type := type(Sym.TypeVar).bound;
       END;
       IF type.hasDescriptor THEN
@@ -421,7 +421,11 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           WriteTDRef(qtd.type(Sym.TypeClosure).baseType);
           FOR i := 0 TO LEN(qtd.type(Sym.TypeClosure).arguments^)-1 DO
             CNli;
-            WriteTDRef(qtd.type(Sym.TypeClosure).arguments[i].type);
+            type := qtd.type(Sym.TypeClosure).arguments[i].type;
+            IF ~(type IS Sym.TypeVar) & TR.IsPointer(type) THEN
+              type := TR.PointerBaseType(type);
+            END;
+            WriteTDRef(type);
           END;
           w.WriteString(", NULL}");
           

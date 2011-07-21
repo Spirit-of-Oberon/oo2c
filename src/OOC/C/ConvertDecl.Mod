@@ -1,7 +1,7 @@
-(* 	$Id: ConvertDecl.Mod,v 1.69 2004/12/15 11:27:00 mva Exp $	 *)
+(* 	$Id: ConvertDecl.Mod,v 1.70 2005/12/26 10:56:55 mva Exp $	 *)
 MODULE OOC:C:ConvertDecl;
 (*  Translate Oberon-2 declarations to their C counterparts.
-    Copyright (C) 2001-2004  Michael van Acken
+    Copyright (C) 2001-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -339,7 +339,6 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
         END;
       ELSIF (mode # modeWriteExported) &
             (item.exportMark # Sym.nameNotExported) &
-            TR.IsRecord(item.type) &
             (item.type.namingDecl = NIL) THEN
         (* for an exported record variable, we don't want to repeat the
            struct definition in the .oh and the .d file; instead we use

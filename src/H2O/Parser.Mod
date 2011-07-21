@@ -334,7 +334,10 @@ VAR
         Element;
         WHILE token.sym = Scanner.comma DO
           GetSym;
-          Element;
+          (* allow this (ffmpeg) :  enum foo { a=1, b=2, c=3, }; *)
+          IF token.sym # Scanner.rbrace THEN
+            Element;
+          END;
         END
       END;
       Expect(Scanner.rbrace);
@@ -1022,6 +1025,7 @@ VAR
           result := Value.zeroLongInt;
           err.MsgParam("Treating undefined symbol '$0' as constant 0", token.name, NIL, NIL, FALSE);
         ELSE
+          result := Value.zeroLongInt;
           err.ErrorParam("Identifier `$0' is undefined", token.name, NIL, NIL);
         END;
         GetSym

@@ -1,14 +1,15 @@
-(* 	$Id: RT0.Mod,v 1.53 2005/10/07 08:35:42 mva Exp $	 *)
+(* 	$Id: RT0.Mod,v 1.55 2005/10/30 08:05:26 mva Exp $	 *)
 MODULE RT0 [
   FOREIGN "C";
   LINK
     FILE "RT0.c";
     <*IF HAVE_LIB_DL THEN*>LIB "dl";<*END*>
+    <*IF HAVE_LIB_PTHREAD THEN*>LIB "pthread";<*END*>
     <*IF HAVE_LIB_GC THEN*>
       <*IF HAVE_LIB_DL THEN*>
-        LIB "gc" ("dl");
+        LIB "gc" ("dl" <*IF HAVE_LIB_PTHREAD THEN*>, "pthread"<*END*>);
       <*ELSE*>
-        LIB "gc";
+        LIB "gc" <*IF HAVE_LIB_PTHREAD THEN*>("pthread")<*END*>;
       <*END*>
     <*END*>
     <*IF HAVE_LIB_M THEN*>LIB "m";<*END*>
@@ -205,7 +206,9 @@ TYPE
     typeArgs-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF Struct;
     (**For a qualified type @oconst{strQualType}, this array holds the base
        type followed by the type arguments applied to the base type, followed
-       by @code{NIL}.  For all other types, this field is @code{NIL}.  *)
+       by @code{NIL}.  For the type arguments, the type descriptor of the
+       record base type is stored, @emph{not} that of the pointer type.
+       For types other than @oconst{strQualType}, this field is @code{NIL}.  *)
     
     module-: Module;
     (**The module that defines this type descriptor.  For predefined types,

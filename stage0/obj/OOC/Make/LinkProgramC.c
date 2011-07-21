@@ -194,7 +194,7 @@ l8:
 
 
   OOC_INITIALIZE_VPAR(moduleList__ref,moduleList,OOC_Repository__Module ,(moduleList_0d*4))
-  i0 = (OOC_INT32)RT0__NewObject(_td__qtd1.baseTypes[0]);
+  i0 = (OOC_INT32)RT0__NewObject(_td__qtd3.baseTypes[0]);
   libDeps = (ADT_Dictionary__Dictionary)i0;
   ADT_Dictionary__DictionaryDesc_INIT((ADT_Dictionary__Dictionary)i0);
   i0 = (OOC_INT32)ADT_Dictionary__New();

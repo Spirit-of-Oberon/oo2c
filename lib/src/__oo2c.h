@@ -1,4 +1,4 @@
-/*      $Id: __oo2c.h,v 1.47 2005/10/07 08:35:42 mva Exp $        */
+/*      $Id: __oo2c.h,v 1.49 2005/12/05 17:32:57 mva Exp $        */
 /*  Run-time system for C back-ends of OOC2
     Copyright (C) 2001-2003, 2005  Michael van Acken
 
@@ -118,18 +118,18 @@ extern OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r);
 #define _ash(_x,_n) (_n >= 0) ? _ashl(_x,_n) : _ashr(_x,- _n)
 
 /* SYSTEM.LSH(x,n) */
-#define _lshl(_x,_n,_type) ((_type)(_x << _n))
-#define _lshr(_x,_n,_type) ((_type)(_x >> _n))
-#define _lsh(_type,_x,_n) ((_n >= 0) ? _lshl(_x,_n,_type) : _lshr(_x,- _n,_type))
+#define _lshl(_x,_n,_type,_typeU) ((_type)((_typeU)(_x) << _n))
+#define _lshr(_x,_n,_type,_typeU) ((_type)((_typeU)(_x) >> _n))
+#define _lsh(_type,_typeU,_x,_n) ((_n >= 0) ? _lshl(_x,_n,_type,_typeU) : _lshr(_x,- _n,_type,_typeU))
 
 /* SYSTEM.ROT(x,n) */
-#define _rot(_type,_x,_n)                                                     \
+#define _rot(_type,_typeU,_x,_n)                                              \
   ({ int bits = sizeof(_type)*8;                                              \
      _type res;                                                               \
      if (_n % bits >= 0) {                                                    \
-       res = ((_type)_x << _n % bits) | ((_type)_x >> (bits - _n % bits));    \
+       res = ((_typeU)_x << _n % bits) | ((_typeU)_x >> (bits - _n % bits));  \
      } else {                                                                 \
-       res = ((_type)_x >> -(_n % bits)) | ((_type)_x << (bits + _n % bits)); \
+       res = ((_typeU)_x >> -(_n % bits)) | ((_typeU)_x << (bits + _n % bits)); \
      }                                                                        \
      res; })
 

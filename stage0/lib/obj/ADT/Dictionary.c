@@ -145,7 +145,7 @@ l17:
 l19:
   return i5;
 l20:
-  i4 = _type_cast_fast(OOC_INT32, OOC_UINT32, ((i4^(_type_cast_fast(OOC_UINT32, OOC_INT32, (_lsh(OOC_INT32, i3, (-3))))))&i2));
+  i4 = _type_cast_fast(OOC_INT32, OOC_UINT32, ((i4^(_type_cast_fast(OOC_UINT32, OOC_INT32, (_lsh(OOC_INT32, OOC_UINT32, i3, (-3))))))&i2));
   incr = i4;
   i6 = i4==0;
   if (!i6) goto l24;
@@ -483,7 +483,7 @@ ADT_Dictionary__Dictionary ADT_Dictionary__DictionaryDesc_Copy(ADT_Dictionary__D
   ADT_Dictionary__Dictionary copy;
   OOC_INT32 i;
 
-  i0 = (OOC_INT32)RT0__NewObject(_td__qtd3.baseTypes[0]);
+  i0 = (OOC_INT32)RT0__NewObject(_td__qtd5.baseTypes[0]);
   ADT_Dictionary__DictionaryDesc_INIT((ADT_Dictionary__Dictionary)i0);
   copy = (ADT_Dictionary__Dictionary)i0;
   i1 = (OOC_INT32)dict;
@@ -882,7 +882,7 @@ void ADT_Dictionary__IterKeysDesc_INIT(ADT_Dictionary__IterKeys iter, ADT_Dictio
 ADT_Dictionary__IterKeys ADT_Dictionary__DictionaryDesc_IterKeys(ADT_Dictionary__Dictionary dict) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)RT0__NewObject(_td__qtd5.baseTypes[0]);
+  i0 = (OOC_INT32)RT0__NewObject(_td__qtd7.baseTypes[0]);
   i1 = (OOC_INT32)dict;
   ADT_Dictionary__IterKeysDesc_INIT((ADT_Dictionary__IterKeys)i0, (ADT_Dictionary__Dictionary)i1);
   return (ADT_Dictionary__IterKeys)i0;
@@ -966,7 +966,7 @@ void ADT_Dictionary__IterValuesDesc_INIT(ADT_Dictionary__IterValues iter, ADT_Di
 ADT_Dictionary__IterValues ADT_Dictionary__DictionaryDesc_IterValues(ADT_Dictionary__Dictionary dict) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)RT0__NewObject(_td__qtd7.baseTypes[0]);
+  i0 = (OOC_INT32)RT0__NewObject(_td__qtd9.baseTypes[0]);
   i1 = (OOC_INT32)dict;
   ADT_Dictionary__IterValuesDesc_INIT((ADT_Dictionary__IterValues)i0, (ADT_Dictionary__Dictionary)i1);
   return (ADT_Dictionary__IterValues)i0;

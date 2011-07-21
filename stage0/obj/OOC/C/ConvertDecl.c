@@ -430,35 +430,35 @@ static OOC_C_DeclWriter__Declaration OOC_C_ConvertDecl__ConvertDecl(OOC_C_DeclWr
 
   i0 = (OOC_INT32)item;
   i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9571)))), &_td_OOC_SymbolTable__ProcDeclDesc);
-  if (i1) goto l87;
+  if (i1) goto l83;
   i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10717)))), &_td_OOC_SymbolTable__ConstDeclDesc);
-  if (i1) goto l85;
+  if (i1) goto l81;
   i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10866)))), &_td_OOC_SymbolTable__VarDeclDesc);
   if (i1) goto l15;
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12981)))), &_td_OOC_SymbolTable__FieldDeclDesc);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12944)))), &_td_OOC_SymbolTable__FieldDeclDesc);
   if (i1) goto l13;
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13214)))), &_td_OOC_SymbolTable__TypeDeclDesc);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13177)))), &_td_OOC_SymbolTable__TypeDeclDesc);
   if (i1) goto l11;
-  _failed_with(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13208)))), 13208);
-  goto l116;
+  _failed_with(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13171)))), 13171);
+  goto l112;
 l11:
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13466))+52);
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13454))+48);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13429))+52);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13417))+48);
   i3 = (OOC_INT32)w;
   i1 = (OOC_INT32)OOC_C_ConvertDecl__ConvertType((OOC_C_DeclWriter__Writer)i3, (OOC_SymbolTable__Type)i2, (OOC_SymbolTable__Type)i1);
   i0 = (OOC_INT32)OOC_C_Naming__NameOfDeclaration((OOC_SymbolTable__Declaration)i0);
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 13246)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i3, (Object__String)i0, 0, 1, (OOC_C_DeclWriter__Type)i1);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 13209)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i3, (Object__String)i0, 0, 1, (OOC_C_DeclWriter__Type)i1);
   return (OOC_C_DeclWriter__Declaration)i0;
-  goto l116;
+  goto l112;
 l13:
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13180))+52);
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13168))+48);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13143))+52);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13131))+48);
   i3 = (OOC_INT32)w;
   i1 = (OOC_INT32)OOC_C_ConvertDecl__ConvertType((OOC_C_DeclWriter__Writer)i3, (OOC_SymbolTable__Type)i2, (OOC_SymbolTable__Type)i1);
   i0 = (OOC_INT32)OOC_C_Naming__NameOfDeclaration((OOC_SymbolTable__Declaration)i0);
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 13014)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i3, (Object__String)i0, 0, 0, (OOC_C_DeclWriter__Type)i1);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 12977)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i3, (Object__String)i0, 0, 0, (OOC_C_DeclWriter__Type)i1);
   return (OOC_C_DeclWriter__Declaration)i0;
-  goto l116;
+  goto l112;
 l15:
   tq = 0;
   i1 = *(OOC_UINT8*)((_check_pointer(i0, 10927))+56);
@@ -526,7 +526,7 @@ l42:
   i7 = *(OOC_UINT8*)((_check_pointer(i0, 11691))+56);
   
 l44:
-  if (i7) goto l62;
+  if (i7) goto l58;
   i5 = i5!=0;
   if (i5) goto l48;
   i5=0u;
@@ -537,129 +537,121 @@ l48:
   
 l50:
   if (i5) goto l52;
-  i5=0u;
+  i0=0u;
   goto l54;
 l52:
-  i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 12585))+48);
-  i5 = OOC_SymbolTable_TypeRules__IsRecord((OOC_SymbolTable__Type)i5);
-  
-l54:
-  if (i5) goto l56;
-  i0=0u;
-  goto l58;
-l56:
-  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 12611))+48);
-  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 12616))+24);
+  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 12574))+48);
+  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 12579))+24);
   i0 = i0==(OOC_INT32)0;
   
-l58:
-  if (i0) goto l60;
+l54:
+  if (i0) goto l56;
   i0=i4;
-  goto l83;
-l60:
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 12881)))), OOC_C_DeclWriter__WriterDesc_NewTypeOf)),OOC_C_DeclWriter__WriterDesc_NewTypeOf)((OOC_C_DeclWriter__Writer)i6, (Object__String)i3);
+  goto l79;
+l56:
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 12844)))), OOC_C_DeclWriter__WriterDesc_NewTypeOf)),OOC_C_DeclWriter__WriterDesc_NewTypeOf)((OOC_C_DeclWriter__Writer)i6, (Object__String)i3);
   ctype = (OOC_C_DeclWriter__Type)i0;
   
-  goto l83;
-l62:
+  goto l79;
+l58:
   i5 = *(OOC_UINT8*)((_check_pointer(i0, 11726))+59);
   i5 = !i5;
+  if (i5) goto l61;
+  i5=0u;
+  goto l63;
+l61:
+  i5 = *(OOC_UINT8*)((_check_pointer(i0, 11744))+60);
+  
+l63:
   if (i5) goto l65;
   i5=0u;
   goto l67;
 l65:
-  i5 = *(OOC_UINT8*)((_check_pointer(i0, 11744))+60);
-  
-l67:
-  if (i5) goto l69;
-  i5=0u;
-  goto l71;
-l69:
   i5 = *(OOC_UINT8*)((_check_pointer(i0, 11770))+61);
   
-l71:
-  if (!i5) goto l74;
+l67:
+  if (!i5) goto l70;
   i5 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"__ref", 6);
   i3 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i3, (Object__String)i5);
   name = (Object__String)i3;
   
-l74:
+l70:
   i5 = *(OOC_UINT8*)((_check_pointer(i0, 12157))+60);
-  if (i5) goto l77;
+  if (i5) goto l73;
   i0=0u;
-  goto l79;
-l77:
+  goto l75;
+l73:
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 12186))+48);
   i0 = !(OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12193)))), &_td_OOC_SymbolTable__ArrayDesc));
   
-l79:
-  if (i0) goto l81;
+l75:
+  if (i0) goto l77;
   i0=i4;
-  goto l83;
-l81:
+  goto l79;
+l77:
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 12408)))), OOC_C_DeclWriter__WriterDesc_NewPointer)),OOC_C_DeclWriter__WriterDesc_NewPointer)((OOC_C_DeclWriter__Writer)i6, 0, (OOC_C_DeclWriter__Type)i4);
   ctype = (OOC_C_DeclWriter__Type)i0;
   
-l83:
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 12931)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i6, (Object__String)i3, i2, i1, (OOC_C_DeclWriter__Type)i0);
+l79:
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 12894)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i6, (Object__String)i3, i2, i1, (OOC_C_DeclWriter__Type)i0);
   return (OOC_C_DeclWriter__Declaration)i0;
-  goto l116;
-l85:
+  goto l112;
+l81:
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10840))+52);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10827))+48);
   i0 = (OOC_INT32)OOC_C_Naming__NameOfDeclaration((OOC_SymbolTable__Declaration)i0);
   i3 = (OOC_INT32)w;
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 10750)))), OOC_C_DeclWriter__WriterDesc_NewDefine)),OOC_C_DeclWriter__WriterDesc_NewDefine)((OOC_C_DeclWriter__Writer)i3, (Object__String)i0, (Object_Boxed__Object)i2, (OOC_SymbolTable__Type)i1);
   return (OOC_C_DeclWriter__Declaration)i0;
-  goto l116;
-l87:
+  goto l112;
+l83:
   i1 = mode;
   switch (i1) {
   case 0:
     sc = 2;
-    goto l109;
+    goto l105;
   case 1:
     i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9711))+4);
     i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 9720)))), &_td_OOC_SymbolTable__ProcDeclDesc);
-    if (i2) goto l93;
+    if (i2) goto l89;
     sc = 3;
     
-    goto l109;
-l93:
+    goto l105;
+l89:
     sc = 6;
     
-    goto l109;
+    goto l105;
   case 2:
     i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9922))+4);
     i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 9931)))), &_td_OOC_SymbolTable__ProcDeclDesc);
-    if (i2) goto l106;
+    if (i2) goto l102;
     i2 = *(OOC_INT8*)((_check_pointer(i0, 10043))+28);
     i2 = i2==0;
-    if (i2) goto l100;
+    if (i2) goto l96;
     i2=0u;
-    goto l102;
-l100:
+    goto l98;
+l96:
     i2 = OOC_SymbolTable__ProcDeclDesc_IsTypeBound((OOC_SymbolTable__ProcDecl)i0);
     i2 = !i2;
     
-l102:
-    if (i2) goto l104;
+l98:
+    if (i2) goto l100;
     sc = 4;
     
-    goto l109;
-l104:
+    goto l105;
+l100:
     sc = 3;
     
-    goto l109;
-l106:
+    goto l105;
+l102:
     sc = 4;
     
-    goto l109;
+    goto l105;
   default:
     _failed_case(i1, 9595);
-    goto l109;
+    goto l105;
   }
-l109:
+l105:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10262))+64);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10244))+64);
   i4 = (OOC_INT32)w;
@@ -668,18 +660,18 @@ l109:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i2, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 10309)))), &_td_OOC_C_DeclWriter__PointerDesc, 10309)), 10317))+4);
   fpars = (OOC_C_DeclWriter__Type)i2;
   i3 = *(OOC_UINT8*)((_check_pointer(i0, 10345))+76);
-  if (!i3) goto l112;
+  if (!i3) goto l108;
   OOC_C_DeclWriter__FunctionDesc_MakeParametersVolatile((OOC_C_DeclWriter__Function)(_type_guard(i2, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 10388)))), &_td_OOC_C_DeclWriter__FunctionDesc, 10388)));
-l112:
+l108:
   i1 = i1!=0;
-  if (!i1) goto l115;
+  if (!i1) goto l111;
   OOC_C_DeclWriter__FunctionDesc_SetNoReturn((OOC_C_DeclWriter__Function)(_type_guard(i2, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 10548)))), &_td_OOC_C_DeclWriter__FunctionDesc, 10548)), 0u);
-l115:
+l111:
   i0 = (OOC_INT32)OOC_C_Naming__NameOfDeclaration((OOC_SymbolTable__Declaration)i0);
   i1 = sc;
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 10610)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i4, (Object__String)i0, 0, i1, (OOC_C_DeclWriter__Type)i2);
   return (OOC_C_DeclWriter__Declaration)i0;
-l116:
+l112:
   _failed_function(9258); return 0;
   ;
 }
@@ -702,15 +694,15 @@ void OOC_C_ConvertDecl__ConvertSymTab(OOC_C_DeclWriter__Writer w, OOC_Repository
           register OOC_INT32 i0,i1;
 
           i0 = (OOC_INT32)ptr;
-          i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14639)))), &_td_OOC_SymbolTable__VarDeclDesc);
+          i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14602)))), &_td_OOC_SymbolTable__VarDeclDesc);
           if (i1) goto l3;
           return 0u;
           goto l4;
 l3:
-          i0 = *(OOC_INT8*)((_check_pointer(i0, 14877))+28);
+          i0 = *(OOC_INT8*)((_check_pointer(i0, 14840))+28);
           return (i0!=0);
 l4:
-          _failed_function(14569); return 0;
+          _failed_function(14532); return 0;
           ;
         }
 
@@ -720,32 +712,32 @@ l4:
           OOC_C_DeclWriter__Declaration d;
 
           i0 = (OOC_INT32)proc;
-          i1 = *(OOC_INT32*)((_check_pointer(i0, 15235))+56);
+          i1 = *(OOC_INT32*)((_check_pointer(i0, 15198))+56);
           i1 = (OOC_INT32)Object_BigInt__NewInt(i1);
           i2 = (OOC_INT32)OOC_C_Naming__NameOfTypeBoundIndex((OOC_SymbolTable__ProcDecl)i0);
           i3 = (OOC_INT32)w;
-          i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15141)))), OOC_C_DeclWriter__WriterDesc_NewDefine)),OOC_C_DeclWriter__WriterDesc_NewDefine)((OOC_C_DeclWriter__Writer)i3, (Object__String)i2, (Object_Boxed__Object)i1, (OOC_SymbolTable__Type)(OOC_INT32)0);
+          i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15104)))), OOC_C_DeclWriter__WriterDesc_NewDefine)),OOC_C_DeclWriter__WriterDesc_NewDefine)((OOC_C_DeclWriter__Writer)i3, (Object__String)i2, (Object_Boxed__Object)i1, (OOC_SymbolTable__Type)(OOC_INT32)0);
           d = (OOC_C_DeclWriter__Declaration)i1;
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15266)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i3, (OOC_C_DeclWriter__Declaration)i1);
-          i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 15581))+64);
-          i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 15518))+64);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15229)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i3, (OOC_C_DeclWriter__Declaration)i1);
+          i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 15544))+64);
+          i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 15481))+64);
           i1 = (OOC_INT32)OOC_C_ConvertDecl__ConvertType((OOC_C_DeclWriter__Writer)i3, (OOC_SymbolTable__Type)i2, (OOC_SymbolTable__Type)i1);
           i0 = (OOC_INT32)OOC_C_Naming__NameOfTypeBoundSignature((OOC_SymbolTable__ProcDecl)i0);
-          i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15303)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i3, (Object__String)i0, 0, 1, (OOC_C_DeclWriter__Type)i1);
+          i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15266)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i3, (Object__String)i0, 0, 1, (OOC_C_DeclWriter__Type)i1);
           d = (OOC_C_DeclWriter__Declaration)i0;
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15606)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i3, (OOC_C_DeclWriter__Declaration)i0);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 15569)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i3, (OOC_C_DeclWriter__Declaration)i0);
           return;
           ;
         }
 
 
       i0 = (OOC_INT32)root;
-      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 15691))+8);
+      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 15654))+8);
       ptr = (OOC_SymbolTable__Item)i0;
       i1 = i0!=(OOC_INT32)0;
       if (!i1) goto l42;
 l3_loop:
-      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 15749)))), &_td_OOC_SymbolTable__DeclarationDesc);
+      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 15712)))), &_td_OOC_SymbolTable__DeclarationDesc);
       if (!i1) goto l37;
       i1 = (OOC_INT32)exports;
       i1 = ADT_Dictionary_AddressKey__DictionaryDesc_HasKey((ADT_Dictionary_AddressKey__Dictionary)i1, (Object__Object)i0);
@@ -759,57 +751,57 @@ l8:
       i1=1u;
 l10:
       if (!i1) goto l37;
-      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 15899)))), &_td_OOC_SymbolTable__ImportDesc);
+      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 15862)))), &_td_OOC_SymbolTable__ImportDesc);
       if (i1) goto l31;
-      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16152)))), &_td_OOC_SymbolTable__ProcDeclDesc);
+      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16115)))), &_td_OOC_SymbolTable__ProcDeclDesc);
       if (i1) goto l16;
       i1=0u;
       goto l18;
 l16:
-      i1 = *(OOC_UINT8*)((_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16179)))), &_td_OOC_SymbolTable__ProcDeclDesc, 16179)), 16188))+49);
+      i1 = *(OOC_UINT8*)((_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16142)))), &_td_OOC_SymbolTable__ProcDeclDesc, 16142)), 16151))+49);
       
 l18:
       if (i1) goto l37;
       i1 = (OOC_INT32)w;
       i1 = (OOC_INT32)OOC_C_ConvertDecl__ConvertDecl((OOC_C_DeclWriter__Writer)i1, (OOC_SymbolTable__Declaration)i0, i2);
       decl = (OOC_C_DeclWriter__Declaration)i1;
-      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16375))+8);
-      i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16375))+8);
-      i2 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16381)))), Object__StringDesc_CharAt)),Object__StringDesc_CharAt)((Object__String)i3, 0);
+      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16338))+8);
+      i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16338))+8);
+      i2 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16344)))), Object__StringDesc_CharAt)),Object__StringDesc_CharAt)((Object__String)i3, 0);
       i2 = i2!=40u;
       if (!i2) goto l37;
       i2 = (OOC_INT32)w;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16841)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i2, (OOC_C_DeclWriter__Declaration)i1);
-      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16892)))), &_td_OOC_SymbolTable__ProcDeclDesc);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16804)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i2, (OOC_C_DeclWriter__Declaration)i1);
+      i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16855)))), &_td_OOC_SymbolTable__ProcDeclDesc);
       if (i1) goto l24;
       i1=0u;
       goto l26;
 l24:
-      i1 = OOC_SymbolTable__ProcDeclDesc_IsTypeBound((OOC_SymbolTable__ProcDecl)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16940)))), &_td_OOC_SymbolTable__ProcDeclDesc, 16940)));
+      i1 = OOC_SymbolTable__ProcDeclDesc_IsTypeBound((OOC_SymbolTable__ProcDecl)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16903)))), &_td_OOC_SymbolTable__ProcDeclDesc, 16903)));
       
 l26:
       if (!i1) goto l37;
       i1 = (OOC_INT32)w;
-      OOC_C_ConvertDecl__ConvertSymTab_ConvertTopLevel_AddTypeBoundHelpers((OOC_C_DeclWriter__Writer)i1, (OOC_SymbolTable__ProcDecl)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 17021)))), &_td_OOC_SymbolTable__ProcDeclDesc, 17021)));
+      OOC_C_ConvertDecl__ConvertSymTab_ConvertTopLevel_AddTypeBoundHelpers((OOC_C_DeclWriter__Writer)i1, (OOC_SymbolTable__ProcDecl)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16984)))), &_td_OOC_SymbolTable__ProcDeclDesc, 16984)));
       goto l37;
 l31:
       i1 = OOC_SymbolTable__ImportDesc_IsInternalImport((OOC_SymbolTable__Import)i0);
       i1 = !i1;
       if (!i1) goto l37;
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16073))+48);
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16084))+12);
-      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16073))+48);
-      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16084))+12);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16036))+48);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16047))+12);
+      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16036))+48);
+      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16047))+12);
       i2 = (OOC_INT32)m;
-      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 16088)), 0);
-      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16051)))), OOC_Repository__ModuleDesc_GetImportedModule)),OOC_Repository__ModuleDesc_GetImportedModule)((OOC_Repository__Module)i2, (void*)(_check_pointer(i0, 16088)), i1);
+      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 16051)), 0);
+      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16014)))), OOC_Repository__ModuleDesc_GetImportedModule)),OOC_Repository__ModuleDesc_GetImportedModule)((OOC_Repository__Module)i2, (void*)(_check_pointer(i0, 16051)), i1);
       i1 = (OOC_INT32)w;
-      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 15997)))), OOC_C_DeclWriter__WriterDesc_NewIncludeModule)),OOC_C_DeclWriter__WriterDesc_NewIncludeModule)((OOC_C_DeclWriter__Writer)i1, (OOC_Repository__Module)i0);
+      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 15960)))), OOC_C_DeclWriter__WriterDesc_NewIncludeModule)),OOC_C_DeclWriter__WriterDesc_NewIncludeModule)((OOC_C_DeclWriter__Writer)i1, (OOC_Repository__Module)i0);
       i1 = (OOC_INT32)w;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 15979)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i1, (OOC_C_DeclWriter__Declaration)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 15942)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i1, (OOC_C_DeclWriter__Declaration)i0);
 l37:
       i0 = (OOC_INT32)ptr;
-      i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 17231));
+      i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 17194));
       ptr = (OOC_SymbolTable__Item)i0;
       i1 = i0!=(OOC_INT32)0;
       if (i1) goto l3_loop;
@@ -825,7 +817,7 @@ l42:
       OOC_C_DeclWriter__Declaration decl;
 
       i0 = (OOC_INT32)root;
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 17626))+8);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 17589))+8);
       ptr = (OOC_SymbolTable__Item)i1;
       i2 = i1!=(OOC_INT32)0;
       if (!i2) goto l17;
@@ -833,9 +825,9 @@ l42:
       i0 = i0!=i2;
       
 l3_loop:
-      i3 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17684)))), &_td_OOC_SymbolTable__ProcDeclDesc);
+      i3 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17647)))), &_td_OOC_SymbolTable__ProcDeclDesc);
       if (i3) goto l11;
-      i3 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17761)))), &_td_OOC_SymbolTable__TypeDeclDesc);
+      i3 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17724)))), &_td_OOC_SymbolTable__TypeDeclDesc);
       if (!i3) goto l12;
       if (!i0) goto l12;
       i3 = mode;
@@ -843,12 +835,12 @@ l3_loop:
       i3 = (OOC_INT32)OOC_C_ConvertDecl__ConvertDecl((OOC_C_DeclWriter__Writer)i4, (OOC_SymbolTable__Declaration)i1, i3);
       decl = (OOC_C_DeclWriter__Declaration)i3;
       i4 = (OOC_INT32)w;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 17876)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i4, (OOC_C_DeclWriter__Declaration)i3);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 17839)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i4, (OOC_C_DeclWriter__Declaration)i3);
       goto l12;
 l11:
       OOC_C_ConvertDecl__ConvertSymTab_ConvertNestedTypes((OOC_SymbolTable__Item)i2, (OOC_SymbolTable__Item)i1);
 l12:
-      i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 18017));
+      i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 17980));
       ptr = (OOC_SymbolTable__Item)i1;
       i3 = i1!=(OOC_INT32)0;
       if (i3) goto l3_loop;
@@ -877,29 +869,29 @@ l4:
   goto l8;
 l7:
   i0 = (OOC_INT32)w;
-  i1 = (OOC_INT32)*(OOC_INT32*)(((_check_pointer(i0, 18284))+24)+(_check_index(0, 17, OOC_UINT8, 18294))*4);
-  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18270)))), OOC_C_DeclWriter__WriterDesc_NewFunction)),OOC_C_DeclWriter__WriterDesc_NewFunction)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Type)i1, 0u);
+  i1 = (OOC_INT32)*(OOC_INT32*)(((_check_pointer(i0, 18247))+24)+(_check_index(0, 17, OOC_UINT8, 18257))*4);
+  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18233)))), OOC_C_DeclWriter__WriterDesc_NewFunction)),OOC_C_DeclWriter__WriterDesc_NewFunction)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Type)i1, 0u);
   fctType = (OOC_C_DeclWriter__Function)i1;
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18502)))), OOC_C_DeclWriter__WriterDesc_NewTypeRef)),OOC_C_DeclWriter__WriterDesc_NewTypeRef)((OOC_C_DeclWriter__Writer)i0, 0, (Object__String)((OOC_INT32)_c0));
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18349)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)((OOC_INT32)_c1), 0, 4, (OOC_C_DeclWriter__Type)i2);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18465)))), OOC_C_DeclWriter__WriterDesc_NewTypeRef)),OOC_C_DeclWriter__WriterDesc_NewTypeRef)((OOC_C_DeclWriter__Writer)i0, 0, (Object__String)((OOC_INT32)_c0));
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18312)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)((OOC_INT32)_c1), 0, 4, (OOC_C_DeclWriter__Type)i2);
   OOC_C_DeclWriter__FunctionDesc_AddParameter((OOC_C_DeclWriter__Function)i1, (OOC_C_DeclWriter__Declaration)i2);
-  i2 = (OOC_INT32)*(OOC_INT32*)(((_check_pointer(i0, 18825))+24)+(_check_index(0, 17, OOC_UINT8, 18836))*4);
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18809)))), OOC_C_DeclWriter__WriterDesc_NewFunction)),OOC_C_DeclWriter__WriterDesc_NewFunction)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Type)i2, 0u);
+  i2 = (OOC_INT32)*(OOC_INT32*)(((_check_pointer(i0, 18788))+24)+(_check_index(0, 17, OOC_UINT8, 18799))*4);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18772)))), OOC_C_DeclWriter__WriterDesc_NewFunction)),OOC_C_DeclWriter__WriterDesc_NewFunction)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Type)i2, 0u);
   i3 = (OOC_INT32)symTab;
   i4 = (OOC_INT32)OOC_C_Naming__NameOfModuleInit((OOC_SymbolTable__Module)i3, 1u, 0u);
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18655)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i4, 0, 2, (OOC_C_DeclWriter__Type)i2);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18626)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i2);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18618)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i4, 0, 2, (OOC_C_DeclWriter__Type)i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18589)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i2);
   i2 = (OOC_INT32)OOC_C_Naming__NameOfModuleInit((OOC_SymbolTable__Module)i3, 1u, 1u);
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18901)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i2, 0, 2, (OOC_C_DeclWriter__Type)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18872)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i2);
-  i2 = (OOC_INT32)*(OOC_INT32*)(((_check_pointer(i0, 19271))+24)+(_check_index(0, 17, OOC_UINT8, 19282))*4);
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19255)))), OOC_C_DeclWriter__WriterDesc_NewFunction)),OOC_C_DeclWriter__WriterDesc_NewFunction)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Type)i2, 0u);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18864)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i2, 0, 2, (OOC_C_DeclWriter__Type)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 18835)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i2);
+  i2 = (OOC_INT32)*(OOC_INT32*)(((_check_pointer(i0, 19234))+24)+(_check_index(0, 17, OOC_UINT8, 19245))*4);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19218)))), OOC_C_DeclWriter__WriterDesc_NewFunction)),OOC_C_DeclWriter__WriterDesc_NewFunction)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Type)i2, 0u);
   i4 = (OOC_INT32)OOC_C_Naming__NameOfModuleInit((OOC_SymbolTable__Module)i3, 0u, 0u);
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19100)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i4, 0, 2, (OOC_C_DeclWriter__Type)i2);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19071)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i2);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19063)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i4, 0, 2, (OOC_C_DeclWriter__Type)i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19034)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i2);
   i2 = (OOC_INT32)OOC_C_Naming__NameOfModuleInit((OOC_SymbolTable__Module)i3, 0u, 1u);
-  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19347)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i2, 0, 2, (OOC_C_DeclWriter__Type)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19318)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i1);
+  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19310)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i0, (Object__String)i2, 0, 2, (OOC_C_DeclWriter__Type)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19281)))), OOC_C_DeclWriter__WriterDesc_AddDeclaration)),OOC_C_DeclWriter__WriterDesc_AddDeclaration)((OOC_C_DeclWriter__Writer)i0, (OOC_C_DeclWriter__Declaration)i1);
 l8:
   return;
   ;
@@ -921,7 +913,7 @@ l3:
   i0 = (OOC_INT32)OOC_C_ConvertDecl__ConvertDecl((OOC_C_DeclWriter__Writer)i1, (OOC_SymbolTable__Declaration)i0, 1);
   return (OOC_C_DeclWriter__Declaration)i0;
 l4:
-  _failed_function(19604); return 0;
+  _failed_function(19567); return 0;
   ;
 }
 
@@ -939,13 +931,13 @@ OOC_C_DeclWriter__Type OOC_C_ConvertDecl__GetTypeRef(OOC_C_DeclWriter__Writer w,
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)type;
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20539))+24);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20502))+24);
   i1 = i1!=(OOC_INT32)0;
   if (i1) goto l3;
   i1=0u;
   goto l5;
 l3:
-  i1 = !(OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 20568)))), &_td_OOC_SymbolTable__PredefTypeDesc));
+  i1 = !(OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 20531)))), &_td_OOC_SymbolTable__PredefTypeDesc));
   
 l5:
   if (i1) goto l7;
@@ -956,10 +948,10 @@ l5:
 l7:
   i0 = (OOC_INT32)OOC_C_Naming__NameOfType((OOC_SymbolTable__Type)i0);
   i1 = (OOC_INT32)w;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 20606)))), OOC_C_DeclWriter__WriterDesc_NewTypeRef)),OOC_C_DeclWriter__WriterDesc_NewTypeRef)((OOC_C_DeclWriter__Writer)i1, 0, (Object__String)i0);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 20569)))), OOC_C_DeclWriter__WriterDesc_NewTypeRef)),OOC_C_DeclWriter__WriterDesc_NewTypeRef)((OOC_C_DeclWriter__Writer)i1, 0, (Object__String)i0);
   return (OOC_C_DeclWriter__Type)i0;
 l8:
-  _failed_function(20362); return 0;
+  _failed_function(20325); return 0;
   ;
 }
 
@@ -968,24 +960,24 @@ OOC_C_DeclWriter__Declaration OOC_C_ConvertDecl__GetPointerDecl(OOC_C_DeclWriter
   OOC_SymbolTable__Type elemType;
 
   i0 = (OOC_INT32)paramDecl;
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21146))+48);
-  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 21153)))), &_td_OOC_SymbolTable__ArrayDesc);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21109))+48);
+  i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 21116)))), &_td_OOC_SymbolTable__ArrayDesc);
   if (i1) goto l3;
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21279))+48);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21242))+48);
   elemType = (OOC_SymbolTable__Type)i1;
   
   goto l4;
 l3:
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21199))+48);
-  i1 = (OOC_INT32)OOC_SymbolTable__ArrayDesc_GetNonOpenElementType((OOC_SymbolTable__Array)(_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 21210)))), &_td_OOC_SymbolTable__ArrayDesc, 21210)));
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21162))+48);
+  i1 = (OOC_INT32)OOC_SymbolTable__ArrayDesc_GetNonOpenElementType((OOC_SymbolTable__Array)(_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 21173)))), &_td_OOC_SymbolTable__ArrayDesc, 21173)));
   elemType = (OOC_SymbolTable__Type)i1;
   
 l4:
   i2 = (OOC_INT32)w;
   i1 = (OOC_INT32)OOC_C_ConvertDecl__GetTypeRef((OOC_C_DeclWriter__Writer)i2, (OOC_SymbolTable__Type)i1);
-  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 21443)))), OOC_C_DeclWriter__WriterDesc_NewPointer)),OOC_C_DeclWriter__WriterDesc_NewPointer)((OOC_C_DeclWriter__Writer)i2, 0, (OOC_C_DeclWriter__Type)i1);
+  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 21406)))), OOC_C_DeclWriter__WriterDesc_NewPointer)),OOC_C_DeclWriter__WriterDesc_NewPointer)((OOC_C_DeclWriter__Writer)i2, 0, (OOC_C_DeclWriter__Type)i1);
   i0 = (OOC_INT32)OOC_C_Naming__NameOfDeclaration((OOC_SymbolTable__Declaration)i0);
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 21313)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i2, (Object__String)i0, 0, 4, (OOC_C_DeclWriter__Type)i1);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 21276)))), OOC_C_DeclWriter__WriterDesc_NewDeclaration)),OOC_C_DeclWriter__WriterDesc_NewDeclaration)((OOC_C_DeclWriter__Writer)i2, (Object__String)i0, 0, 4, (OOC_C_DeclWriter__Type)i1);
   return (OOC_C_DeclWriter__Declaration)i0;
   ;
 }

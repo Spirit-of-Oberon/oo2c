@@ -19,7 +19,7 @@ static void* _c12;
 static OOC_SymbolTable__Position OOC_SymbolTable__importPosition;
 static OOC_SymbolTable__TypeClosure OOC_SymbolTable__emptyClosure;
 static OOC_SymbolTable__Name OOC_SymbolTable__predefName;
-OOC_SymbolTable__PredefType *OOC_SymbolTable__predefIdToType;
+typeof(OOC_SymbolTable__predefIdToType) OOC_SymbolTable__predefIdToType;
 static URI__HierarchicalURI OOC_SymbolTable__emptyBaseURI;
 static void OOC_SymbolTable__WriteType(ADT_Storable__Writer w, OOC_SymbolTable__Type type, OOC_SymbolTable__Type srcCodeType);
 static void OOC_SymbolTable__ReadType(ADT_Storable__Reader r, OOC_SymbolTable__Type *type, OOC_SymbolTable__Type *srcCodeType);

@@ -107,17 +107,17 @@ extern RT0__StructDesc _td_RT0__ObjectDesc;
 extern RT0__StructDesc _td_RT0__Name;
 extern RT0__StructDesc _td_RT0__Module;
 extern RT0__StructDesc _td_RT0__Struct;
-extern RT0__StructDesc _td_RT0__6868;
-extern RT0__StructDesc _td_RT0__7088;
-extern RT0__StructDesc _td_RT0__7282;
+extern RT0__StructDesc _td_RT0__7016;
+extern RT0__StructDesc _td_RT0__7236;
+extern RT0__StructDesc _td_RT0__7430;
 extern RT0__StructDesc _td_RT0__ModuleDesc;
-extern RT0__StructDesc _td_RT0__9059;
+extern RT0__StructDesc _td_RT0__9359;
 extern RT0__StructDesc _td_RT0__CaseRange;
 extern RT0__StructDesc _td_RT0__charPtr1d;
 extern RT0__StructDesc _td_RT0__charPtr2d;
-extern RT0__StructDesc _td_RT0__14981;
-extern RT0__StructDesc _td_RT0__15187;
-extern RT0__StructDesc _td_RT0__15533;
+extern RT0__StructDesc _td_RT0__15281;
+extern RT0__StructDesc _td_RT0__15487;
+extern RT0__StructDesc _td_RT0__15833;
 #endif /* _MODULE_RT0_ */
 
 /* --- */

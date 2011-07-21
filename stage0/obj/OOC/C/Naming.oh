@@ -48,7 +48,7 @@ extern RT0__StructDesc _td_OOC_C_Naming__1650;
 extern RT0__StructDesc _td_OOC_C_Naming__2260;
 extern RT0__StructDesc _td_OOC_C_Naming__5841;
 extern RT0__StructDesc _td_OOC_C_Naming__6993;
-extern RT0__StructDesc _td_OOC_C_Naming__10235;
+extern RT0__StructDesc _td_OOC_C_Naming__10459;
 #endif /* _MODULE_OOC_C_Naming_ */
 
 /* --- */
