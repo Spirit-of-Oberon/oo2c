@@ -48,7 +48,7 @@ void OOC_Config_StdPragmas__CreateVariables(OOC_Config_Pragmas__Section s) {
   i1 = (OOC_INT32)Config__NewIntegerVar(2);
   i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3876)))), Config_Section_Options__SectionDesc_Set)),Config_Section_Options__SectionDesc_Set)((Config_Section_Options__Section)i0, (Object__String)((OOC_INT32)_c15), (Config__Variable)i1);
   OOC_Config_StdPragmas__compilerMajor = (Config_Section_Options__Option)i1;
-  i1 = (OOC_INT32)Config__NewIntegerVar(0);
+  i1 = (OOC_INT32)Config__NewIntegerVar(1);
   i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3968)))), Config_Section_Options__SectionDesc_Set)),Config_Section_Options__SectionDesc_Set)((Config_Section_Options__Section)i0, (Object__String)((OOC_INT32)_c16), (Config__Variable)i1);
   OOC_Config_StdPragmas__compilerMinor = (Config_Section_Options__Option)i1;
   i1 = (OOC_INT32)Config__NewStringVar((Object__String8)((OOC_INT32)_c17));
@@ -87,7 +87,7 @@ void OOC_OOC_Config_StdPragmas_init(void) {
   _c10 = Object__NewLatin1Region("RangeCheck", 11, 0, 10);
   _c11 = Object__NewLatin1Region("OOC", 4, 0, 3);
   _c12 = Object__NewLatin1Region("COMPILER", 9, 0, 8);
-  _c13 = Object__NewLatin1Region("2.0.18", 7, 0, 6);
+  _c13 = Object__NewLatin1Region("2.1", 4, 0, 3);
   _c14 = Object__NewLatin1Region("COMPILER_VERSION", 17, 0, 16);
   _c15 = Object__NewLatin1Region("COMPILER_MAJOR", 15, 0, 14);
   _c16 = Object__NewLatin1Region("COMPILER_MINOR", 15, 0, 14);

@@ -4,17 +4,18 @@
 #include <__typemap.h>
 #include <RT0.oh>
 #include <IO.oh>
+#include <OOC/Package.oh>
 #include <OOC/Repository.oh>
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-extern OOC_CHAR8 OOC_Make_LinkProgramC__Run(OOC_Repository__Module module, const OOC_Repository__Module imports__ref[], OOC_LEN imports_0d, Object__String forLibrary);
+extern OOC_CHAR8 OOC_Make_LinkProgramC__Run(OOC_Repository__Module module, const OOC_Repository__Module imports__ref[], OOC_LEN imports_0d, OOC_Package__Library forLibrary);
 extern void OOC_OOC_Make_LinkProgramC_init(void);
 extern void OOC_OOC_Make_LinkProgramC_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_Make_LinkProgramC__1234;
-extern RT0__StructDesc _td_OOC_Make_LinkProgramC__5901;
+extern RT0__StructDesc _td_OOC_Make_LinkProgramC__1240;
+extern RT0__StructDesc _td_OOC_Make_LinkProgramC__5907;
 #endif /* _MODULE_OOC_Make_LinkProgramC_ */
 
 /* --- */

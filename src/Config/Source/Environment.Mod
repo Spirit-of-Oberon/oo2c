@@ -11,6 +11,8 @@ TYPE
     next: VariableTemplate;
     name: Object.String8;
     pattern: Object.String8;
+    isList: BOOLEAN;
+    listSep: CHAR;
   END;
 
 TYPE
@@ -68,56 +70,98 @@ PROCEDURE (command: Command) DoNotWrite*;
   END DoNotWrite;
 
 
+PROCEDURE (t: VariableTemplate) INIT*(name, transformation: Object.String8;
+                                      isList: BOOLEAN; listSep: CHAR);
+  BEGIN
+    t.next := NIL;
+    t.name := name;
+    t.pattern := transformation;
+    t.isList := isList;
+    t.listSep := listSep;
+  END INIT;
+
+PROCEDURE Append (VAR list: VariableTemplate; t: VariableTemplate);
+  BEGIN
+    IF (list = NIL) THEN
+      list := t
+    ELSE
+      Append (list. next, t)
+    END
+  END Append;
+
 PROCEDURE (env: Environment) AddVariableTemplate* (name, transformation: Object.String8): VariableTemplate;
 (**If a variable name is added multiple times, all rules associated with this
    name are evaluated if it appears in the program's environment.  *)
   VAR
     t: VariableTemplate;
-  
-  PROCEDURE Append (VAR list: VariableTemplate);
-    BEGIN
-      IF (list = NIL) THEN
-        list := t
-      ELSE
-        Append (list. next)
-      END
-    END Append;
-    
   BEGIN
-    NEW (t);
-    t. next := NIL;
-    t. name := name;
-    t. pattern := transformation;
-    Append (env. variableTemplates);
+    t := NEW (VariableTemplate, name, transformation, FALSE, 0X);
+    Append (env. variableTemplates, t);
     RETURN t
   END AddVariableTemplate;
+
+PROCEDURE (env: Environment) AddListTemplate* (name,
+                                               transformation: Object.String8;
+                                               listSep: CHAR): VariableTemplate;
+  VAR
+    t: VariableTemplate;
+  BEGIN
+    t := NEW (VariableTemplate, name, transformation, TRUE, listSep);
+    Append (env. variableTemplates, t);
+    RETURN t
+  END AddListTemplate;
 
 PROCEDURE (env: Environment) Parse*(): Msg.Msg;
   VAR
     t: VariableTemplate;
-    cmd: Command;
-    value: STRING;
+    i, j: LONGINT;
+    value, entry: STRING;
     
-  PROCEDURE Append (VAR list: Command);
+  PROCEDURE AddCommand(t: VariableTemplate; value: STRING);
+    VAR
+      cmd: Command;
+      
+    PROCEDURE Append (VAR list: Command);
+      BEGIN
+        IF (list = NIL) THEN
+          list := cmd
+        ELSE
+          Append (list. nextCommand)
+        END
+      END Append;
+    
     BEGIN
-      IF (list = NIL) THEN
-        list := cmd
-      ELSE
-        Append (list. nextCommand)
-      END
-    END Append;
+      NEW (cmd);
+      cmd. nextCommand := NIL;
+      cmd. template := t;
+      cmd. argument := value(Object.String8);
+      cmd. doNotWrite := FALSE;
+      Append (env. commandList)
+    END AddCommand;
   
   BEGIN
     t := env. variableTemplates;
     WHILE (t # NIL) DO
       value := ProcessParameters.GetEnv(t.name);
       IF (value # NIL) THEN
-        NEW (cmd);
-        cmd. nextCommand := NIL;
-        cmd. template := t;
-        cmd. argument := value(Object.String8);
-        cmd. doNotWrite := FALSE;
-        Append (env. commandList)
+        IF t.isList THEN
+          i := 0;
+          WHILE (i >= 0) DO
+            j := value.IndexOf(t.listSep, i);
+            IF (j < 0) THEN
+              entry := value.Substring(i, value.length);
+              i := j;
+            ELSE
+              entry := value.Substring(i, j);
+              i := j+1;  (* skip separator *)
+            END;
+            IF (entry.length > 0) THEN  (* drop any empty entries *)
+              AddCommand(t, entry);
+            END;
+          END;
+        ELSE
+          AddCommand(t, value);
+        END;
       END;
       t := t. next
     END;

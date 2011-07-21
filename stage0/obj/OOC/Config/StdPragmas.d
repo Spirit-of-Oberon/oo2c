@@ -41,7 +41,7 @@ static void* _c26;
 #define OOC_Config_StdPragmas__defaultRangeCheck OOC_FALSE
 #define OOC_Config_StdPragmas__defaultCompiler "OOC"
 #define OOC_Config_StdPragmas__defaultCompilerMajor 2
-#define OOC_Config_StdPragmas__defaultCompilerMinor 0
+#define OOC_Config_StdPragmas__defaultCompilerMinor 1
 #define OOC_Config_StdPragmas__defaultTargetOS "Unix"
 #define OOC_Config_StdPragmas__defaultTargetInteger 64
 #define OOC_Config_StdPragmas__defaultTargetAddress 32

@@ -159,14 +159,14 @@ extern RT0__StructDesc _td_OOC_SSA_Blocker__Loop;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__ProxyDesc;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__RegionDesc;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__SelectDesc;
-extern RT0__StructDesc _td_OOC_SSA_Blocker__5568;
-extern RT0__StructDesc _td_OOC_SSA_Blocker__5557;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__5567;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__5556;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__Preceeds;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__PreceedsDesc;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__LoopDesc;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__DependenceData;
 extern RT0__StructDesc _td_OOC_SSA_Blocker__DependenceDataDesc;
-extern RT0__StructDesc _td_OOC_SSA_Blocker__15944;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__15943;
 #endif /* _MODULE_OOC_SSA_Blocker_ */
 
 /* --- */

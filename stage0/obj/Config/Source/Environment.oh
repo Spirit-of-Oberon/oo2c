@@ -16,6 +16,8 @@ typedef struct Config_Source_Environment__VariableTemplateDesc {
   Config_Source_Environment__VariableTemplate next;
   Object__String8 name;
   Object__String8 pattern;
+  OOC_CHAR8 isList;
+  OOC_CHAR8 listSep;
 } Config_Source_Environment__VariableTemplateDesc;
 typedef struct Config_Source_Environment__CommandDesc *Config_Source_Environment__Command;
 typedef struct Config_Source_Environment__CommandDesc {
@@ -33,11 +35,17 @@ extern Config_Source_Environment__Environment Config_Source_Environment__New(voi
 extern void Config_Source_Environment__CommandDesc_DoNotWrite(Config_Source_Environment__Command command);
 #define _TBN_Config_Source_Environment__CommandDesc_DoNotWrite 0
 typedef void (*_TBP_Config_Source_Environment__CommandDesc_DoNotWrite)(Config_Source_Environment__Command command);
+extern void Config_Source_Environment__VariableTemplateDesc_INIT(Config_Source_Environment__VariableTemplate t, Object__String8 name, Object__String8 transformation, OOC_CHAR8 isList, OOC_CHAR8 listSep);
+#define _TBN_Config_Source_Environment__VariableTemplateDesc_INIT 0
+typedef void (*_TBP_Config_Source_Environment__VariableTemplateDesc_INIT)(Config_Source_Environment__VariableTemplate t, Object__String8 name, Object__String8 transformation, OOC_CHAR8 isList, OOC_CHAR8 listSep);
 extern Config_Source_Environment__VariableTemplate Config_Source_Environment__EnvironmentDesc_AddVariableTemplate(Config_Source_Environment__Environment env, Object__String8 name, Object__String8 transformation);
 #define _TBN_Config_Source_Environment__EnvironmentDesc_AddVariableTemplate 1
 typedef Config_Source_Environment__VariableTemplate (*_TBP_Config_Source_Environment__EnvironmentDesc_AddVariableTemplate)(Config_Source_Environment__Environment env, Object__String8 name, Object__String8 transformation);
+extern Config_Source_Environment__VariableTemplate Config_Source_Environment__EnvironmentDesc_AddListTemplate(Config_Source_Environment__Environment env, Object__String8 name, Object__String8 transformation, OOC_CHAR8 listSep);
+#define _TBN_Config_Source_Environment__EnvironmentDesc_AddListTemplate 2
+typedef Config_Source_Environment__VariableTemplate (*_TBP_Config_Source_Environment__EnvironmentDesc_AddListTemplate)(Config_Source_Environment__Environment env, Object__String8 name, Object__String8 transformation, OOC_CHAR8 listSep);
 extern Msg__Msg Config_Source_Environment__EnvironmentDesc_Parse(Config_Source_Environment__Environment env);
-#define _TBN_Config_Source_Environment__EnvironmentDesc_Parse 2
+#define _TBN_Config_Source_Environment__EnvironmentDesc_Parse 3
 typedef Msg__Msg (*_TBP_Config_Source_Environment__EnvironmentDesc_Parse)(Config_Source_Environment__Environment env);
 extern void Config_Source_Environment__EnvironmentDesc_Write(Config_Source_Environment__Environment env, IO__ByteChannel ch, const Config_Parser__String rootTag__ref, OOC_LEN rootTag_0d);
 #define _TBN_Config_Source_Environment__EnvironmentDesc_Write 0
@@ -52,7 +60,7 @@ extern RT0__StructDesc _td_Config_Source_Environment__Command;
 extern RT0__StructDesc _td_Config_Source_Environment__CommandDesc;
 extern RT0__StructDesc _td_Config_Source_Environment__Environment;
 extern RT0__StructDesc _td_Config_Source_Environment__EnvironmentDesc;
-extern RT0__StructDesc _td_Config_Source_Environment__3605;
+extern RT0__StructDesc _td_Config_Source_Environment__5003;
 #endif /* _MODULE_Config_Source_Environment_ */
 
 /* --- */

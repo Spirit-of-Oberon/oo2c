@@ -1,7 +1,7 @@
-(*	$Id: Boxed.Mod,v 1.14 2003/09/25 21:18:07 mva Exp $	*)
+(*	$Id: Boxed.Mod,v 1.16 2004/02/15 11:00:17 mva Exp $	*)
 MODULE Object:Boxed;
 (*  Implements object representations for predefined types.
-    Copyright (C) 2002, 2003  Michael van Acken
+    Copyright (C) 2002-2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -48,7 +48,7 @@ TYPE
 
 VAR
   true-, false-: Boolean;
-  trueString, falseString: Obj.String;
+  trueString, falseString: STRING;
   
 TYPE
   LongInt* = POINTER TO LongIntDesc;
@@ -81,7 +81,7 @@ TYPE
   String* = POINTER TO StringDesc;
   StringDesc* = RECORD
     (ObjectDesc)
-    value-: Obj.String;
+    value-: STRING;
   END;
 
 VAR
@@ -91,7 +91,7 @@ VAR
 (* Object
    ------------------------------------------------------------------------ *)
 
-PROCEDURE (v: Object) [ABSTRACT] ToString*(): Obj.String;
+PROCEDURE (v: Object) [ABSTRACT] ToString*(): STRING;
   END ToString;
 
 PROCEDURE (v: Object) [ABSTRACT] Cmp*(y: Obj.Object): LONGINT;
@@ -120,6 +120,16 @@ PROCEDURE ParseBoolean*(str[NO_COPY]: ARRAY OF CHAR): Boolean;
     END;
   END ParseBoolean;
 
+PROCEDURE BooleanToString*(value: BOOLEAN): STRING;
+(**Equivalent to calling @oproc{NewBoolean} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: Boolean;
+  BEGIN
+    v := NewBoolean(value);
+    RETURN v.ToString();
+  END BooleanToString;
+
 PROCEDURE (v: Boolean) Equals*(y: Obj.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Boolean) & (v.value = y(Boolean).value)
@@ -137,7 +147,7 @@ PROCEDURE (v: Boolean) HashCode*(): Obj.Hash;
     RETURN HashCode.Boolean(v.value);
   END HashCode;
   
-PROCEDURE (v: Boolean) ToString*(): Obj.String;
+PROCEDURE (v: Boolean) ToString*(): STRING;
   BEGIN
     IF v.value THEN
       RETURN trueString;
@@ -163,7 +173,7 @@ PROCEDURE (v: Boolean) Load*(r: Storable.Reader) RAISES IO.Error;
     v.value := (si # 0);
   END Load;
 
-(* LongReal
+(* LongInt
    ------------------------------------------------------------------------ *)
 
 PROCEDURE NewLongInt*(val: LONGINT): LongInt;
@@ -189,6 +199,16 @@ PROCEDURE ParseLongInt*(s: ARRAY OF CHAR): LongInt;
     END;
   END ParseLongInt;
 
+PROCEDURE IntToString*(value: LONGINT): STRING;
+(**Equivalent to calling @oproc{NewLongInt} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: LongInt;
+  BEGIN
+    v := NewLongInt(value);
+    RETURN v.ToString();
+  END IntToString;
+
 PROCEDURE (v: LongInt) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
     w. WriteLInt(v.value);
@@ -209,7 +229,7 @@ PROCEDURE (v: LongInt) HashCode*(): Obj.Hash;
     RETURN v.value;
   END HashCode;
 
-PROCEDURE (v: LongInt) ToString*(): Obj.String;
+PROCEDURE (v: LongInt) ToString*(): STRING;
   VAR 
     str: ARRAY 10 OF CHAR;
   BEGIN
@@ -289,6 +309,16 @@ PROCEDURE ParseLongReal*(s: ARRAY OF CHAR): LongReal;
     END;
   END ParseLongReal;
 
+PROCEDURE LongRealToString*(value: LONGREAL): STRING;
+(**Equivalent to calling @oproc{NewLongReal} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: LongReal;
+  BEGIN
+    v := NewLongReal(value);
+    RETURN v.ToString();
+  END LongRealToString;
+
 PROCEDURE ParseLongRealLiteral*(s: ARRAY OF CHAR): LongReal;
 (**Like @oproc{ParseLongReal}, but the character of the exponent decides
    whether the value should be treated as a @code{REAL} or @code{LONGREAL}
@@ -343,7 +373,7 @@ PROCEDURE (v: LongReal) HashCode*(): Obj.Hash;
     RETURN HashCode.LongReal(v.value);
   END HashCode;
 
-PROCEDURE (v: LongReal) ToString*(): Obj.String;
+PROCEDURE (v: LongReal) ToString*(): STRING;
   VAR 
     str: ARRAY 128 OF CHAR;
   BEGIN
@@ -410,6 +440,16 @@ PROCEDURE NewSet*(value: SET): Set;
     RETURN v;
   END NewSet;
 
+PROCEDURE SetToString*(value: SET): STRING;
+(**Equivalent to calling @oproc{NewSet} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: Set;
+  BEGIN
+    v := NewSet(value);
+    RETURN v.ToString();
+  END SetToString;
+
 PROCEDURE (v: Set) Equals*(y: Obj.Object): BOOLEAN;
 BEGIN
   WITH y: Set DO
@@ -431,12 +471,16 @@ PROCEDURE (v: Set) HashCode*(): Obj.Hash;
     RETURN HashCode.Set(v.value);
   END HashCode;
 
-PROCEDURE SetToString(val: SET; VAR str: ARRAY OF CHAR);
+PROCEDURE (v: Set) ToString*(): STRING;
   VAR
+    str: ARRAY 32*4+3 OF CHAR;
+    val: SET;
     begin, i: SHORTINT;
     comma: BOOLEAN;
     num: ARRAY 8 OF CHAR;
   BEGIN
+    val := v.value;
+    
     COPY("{", str);
     comma := FALSE;
     i := MIN(SET);
@@ -463,13 +507,7 @@ PROCEDURE SetToString(val: SET; VAR str: ARRAY OF CHAR);
       INC(i)
     END; 
     Strings.Append("}", str);
-  END SetToString;
-
-PROCEDURE (v: Set) ToString*(): Obj.String;
-  VAR
-    str: ARRAY 32*4+3 OF CHAR;
-  BEGIN
-    SetToString(v.value, str);
+    
     RETURN Obj.NewLatin1(str);
   END ToString;
 
@@ -486,7 +524,7 @@ PROCEDURE (v: Set) Load*(r: Storable.Reader) RAISES IO.Error;
 (* String
    ------------------------------------------------------------------------ *)
 
-PROCEDURE NewString*(value: Obj.String): String;
+PROCEDURE NewString*(value: STRING): String;
   VAR
     v: String;
   BEGIN
@@ -514,7 +552,7 @@ PROCEDURE (v: String) HashCode*(): Obj.Hash;
     RETURN v.value.HashCode();
   END HashCode;
   
-PROCEDURE (v: String) ToString*(): Obj.String;
+PROCEDURE (v: String) ToString*(): STRING;
   VAR
     i: LONGINT;
     delim: ARRAY 2 OF CHAR;

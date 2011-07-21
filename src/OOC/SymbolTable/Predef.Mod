@@ -1,7 +1,7 @@
-(* 	$Id: Predef.Mod,v 1.57 2003/07/07 22:06:22 mva Exp $	 *)
+(* 	$Id: Predef.Mod,v 1.58 2004/03/01 12:17:26 mva Exp $	 *)
 MODULE OOC:SymbolTable:Predef;
 (*  Defines symbol table of pseudo module with predefined entities.
-    Copyright (C) 2000-2003  Michael van Acken
+    Copyright (C) 2000-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -73,8 +73,12 @@ CONST
   (**The type of the constant @code{NIL}.  *)
   void* = 17;
   (**The return type of procedures, indicating that no result is produced.  *)
+
+  outOfRangeInt* = 18;
+  (**This type is assigned to integer values that are too large to be stored in
+     the largest available integer type.  *)
   
-  lastId* = void;
+  lastId* = outOfRangeInt;
   (**Id of last predefined type.  Typically used in client modules
      to declare variables @code{ARRAY @oconst{lastId}+1 OF @dots{}}.  *)
   
@@ -273,6 +277,8 @@ PROCEDURE CreatePredef* (stb: Builder.Builder;
                          NIL, NIL);
     ptype := PredefType (stb, module, void, "", 0, 1,
                          NIL, NIL);
+    ptype := PredefType (stb, module, outOfRangeInt, "", 0, 1,
+                         NIL, NIL);
 
     exception := PredefVar(stb, module, "EXCEPTION", Sym.predefIdToType[nil]);
     
@@ -368,7 +374,7 @@ PROCEDURE SmallestIntType* (value: BigInt.BigInt): Sym.Type;
         RETURN GetType(i);
       END;
     END;
-    RETURN NIL;
+    RETURN GetType(outOfRangeInt);
   END SmallestIntType;
 
 PROCEDURE IsStaticMethod*(name: ARRAY OF CHAR): BOOLEAN;

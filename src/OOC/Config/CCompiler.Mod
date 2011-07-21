@@ -1,7 +1,7 @@
 (* 	$Id: CCompiler.Mod,v 1.33 2003/08/02 07:25:56 mva Exp $	 *)
 MODULE OOC:Config:CCompiler;
 (*  Generates command lines for the C compiler and linker.
-    Copyright (C) 2001, 2002, 2003  Michael van Acken
+    Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,7 +22,8 @@ MODULE OOC:Config:CCompiler;
 
 IMPORT
   Object, ADT:StringBuffer, URI, URI:Scheme:File,
-  CfgData := Config, Config:Section:Options, OOC:Config, OOC:Repository;
+  CfgData := Config, Config:Section:Options,
+  OOC:Config, OOC:Package, OOC:Repository;
 
 VAR
   cc, cppflags, cflags, ldflags, libs-, libtool, libdir-: Options.Option;
@@ -110,14 +111,17 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN): STRING;
     RETURN sb.ToString();
   END CompileFileCmd;
 
-PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN): STRING;
+PROCEDURE LinkProgramCmd* (execFile: URI.URI;
+                           forLibrary: Package.Library): STRING;
   VAR
     sb: StringBuffer.StringBuffer;
   BEGIN
     sb := SetCommand("link");
     sb.Append("-o ");
     sb.Append(execFile(File.URI).GetPath());
-    IF forLibrary & HaveLibtool() THEN
+    IF (forLibrary # NIL) & HaveLibtool() THEN
+      sb.Append(" -version-info ");
+      sb.AppendLatin1(forLibrary.version.tuple);
       sb.Append(" -rpath ");
       sb.Append(libdir.value);
     END;

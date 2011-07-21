@@ -1,7 +1,7 @@
-(* 	$Id: ConstFold.Mod,v 1.79 2003/11/15 23:19:00 mva Exp $	 *)
+(* 	$Id: ConstFold.Mod,v 1.80 2004/03/01 12:17:26 mva Exp $	 *)
 MODULE OOC:IR:ConstFold;
 (*  Constant folding on IR expressions.
-    Copyright (C) 2002, 2003  Stewart Greenhill, Michael van Acken
+    Copyright (C) 2002, 2003, 2004  Stewart Greenhill, Michael van Acken
 
     This file is part of OOC.
 
@@ -398,11 +398,9 @@ VAR
 BEGIN
   (* Evaluate left and right operands. Propagate any errors. *)
   IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
-    (* for now, only support integers *)
-    CASE op.left.type(Sym.PredefType).id OF
-    | Predef.shortint, Predef.integer, Predef.longint:
+    IF TR.IsIntegerType(op.left.type) THEN
       result := IntegerOp();
-    | Predef.real, Predef.longreal:
+    ELSE
       IF foldReals THEN
         result := RealOp();
       ELSE

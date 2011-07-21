@@ -167,10 +167,10 @@ extern RT0__StructDesc _td_OOC_Repository__ModuleRef;
 extern RT0__StructDesc _td_OOC_Repository__ModuleDesc;
 extern RT0__StructDesc _td_OOC_Repository__3267;
 extern RT0__StructDesc _td_OOC_Repository__3256;
-extern RT0__StructDesc _td_OOC_Repository__11871;
-extern RT0__StructDesc _td_OOC_Repository__12756;
-extern RT0__StructDesc _td_OOC_Repository__15308;
-extern RT0__StructDesc _td_OOC_Repository__19548;
+extern RT0__StructDesc _td_OOC_Repository__12075;
+extern RT0__StructDesc _td_OOC_Repository__12960;
+extern RT0__StructDesc _td_OOC_Repository__15512;
+extern RT0__StructDesc _td_OOC_Repository__19752;
 #endif /* _MODULE_OOC_Repository_ */
 
 /* --- */

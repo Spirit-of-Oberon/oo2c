@@ -5,6 +5,7 @@
 #include <RT0.oh>
 #include <URI.oh>
 #include <Config/Section/Options.oh>
+#include <OOC/Package.oh>
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
@@ -18,7 +19,7 @@ extern Config_Section_Options__Option OOC_Config_CCompiler__oocdir;
 extern OOC_CHAR8 OOC_Config_CCompiler__HaveLibtool(void);
 extern OOC_CHAR8 OOC_Config_CCompiler__SkipCallCC(void);
 extern Object__String OOC_Config_CCompiler__CompileFileCmd(URI__URI in, URI__URI out, OOC_CHAR8 forLibrary);
-extern Object__String OOC_Config_CCompiler__LinkProgramCmd(URI__URI execFile, OOC_CHAR8 forLibrary);
+extern Object__String OOC_Config_CCompiler__LinkProgramCmd(URI__URI execFile, OOC_Package__Library forLibrary);
 extern Object__String OOC_Config_CCompiler__InstallDirectoryCmd(Object__String path);
 extern Object__String OOC_Config_CCompiler__InstallProgramCmd(URI__URI file, OOC_CHAR8 asLibrary);
 extern Object__String OOC_Config_CCompiler__UninstallProgramCmd(Object__String path, OOC_CHAR8 asLibrary);

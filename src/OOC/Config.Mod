@@ -1,7 +1,7 @@
 MODULE OOC:Config;
 
 IMPORT
-  RT0, Msg, IO, Config, Config:Source:CmdLine,
+  RT0, Msg, IO, Config, Config:Source:CmdLine, Config:Source:Environment,
   Config:Section:Options, Config:Section:Arguments, Config:Simple,
   Object, OOC:Config:Pragmas, OOC:Config:StdPragmas, OOC:Config:Autoconf,
   OOC:Config:Repositories,
@@ -19,6 +19,7 @@ CONST
   runtimeModule* = "RT0";
   (**Name of the pseudo module that pulls in the run-time system.  *)
   configEnvVar = "OO2CRC";
+  repositoryListEnvVar = "OOC_REPS";
   
 VAR
   config: Simple.Config;
@@ -41,6 +42,16 @@ PROCEDURE AddCmdLine* (options, template: ARRAY OF CHAR);
   BEGIN
     ot := cmdLine. AddOptionTemplate (options, template);
   END AddCmdLine;
+
+PROCEDURE AddRepositoryListEnv*();
+  VAR
+    t: Environment.VariableTemplate;
+  BEGIN
+    t := config.envVars.AddListTemplate
+        (repositoryListEnvVar,
+         "<repositories><file-system>$1</file-system></repositories>",
+         ":");
+  END AddRepositoryListEnv;
 
 PROCEDURE InitConfig (defaultConfigFile: Object.String8);
   VAR

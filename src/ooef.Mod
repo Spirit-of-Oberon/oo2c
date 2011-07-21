@@ -1,7 +1,7 @@
-(* 	$Id: ooef.Mod,v 1.7 2003/10/06 17:41:07 mva Exp $	 *)
+(* 	$Id: ooef.Mod,v 1.8 2004/02/14 14:55:38 mva Exp $	 *)
 MODULE ooef;  
 (*  Filter to convert error messages emitted by oo2c into other formats.
-    Copyright (C) 1995-1999, 2002, 2003  Michael van Acken
+    Copyright (C) 1995-1999, 2002, 2003, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -550,7 +550,8 @@ PROCEDURE NewConfig;
                       "<options><set name='errorFormat'>1</set></options>");
     Config.AddCmdLine("--linecol,-L",
                       "<options><set name='errorFormat'>2</set></options>");
-    
+
+    Config.AddRepositoryListEnv();
     Config.AddCmdLine("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     

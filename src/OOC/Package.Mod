@@ -19,6 +19,7 @@ TYPE
   VersionDesc = RECORD
     current, age, revision: LONGINT;  (* unsigned integers *)
     tuple-: ARRAY 32 OF CHAR;
+    (**Version tuple in libtool format @samp{CURRENT:REVISION:AGE}.  *)
   END;
 
 TYPE
@@ -761,10 +762,10 @@ PROCEDURE ProcessPackage (root: Parser.Element;
       IntStr.IntToStr(version.current, str);
       Strings.Append(str, version.tuple);
       Strings.Append(":", version.tuple);
-      IntStr.IntToStr(version.age, str);
+      IntStr.IntToStr(version.revision, str);
       Strings.Append(str, version.tuple);
       Strings.Append(":", version.tuple);
-      IntStr.IntToStr(version.revision, str);
+      IntStr.IntToStr(version.age, str);
       Strings.Append(str, version.tuple);
       
       RETURN version;

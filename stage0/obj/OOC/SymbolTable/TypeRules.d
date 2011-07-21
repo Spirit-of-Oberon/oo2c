@@ -3,7 +3,7 @@ static OOC_CHAR8 OOC_SymbolTable_TypeRules__ExtendsLibType(OOC_SymbolTable__Type
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_OOC_SymbolTable_TypeRules__3264 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_SymbolTable_TypeRules__3257 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SymbolTable:TypeRules", (RT0__Struct[]) { NULL } };
 
 extern void OOC_OOC_SymbolTable_TypeRules_init0() {

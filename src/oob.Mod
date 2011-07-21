@@ -1,7 +1,7 @@
-(* 	$Id: oob.Mod,v 1.20 2003/07/14 22:05:21 mva Exp $	 *)
+(* 	$Id: oob.Mod,v 1.21 2004/02/14 14:55:38 mva Exp $	 *)
 MODULE oob;
 (*  Symbol file browser.
-    Copyright (C) 2002, 2003  Michael van Acken
+    Copyright (C) 2002-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -476,6 +476,7 @@ PROCEDURE WriteHelp;
 
 PROCEDURE NewConfig;
   BEGIN
+    Config.AddRepositoryListEnv();
     Config.AddCmdLine("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     

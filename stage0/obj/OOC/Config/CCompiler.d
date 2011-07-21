@@ -48,6 +48,7 @@ static void* _c46;
 static void* _c47;
 static void* _c48;
 static void* _c49;
+static void* _c50;
 #include <OOC/Config/CCompiler.oh>
 #include <Object.oh>
 #include <ADT/StringBuffer.oh>

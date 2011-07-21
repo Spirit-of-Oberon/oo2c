@@ -1,7 +1,7 @@
 (* 	$Id: LinkProgramC.Mod,v 1.27 2003/10/16 20:33:36 mva Exp $	 *)
 MODULE OOC:Make:LinkProgramC;
 (*  Links object files and libraries to create an executable file.
-    Copyright (C) 2001, 2002, 2003  Michael van Acken
+    Copyright (C) 2001-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -23,7 +23,7 @@ MODULE OOC:Make:LinkProgramC;
 IMPORT
   Out, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
   ADT:ArrayList, ADT:StringBuffer, CfgData := Config,
-  OS:ProcessManagement, OOC:Repository, OOC:Config,
+  OS:ProcessManagement, OOC:Package, OOC:Repository, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
 VAR
@@ -169,11 +169,11 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
 
 PROCEDURE Run*(module: Repository.Module;
                imports: ARRAY OF Repository.Module;
-               forLibrary: STRING): BOOLEAN
+               forLibrary: Package.Library): BOOLEAN
 RAISES IO.Error;
   VAR
     sb: StringBuffer.StringBuffer;
-    cmd: STRING;
+    cmd, forLibraryName: STRING;
     uri: URI.URI;
     exit, i: LONGINT;
     importedLibs: Dictionary.Dictionary;
@@ -187,22 +187,23 @@ RAISES IO.Error;
     IF (forLibrary # NIL) THEN
       objectFile := Repository.modObjectFileLib;
       outputFile := Repository.modLibrary;
+      forLibraryName := forLibrary.name;
     ELSE
       objectFile := Repository.modObjectFile;
       outputFile := Repository.modExecutable;
+      forLibraryName := NIL;
     END;
     
     module. CreateOutputDir (outputFile);
     sb := StringBuffer.New(CCompiler.LinkProgramCmd
-                           (module. GetURI (outputFile, TRUE),
-                            (forLibrary # NIL)));
+                           (module. GetURI (outputFile, TRUE), forLibrary));
 
     importedLibs := Dictionary.New();
     importedLibsList := ArrayList.New(4);
     FOR i := 0 TO LEN(imports)-1 DO
       ASSERT(imports[i].ifQuality = Repository.completeInterface);
       libraryName := imports[i].ifData.libraryName;
-      IF (libraryName # NIL) & ~libraryName.Equals(forLibrary) THEN
+      IF (libraryName # NIL) & ~libraryName.Equals(forLibraryName) THEN
         (* object file is part of a library; for each library encountered
            this way, keep track of one module that it provides *)
         IF ~importedLibs.HasKey(libraryName) THEN
@@ -240,7 +241,7 @@ RAISES IO.Error;
     
     (* add "-l" options for the external libraries, most specific library
        first *)
-    extLibs := GetExternalLibs(imports, forLibrary);
+    extLibs := GetExternalLibs(imports, forLibraryName);
     FOR i := LEN (extLibs^)-1 TO 0 BY -1 DO
       sb.Append(extLibs[i]);
     END;

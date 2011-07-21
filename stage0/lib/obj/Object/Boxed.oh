@@ -46,6 +46,7 @@ extern OOC_INT32 Object_Boxed__ObjectDesc_Cmp(Object_Boxed__Object v, Object__Ob
 typedef OOC_INT32 (*_TBP_Object_Boxed__ObjectDesc_Cmp)(Object_Boxed__Object v, Object__Object y);
 extern Object_Boxed__Boolean Object_Boxed__NewBoolean(OOC_CHAR8 value);
 extern Object_Boxed__Boolean Object_Boxed__ParseBoolean(const OOC_CHAR8 str[], OOC_LEN str_0d);
+extern Object__String Object_Boxed__BooleanToString(OOC_CHAR8 value);
 extern OOC_CHAR8 Object_Boxed__BooleanDesc_Equals(Object_Boxed__Boolean v, Object__Object y);
 #define _TBN_Object_Boxed__BooleanDesc_Equals 2
 typedef OOC_CHAR8 (*_TBP_Object_Boxed__BooleanDesc_Equals)(Object_Boxed__Boolean v, Object__Object y);
@@ -66,6 +67,7 @@ extern void Object_Boxed__BooleanDesc_Load(Object_Boxed__Boolean v, ADT_Storable
 typedef void (*_TBP_Object_Boxed__BooleanDesc_Load)(Object_Boxed__Boolean v, ADT_Storable__Reader r);
 extern Object_Boxed__LongInt Object_Boxed__NewLongInt(OOC_INT32 val);
 extern Object_Boxed__LongInt Object_Boxed__ParseLongInt(const OOC_CHAR8 s__ref[], OOC_LEN s_0d);
+extern Object__String Object_Boxed__IntToString(OOC_INT32 value);
 extern void Object_Boxed__LongIntDesc_Store(Object_Boxed__LongInt v, ADT_Storable__Writer w);
 #define _TBN_Object_Boxed__LongIntDesc_Store 4
 typedef void (*_TBP_Object_Boxed__LongIntDesc_Store)(Object_Boxed__LongInt v, ADT_Storable__Writer w);
@@ -107,6 +109,7 @@ extern Object_Boxed__LongInt Object_Boxed__LongIntDesc_Neg(Object_Boxed__LongInt
 typedef Object_Boxed__LongInt (*_TBP_Object_Boxed__LongIntDesc_Neg)(Object_Boxed__LongInt v);
 extern Object_Boxed__LongReal Object_Boxed__NewLongReal(OOC_REAL64 val);
 extern Object_Boxed__LongReal Object_Boxed__ParseLongReal(const OOC_CHAR8 s__ref[], OOC_LEN s_0d);
+extern Object__String Object_Boxed__LongRealToString(OOC_REAL64 value);
 extern Object_Boxed__LongReal Object_Boxed__ParseLongRealLiteral(const OOC_CHAR8 s__ref[], OOC_LEN s_0d);
 extern void Object_Boxed__LongRealDesc_Store(Object_Boxed__LongReal v, ADT_Storable__Writer w);
 #define _TBN_Object_Boxed__LongRealDesc_Store 4
@@ -148,6 +151,7 @@ extern Object_Boxed__LongReal Object_Boxed__LongRealDesc_Neg(Object_Boxed__LongR
 #define _TBN_Object_Boxed__LongRealDesc_Neg 13
 typedef Object_Boxed__LongReal (*_TBP_Object_Boxed__LongRealDesc_Neg)(Object_Boxed__LongReal v);
 extern Object_Boxed__Set Object_Boxed__NewSet(OOC_UINT32 value);
+extern Object__String Object_Boxed__SetToString(OOC_UINT32 value);
 extern OOC_CHAR8 Object_Boxed__SetDesc_Equals(Object_Boxed__Set v, Object__Object y);
 #define _TBN_Object_Boxed__SetDesc_Equals 2
 typedef OOC_CHAR8 (*_TBP_Object_Boxed__SetDesc_Equals)(Object_Boxed__Set v, Object__Object y);
@@ -192,7 +196,7 @@ extern void OOC_Object_Boxed_init0(void);
 /* run-time meta data */
 extern RT0__StructDesc _td_Object_Boxed__Object;
 extern RT0__StructDesc _td_Object_Boxed__ObjectDesc;
-extern RT0__StructDesc _td_Object_Boxed__1719;
+extern RT0__StructDesc _td_Object_Boxed__1718;
 extern RT0__StructDesc _td_Object_Boxed__Boolean;
 extern RT0__StructDesc _td_Object_Boxed__BooleanDesc;
 extern RT0__StructDesc _td_Object_Boxed__LongInt;
@@ -203,17 +207,16 @@ extern RT0__StructDesc _td_Object_Boxed__Set;
 extern RT0__StructDesc _td_Object_Boxed__SetDesc;
 extern RT0__StructDesc _td_Object_Boxed__String;
 extern RT0__StructDesc _td_Object_Boxed__StringDesc;
-extern RT0__StructDesc _td_Object_Boxed__2973;
-extern RT0__StructDesc _td_Object_Boxed__4339;
-extern RT0__StructDesc _td_Object_Boxed__5107;
-extern RT0__StructDesc _td_Object_Boxed__6557;
-extern RT0__StructDesc _td_Object_Boxed__6851;
-extern RT0__StructDesc _td_Object_Boxed__8311;
-extern RT0__StructDesc _td_Object_Boxed__10232;
-extern RT0__StructDesc _td_Object_Boxed__10307;
-extern RT0__StructDesc _td_Object_Boxed__11079;
-extern RT0__StructDesc _td_Object_Boxed__12166;
-extern RT0__StructDesc _td_Object_Boxed__12744;
+extern RT0__StructDesc _td_Object_Boxed__2960;
+extern RT0__StructDesc _td_Object_Boxed__4600;
+extern RT0__StructDesc _td_Object_Boxed__5635;
+extern RT0__StructDesc _td_Object_Boxed__7085;
+extern RT0__StructDesc _td_Object_Boxed__7664;
+extern RT0__StructDesc _td_Object_Boxed__9120;
+extern RT0__StructDesc _td_Object_Boxed__11310;
+extern RT0__StructDesc _td_Object_Boxed__11399;
+extern RT0__StructDesc _td_Object_Boxed__13140;
+extern RT0__StructDesc _td_Object_Boxed__13718;
 #endif /* _MODULE_Object_Boxed_ */
 
 /* --- */

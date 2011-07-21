@@ -1,7 +1,7 @@
-(* 	$Id: Blocker.Mod,v 1.48 2003/03/09 18:04:03 mva Exp $	 *)
+(* 	$Id: Blocker.Mod,v 1.49 2004/03/01 16:55:23 mva Exp $	 *)
 MODULE OOC:SSA:Blocker;
 (*  Imposes a block structure on a flat list of SSA instructions.
-    Copyright (C) 2002, 2003  Michael van Acken
+    Copyright (C) 2002-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -1382,16 +1382,23 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
 
     PROCEDURE Add (VAR list: Proxy; proxy: Proxy);
       BEGIN
+        proxy. prevProxy := NIL;
         proxy. nextProxy := list;
+        IF (list # NIL) THEN
+          list. prevProxy := proxy;
+        END;
         list := proxy;
       END Add;
 
     PROCEDURE Remove (VAR list: Proxy; proxy: Proxy);
       BEGIN
-        IF (list = proxy) THEN
-          list := proxy. nextProxy;
+        IF (proxy.prevProxy = NIL) THEN
+          list := proxy.nextProxy;
         ELSE
-          Remove (list. nextProxy, proxy); 
+          proxy.prevProxy.nextProxy := proxy.nextProxy;
+        END;
+        IF (proxy.nextProxy # NIL) THEN
+          proxy.nextProxy.prevProxy := proxy.prevProxy;
         END;
       END Remove;
 

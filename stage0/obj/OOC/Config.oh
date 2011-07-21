@@ -21,13 +21,14 @@ extern OOC_Config_Repositories__Section OOC_Config__repositories;
 extern Config_Section_Options__Option OOC_Config__xsltproc;
 extern Config_Section_Options__Option OOC_Config__AddOption(Object__String name, Config__Variable init);
 extern void OOC_Config__AddCmdLine(const OOC_CHAR8 options__ref[], OOC_LEN options_0d, const OOC_CHAR8 _template__ref[], OOC_LEN _template_0d);
+extern void OOC_Config__AddRepositoryListEnv(void);
 extern void OOC_Config__Read(Msg__MsgList errList);
 extern OOC_CHAR8 OOC_Config__HaveXsltProc(void);
 extern void OOC_OOC_Config_init(void);
 extern void OOC_OOC_Config_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_Config__990;
+extern RT0__StructDesc _td_OOC_Config__1054;
 #endif /* _MODULE_OOC_Config_ */
 
 /* --- */

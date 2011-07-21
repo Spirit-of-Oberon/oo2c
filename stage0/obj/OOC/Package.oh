@@ -124,17 +124,17 @@ extern RT0__StructDesc _td_OOC_Package__Repository;
 extern RT0__StructDesc _td_OOC_Package__RepositoryDesc;
 extern RT0__StructDesc _td_OOC_Package__ErrorContext;
 extern RT0__StructDesc _td_OOC_Package__ErrorContextDesc;
-extern RT0__StructDesc _td_OOC_Package__2921;
-extern RT0__StructDesc _td_OOC_Package__8593;
-extern RT0__StructDesc _td_OOC_Package__8582;
-extern RT0__StructDesc _td_OOC_Package__13969;
-extern RT0__StructDesc _td_OOC_Package__13958;
-extern RT0__StructDesc _td_OOC_Package__14236;
-extern RT0__StructDesc _td_OOC_Package__15799;
-extern RT0__StructDesc _td_OOC_Package__18934;
-extern RT0__StructDesc _td_OOC_Package__19136;
-extern RT0__StructDesc _td_OOC_Package__32044;
-extern RT0__StructDesc _td_OOC_Package__32162;
+extern RT0__StructDesc _td_OOC_Package__2993;
+extern RT0__StructDesc _td_OOC_Package__8665;
+extern RT0__StructDesc _td_OOC_Package__8654;
+extern RT0__StructDesc _td_OOC_Package__14041;
+extern RT0__StructDesc _td_OOC_Package__14030;
+extern RT0__StructDesc _td_OOC_Package__14308;
+extern RT0__StructDesc _td_OOC_Package__15871;
+extern RT0__StructDesc _td_OOC_Package__19006;
+extern RT0__StructDesc _td_OOC_Package__19208;
+extern RT0__StructDesc _td_OOC_Package__32116;
+extern RT0__StructDesc _td_OOC_Package__32234;
 #endif /* _MODULE_OOC_Package_ */
 
 /* --- */
