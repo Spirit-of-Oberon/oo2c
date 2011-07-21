@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>no</symbol>
+<symbol id='whitespace' pos='2' line='0' column='2'> </symbol>
+<symbol id='ident' pos='3' line='0' column='3'>comment</symbol>
+<symbol id='colon' pos='10' line='0' column='10'>:</symbol>
+<symbol id='whitespace' pos='11' line='0' column='11'> </symbol>
+<symbol id='invalid' pos='12' line='0' column='12'>*)</symbol>
+<symbol id='whitespace' pos='14' line='0' column='14'>&#10;</symbol>
+<symbol id='endOfFile' pos='15' line='1' column='0'></symbol>
+</document>

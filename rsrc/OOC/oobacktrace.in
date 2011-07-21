@@ -1,0 +1,98 @@
+#!@PERL@ -w
+# $Id: oobacktrace.in,v 1.1 2002/12/08 15:51:07 mva Exp $
+# 
+# Wrapper to map backtrace information onto function names
+# Copyright (C) 1999, 2001  Michael van Acken
+# 
+# This file is part of OOC.
+# 
+# OOC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.  
+# 
+# OOC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details. 
+# 
+# You should have received a copy of the GNU General Public License
+# along with OOC. If not, write to the Free Software Foundation, 59
+# Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+use strict;
+
+unless (@ARGV) {
+  print <<"EOD";
+Usage: $0 <command> <arguments>...
+
+On systems implementing the backtrace_symbols function (read: gibc 2.1
+or later), the default exception handler writes the function addresses
+from the top of the calling stack to stderr.  This script acts as a
+wrapper around the program.  It captures the stderr and tries to map
+the address values of the backtrace information to function names.  If
+possible, the name and line number of the C file defining the function
+is also given.
+
+Exit code of the wrapper that of the command, unless the command was
+terminated by a signal.  In this case, the wrapper exits with 127.
+EOD
+  exit 1;
+}
+
+my $nm_prog = "nm";
+my $tmp = "/tmp/oobacktrace.$$";
+END { unlink $tmp };
+
+unless ($ARGV[0] =~ m:/:) {
+  for my $path (split /:/, $ENV{PATH}) {
+    if (-x "$path/$ARGV[0]") {
+      $ARGV[0] = "$path/$ARGV[0]"; last;
+    }
+  }
+}
+my $cmd = join(" ", map { s/'/'\\''/g; "'".$_."'" } @ARGV);
+$ARGV[0] =~ s/'/'\\''/g;
+my $rc = system("$cmd 2>$tmp");
+
+if (-s $tmp) {
+  # get symbol data from command by running nm on the command name
+  open F, "$nm_prog -n -l $ARGV[0] |" or die "Failed to call nm: $!";
+  my @nm = grep {$_->[0] =~ /[0-9a-f]+/} 
+    map {[ m:^(.+) .? ([a-zA-Z0-9_.@-]+)(\t.*)?$: ]} <F>;
+  close F;
+  for (@nm) {  # normalize address values to 64 bit
+    $_->[0] = "0" x (16 - length($_->[0])) . $_->[0];
+  }
+  
+  # for every address in the command's output, locate the symbol it belongs to
+  open F, $tmp or die "Failed to open $tmp: $!";
+  while (<F>) {
+    if (/^([0-9]+): (.*)\[0x([0-9a-f]+)\]$/) {
+      my $adr = "0" x (16 - length($3)) . $3; # normalize address value
+      my $i = 0;
+      while (defined $nm[$i] and $nm[$i]->[0] lt $adr) {
+	$i++;
+      }
+      if ($i > 0) {  # there is a symbol with an address less than $adr
+	$i--;
+	print STDERR "$1: $nm[$i]->[1]",
+	  defined($nm[$i]->[2])?$nm[$i]->[2]:"",
+          "\n"; 
+      } else {
+	print STDERR $_;	# echo line unchanged
+      }
+    } else {
+      print STDERR $_;		# echo line unchanged
+    }
+  }
+  close F;
+}
+
+if ($rc == 0) {			# program completed successfully
+    exit(0);
+} elsif ($rc >> 8 == 0) {	# program caught itself a signal
+    exit(127);
+} else {			# return the original exit code
+    exit($rc >> 8);
+}

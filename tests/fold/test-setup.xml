@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE test-setup SYSTEM "../../rsrc/OOC/TestFramework/test-setup.dtd">
+
+<test-setup lang="O2">
+  &test-env;
+  
+  <processor name="TestCompile"
+	     version="devel"
+	     command="../../TestCompile"
+	     config-file=""
+	     working-dir="wd" 
+	     flags="-r ../lib-TestCompile -r wd --write-ir"
+	     filter-command="&OOEF;" 
+	     diff-command="&DIFF;" 
+	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"
+	     />
+
+  <test-suite uri="testsuite.xml" />
+</test-setup>

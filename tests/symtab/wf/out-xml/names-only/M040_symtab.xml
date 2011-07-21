@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <record_type id='1' pos='21' line='2' column='10' class='R0' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='2' name='R0' pos='16' line='2' column='5' class='R0' visible_from='31' export='no' type_id='1'/>
+  <type_name id='3' pos='51' line='3' column='18' ident_name='R0' ident_pos='51' ident_line='3' ident_column='18'/>
+  <record_type id='4' pos='43' line='3' column='10' class='R1' base_type_id='3' tb_proc_count='-1'/>
+  <type_decl id='5' name='R1' pos='38' line='3' column='5' class='R1' visible_from='58' export='no' type_id='4'/>
+  <procedure_decl id='6' name='ProcA' pos='83' line='5' column='22' visible_from='88' export='no' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='7' pos='61' line='5' column='0' receiver_id='9' resultType='#none'>
+      <type_name id='8' pos='79' line='5' column='18' ident_name='R0' ident_pos='79' ident_line='5' ident_column='18'/>
+      <var_decl id='9' name='r' pos='76' line='5' column='15' visible_from='81' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='yes' type_id='8'/>
+    </procedure_type>
+  </procedure_decl>
+  <procedure_decl id='10' name='ProcA' pos='126' line='8' column='22' visible_from='131' export='no' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='11' pos='104' line='8' column='0' receiver_id='13' resultType='#none'>
+      <type_name id='12' pos='122' line='8' column='18' ident_name='R1' ident_pos='122' ident_line='8' ident_column='18'/>
+      <var_decl id='13' name='r' pos='119' line='8' column='15' visible_from='124' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='yes' type_id='12'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

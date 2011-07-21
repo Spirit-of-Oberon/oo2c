@@ -1,0 +1,3 @@
+This is a left quote @samp{``} and this a right @samp{''}.
+
+Within text, this looks like ``this''.

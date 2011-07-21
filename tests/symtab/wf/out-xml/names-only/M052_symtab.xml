@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <procedure_decl id='1' name='P' pos='20' line='1' column='10' visible_from='34' export='no' is_type_bound='no' is_forward_decl='no'>
+    <oberon-doc>
+      <summary>Doc for procedure `P'.</summary>
+      <p pad-after='yes' no-indent='yes'>Doc for procedure `P'.</p>
+    </oberon-doc>
+    <procedure_type id='2' pos='10' line='1' column='0' resultType='#none'>
+      <type_name id='3' pos='26' line='1' column='16' ident_name='INTEGER' ident_pos='26' ident_line='1' ident_column='16'/>
+      <var_decl id='4' name='a' pos='23' line='1' column='13' visible_from='33' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='no' type_id='3'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

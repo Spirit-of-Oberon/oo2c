@@ -1,0 +1,41 @@
+# -*-mode: makefile-*-
+
+include $(OOC_DEV_ROOT)/Makefile.config
+
+# ------------------------------------------------------------------------
+# Auxiliary Variables
+# ------------------------------------------------------------------------
+
+# Create list of all test directories.
+ifdef TEST_BASE
+TEST_LIST=$(TEST_BASE)
+CLEAN_LIST=test-cleanall
+else
+TEST_LIST=$(TEST_SUBDIRS)
+CLEAN_LIST=main-clean
+endif
+
+TEST_LIST_CLEAN=$(patsubst %,$(OOC_DEV_ROOT)/%/.test-clean,$(TEST_LIST))
+TEST_LIST_TEST=$(patsubst %,$(OOC_DEV_ROOT)/%/.test,$(TEST_LIST))
+
+# ------------------------------------------------------------------------
+# Test targets
+# ------------------------------------------------------------------------
+
+# Change ".test-clean" tag to "Makefile", thus call the test makefile which
+# in turn recalls this makefile with target test1-clean.
+%.test-clean:
+	$(MAKE) -f $(subst .test-clean,Makefile,$@) test-clean
+
+test-cleanall: $(TEST_LIST_CLEAN)
+	$(PRINT) Done clean.
+
+# Change ".test" tag to "Makefile", thus call the package makefile which
+# in turn recalls this makefile with target test1-report.
+%.test: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
+	$(MAKE) -f $(subst .test,Makefile,$@) test-runall
+
+test: $(TEST_LIST_TEST)
+	$(PRINT) Done test.
+
+clean: $(CLEAN_LIST)

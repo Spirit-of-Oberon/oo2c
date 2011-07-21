@@ -1,0 +1,13 @@
+In file not-wf/src/M006.Mod: 
+Expected identifier, but found `$'
+char=$
+column=29
+line=3
+pos=98
+
+Expected identifier, but found `$'
+char=$
+column=29
+line=3
+pos=98
+

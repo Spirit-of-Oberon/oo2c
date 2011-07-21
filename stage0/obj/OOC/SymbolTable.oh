@@ -1,0 +1,1157 @@
+#ifndef _MODULE_OOC_SymbolTable_
+#define _MODULE_OOC_SymbolTable_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Object/Boxed.oh>
+#include <ADT/Dictionary/AddressKey.oh>
+#include <ADT/Dictionary.oh>
+#include <ADT/Storable.oh>
+#include <ADT/ArrayList.oh>
+#include <ADT/Object/Storage.oh>
+#include <IO.oh>
+#include <URI.oh>
+#include <OOC/Scanner/InputBuffer.oh>
+#include <OOC/Scanner/SymList.oh>
+#include <OOC/Doc.oh>
+#include <OOC/AST.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_Scanner_InputBuffer__CharArray OOC_SymbolTable__NameString;
+typedef OOC_INT32 OOC_SymbolTable__ModulePos;
+typedef OOC_INT32 OOC_SymbolTable__ModuleLine;
+typedef OOC_INT32 OOC_SymbolTable__ModuleColumn;
+typedef ADT_Dictionary_AddressKey__Dictionary OOC_SymbolTable__Exports;
+typedef ADT_Dictionary__Dictionary OOC_SymbolTable__ExtensionDict;
+typedef struct OOC_SymbolTable__PositionDesc *OOC_SymbolTable__Position;
+typedef struct OOC_SymbolTable__PositionDesc {
+  OOC_INT32 pos;
+  OOC_INT32 line;
+  OOC_INT32 column;
+} OOC_SymbolTable__PositionDesc;
+typedef struct OOC_SymbolTable__NameDesc *OOC_SymbolTable__Name;
+typedef struct OOC_SymbolTable__NameDesc {
+  OOC_INT32 pos;
+  OOC_INT32 line;
+  OOC_INT32 column;
+  OOC_Scanner_InputBuffer__CharArray str;
+} OOC_SymbolTable__NameDesc;
+typedef struct OOC_SymbolTable__FlagDesc *OOC_SymbolTable__Flag;
+typedef struct OOC_SymbolTable__FlagDesc {
+  OOC_SymbolTable__Flag nextFlag;
+  OOC_INT16 id;
+  OOC_CHAR8 __pad6;
+  OOC_CHAR8 __pad7;
+  OOC_SymbolTable__Position pos;
+} OOC_SymbolTable__FlagDesc;
+#define OOC_SymbolTable__flagUnknownName (-1)
+#define OOC_SymbolTable__flagNoCopy 0
+#define OOC_SymbolTable__flagAbstract 1
+#define OOC_SymbolTable__flagNoLengthInfo 2
+#define OOC_SymbolTable__flagNoDescriptor 3
+#define OOC_SymbolTable__flagNotExtensible 4
+#define OOC_SymbolTable__flagCString 5
+#define OOC_SymbolTable__flagNilCompat 6
+#define OOC_SymbolTable__flagUnion 7
+#define OOC_SymbolTable__flagReadOnly 8
+#define OOC_SymbolTable__flagNoReturn 9
+#define OOC_SymbolTable__flagDeprecated 10
+#define OOC_SymbolTable__flagOOCExtensions 11
+#define OOC_SymbolTable__flagExtensible 12
+#define OOC_SymbolTable__flagAlign1 13
+#define OOC_SymbolTable__flagAlign2 14
+#define OOC_SymbolTable__flagAlign4 15
+#define OOC_SymbolTable__flagAlign8 16
+#define OOC_SymbolTable__flagVtable 17
+#define OOC_SymbolTable__flagUncheckedException 18
+#define OOC_SymbolTable__flagAtomic 19
+#define OOC_SymbolTable__libTypeStandard 0
+#define OOC_SymbolTable__libTypeFramework 1
+#define OOC_SymbolTable__nameNotExported 0
+#define OOC_SymbolTable__nameExported 1
+#define OOC_SymbolTable__nameExportedRO 2
+typedef OOC_INT8 OOC_SymbolTable__ExportMark;
+typedef struct OOC_SymbolTable__ItemDesc *OOC_SymbolTable__Item;
+typedef struct OOC_SymbolTable__ItemDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+} OOC_SymbolTable__ItemDesc;
+#define OOC_SymbolTable__visiblePosImportedDecl (-3)
+#define OOC_SymbolTable__posImportedName (-2)
+#define OOC_SymbolTable__visiblePosImportedFormalParam (-1)
+typedef struct OOC_SymbolTable__DeclarationDesc *OOC_SymbolTable__Declaration;
+typedef struct OOC_SymbolTable__DeclarationDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+} OOC_SymbolTable__DeclarationDesc;
+typedef OOC_SymbolTable__Declaration *OOC_SymbolTable__DeclarationArray;
+typedef struct OOC_SymbolTable__NamespaceDesc *OOC_SymbolTable__Namespace;
+typedef struct OOC_SymbolTable__NamespaceDesc {
+  char __dummy;
+} OOC_SymbolTable__NamespaceDesc;
+typedef struct OOC_SymbolTable__TypeParsDesc *OOC_SymbolTable__TypePars;
+typedef struct OOC_SymbolTable__TypeVarDesc *OOC_SymbolTable__TypeVar;
+typedef OOC_SymbolTable__TypeVar *OOC_SymbolTable__TypeVarArray;
+typedef struct OOC_SymbolTable__TypeParsDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__TypeVarArray params;
+  OOC_SymbolTable__Namespace ns;
+} OOC_SymbolTable__TypeParsDesc;
+#define OOC_SymbolTable__dynamicSize (-1)
+#define OOC_SymbolTable__unknownSize (-2)
+typedef struct OOC_SymbolTable__TypeDesc *OOC_SymbolTable__Type;
+typedef struct OOC_SymbolTable__TypeDeclDesc *OOC_SymbolTable__TypeDecl;
+typedef struct OOC_SymbolTable__TypeDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+} OOC_SymbolTable__TypeDesc;
+typedef OOC_INT8 OOC_SymbolTable__ModuleClass;
+#define OOC_SymbolTable__mcStandard 0
+#define OOC_SymbolTable__mcInternal 1
+#define OOC_SymbolTable__mcForeign 2
+#define OOC_SymbolTable__mcInterface 3
+typedef OOC_INT8 OOC_SymbolTable__CallConv;
+#define OOC_SymbolTable__callConvInvalid (-1)
+#define OOC_SymbolTable__callConvDefault 0
+#define OOC_SymbolTable__callConvInternal 1
+#define OOC_SymbolTable__callConvC 2
+#define OOC_SymbolTable__callConvPascal 3
+typedef struct OOC_SymbolTable__LinkDirectiveDesc *OOC_SymbolTable__LinkDirective;
+typedef struct OOC_SymbolTable__LinkDirectiveDesc {
+  OOC_SymbolTable__LinkDirective next;
+} OOC_SymbolTable__LinkDirectiveDesc;
+typedef struct OOC_SymbolTable__LinkFileDesc *OOC_SymbolTable__LinkFile;
+typedef struct OOC_SymbolTable__LinkFileDesc {
+  OOC_SymbolTable__LinkDirective next;
+  URI__HierarchicalURI file;
+  Object__String prefixOption;
+  Object__String suffixOption;
+} OOC_SymbolTable__LinkFileDesc;
+typedef struct OOC_SymbolTable__LinkLibDesc *OOC_SymbolTable__LinkLib;
+typedef struct OOC_SymbolTable__LinkLibDesc {
+  OOC_SymbolTable__LinkDirective next;
+  Object__String libraryName;
+  Object__StringArrayPtr dependencies;
+  Object__String prefixOption;
+  Object__String suffixOption;
+  OOC_INT32 type;
+} OOC_SymbolTable__LinkLibDesc;
+#define OOC_SymbolTable__declModuleBody "_MODULE_BODY"
+typedef struct OOC_SymbolTable__ModuleDesc *OOC_SymbolTable__Module;
+typedef struct OOC_SymbolTable__ModuleRefDesc *OOC_SymbolTable__ModuleRef;
+typedef struct OOC_SymbolTable__ModuleRefDesc {
+  OOC_Scanner_InputBuffer__CharArray name;
+  OOC_INT32 fingerprint;
+} OOC_SymbolTable__ModuleRefDesc;
+typedef OOC_SymbolTable__ModuleRef *OOC_SymbolTable__ModuleRefArray;
+typedef struct OOC_SymbolTable__ProcDeclDesc *OOC_SymbolTable__ProcDecl;
+typedef struct OOC_SymbolTable__ModuleDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_SymbolTable__Namespace ns;
+  OOC_INT8 _class;
+  OOC_CHAR8 __pad53;
+  OOC_CHAR8 __pad54;
+  OOC_CHAR8 __pad55;
+  Object__String libraryName;
+  OOC_INT8 callConv;
+  OOC_CHAR8 __pad61;
+  OOC_CHAR8 __pad62;
+  OOC_CHAR8 __pad63;
+  OOC_SymbolTable__LinkDirective linkDirectives;
+  OOC_INT32 fingerprint;
+  OOC_SymbolTable__ModuleRefArray prunedImports;
+  OOC_AST__Node moduleAST;
+  OOC_SymbolTable__ProcDecl bodyDecl;
+} OOC_SymbolTable__ModuleDesc;
+typedef struct OOC_SymbolTable__ImportDesc *OOC_SymbolTable__Import;
+typedef struct OOC_SymbolTable__ImportDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_SymbolTable__Name moduleName;
+  OOC_SymbolTable__Module externalSymTab;
+  OOC_INT32 fingerprint;
+} OOC_SymbolTable__ImportDesc;
+typedef OOC_INT16 OOC_SymbolTable__PredefId;
+typedef struct OOC_SymbolTable__PredefTypeDesc *OOC_SymbolTable__PredefType;
+typedef struct OOC_SymbolTable__PredefTypeDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_INT16 id;
+} OOC_SymbolTable__PredefTypeDesc;
+typedef struct OOC_SymbolTable__TypeNameDesc *OOC_SymbolTable__TypeName;
+typedef struct OOC_SymbolTable__TypeNameDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_SymbolTable__Name module;
+  OOC_SymbolTable__Name ident;
+} OOC_SymbolTable__TypeNameDesc;
+typedef struct OOC_SymbolTable__PointerDesc *OOC_SymbolTable__Pointer;
+typedef struct OOC_SymbolTable__PointerDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_SymbolTable__Type baseType;
+  OOC_SymbolTable__Type srcCodeBaseType;
+  OOC_CHAR8 doCArrayAssignment;
+  OOC_CHAR8 isStatic;
+} OOC_SymbolTable__PointerDesc;
+typedef struct OOC_SymbolTable__ExceptionNameDesc *OOC_SymbolTable__ExceptionName;
+typedef OOC_SymbolTable__ExceptionName *OOC_SymbolTable__ExceptionNameArray;
+typedef struct OOC_SymbolTable__ExceptionNameDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Type type;
+  OOC_SymbolTable__Type srcCodeType;
+} OOC_SymbolTable__ExceptionNameDesc;
+typedef struct OOC_SymbolTable__VarDeclDesc *OOC_SymbolTable__VarDecl;
+typedef OOC_SymbolTable__VarDecl *OOC_SymbolTable__VarDeclArray;
+typedef struct OOC_SymbolTable__FormalParsDesc *OOC_SymbolTable__FormalPars;
+typedef struct OOC_SymbolTable__FormalParsDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_SymbolTable__VarDecl receiver;
+  OOC_SymbolTable__Type resultType;
+  OOC_SymbolTable__Type srcCodeResultType;
+  OOC_SymbolTable__VarDeclArray params;
+  OOC_CHAR8 anyRestParameters;
+  OOC_CHAR8 noReturn;
+  OOC_INT8 callConv;
+  OOC_CHAR8 __pad59;
+  OOC_SymbolTable__ExceptionNameArray raises;
+  OOC_SymbolTable__Namespace ns;
+} OOC_SymbolTable__FormalParsDesc;
+typedef struct OOC_SymbolTable__ArrayDesc *OOC_SymbolTable__Array;
+typedef struct OOC_SymbolTable__ArrayDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_CHAR8 isOpenArray;
+  OOC_CHAR8 hasLengthInfo;
+  OOC_CHAR8 readOnlyExport;
+  OOC_CHAR8 __pad43;
+  OOC_SymbolTable__Type elementType;
+  OOC_SymbolTable__Type srcCodeElementType;
+  OOC_INT32 length;
+  OOC_AST__Node lengthExpr;
+  OOC_CHAR8 isAtomic;
+} OOC_SymbolTable__ArrayDesc;
+typedef struct OOC_SymbolTable__RecordDesc *OOC_SymbolTable__Record;
+typedef struct OOC_SymbolTable__RecordDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_SymbolTable__Type baseType;
+  OOC_SymbolTable__Type srcCodeBaseType;
+  OOC_INT32 tbProcCount;
+  OOC_SymbolTable__Namespace ns;
+  OOC_CHAR8 isUnion;
+  OOC_CHAR8 isAbstract;
+  OOC_CHAR8 isExtensible;
+  OOC_CHAR8 isUncheckedException;
+  OOC_CHAR8 isVtable;
+  OOC_CHAR8 isAtomic;
+  OOC_INT16 fieldAlign;
+  OOC_SymbolTable__Name className;
+} OOC_SymbolTable__RecordDesc;
+typedef struct OOC_SymbolTable__TypeVarDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_SymbolTable__Type bound;
+  OOC_SymbolTable__Type srcCodeBound;
+} OOC_SymbolTable__TypeVarDesc;
+typedef struct OOC_SymbolTable__QualTypeDesc *OOC_SymbolTable__QualType;
+typedef struct OOC_SymbolTable__TypeRef {
+  OOC_SymbolTable__Type type;
+  OOC_SymbolTable__Type srcCodeType;
+} OOC_SymbolTable__TypeRef;
+typedef struct OOC_SymbolTable__TypeRef *OOC_SymbolTable__TypeRefArray;
+typedef struct OOC_SymbolTable__QualTypeDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_SymbolTable__Type baseType;
+  OOC_SymbolTable__Type srcCodeBaseType;
+  OOC_SymbolTable__TypeRefArray arguments;
+} OOC_SymbolTable__QualTypeDesc;
+typedef struct OOC_SymbolTable__TypeClosureDesc *OOC_SymbolTable__TypeClosure;
+typedef struct OOC_SymbolTable__TypeClosureDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Position position;
+  OOC_SymbolTable__TypeDecl namingDecl;
+  OOC_SymbolTable__TypePars typePars;
+  OOC_INT32 size;
+  OOC_INT16 align;
+  OOC_CHAR8 hasDescriptor;
+  OOC_CHAR8 __pad39;
+  OOC_SymbolTable__Type baseType;
+  OOC_SymbolTable__TypeVarArray params;
+  OOC_SymbolTable__TypeRefArray arguments;
+} OOC_SymbolTable__TypeClosureDesc;
+#define OOC_SymbolTable__standardProc 0
+#define OOC_SymbolTable__virtualMethod 1
+#define OOC_SymbolTable__staticMethod 2
+typedef struct OOC_SymbolTable__ProcDeclDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_INT8 procClass;
+  OOC_CHAR8 isForwardDecl;
+  OOC_CHAR8 isAbstract;
+  OOC_CHAR8 notRedefined;
+  OOC_CHAR8 nonlocalWrites;
+  OOC_CHAR8 __pad53;
+  OOC_CHAR8 __pad54;
+  OOC_CHAR8 __pad55;
+  OOC_INT32 tbProcIndex;
+  OOC_SymbolTable__Namespace ns;
+  OOC_SymbolTable__FormalPars formalPars;
+  Object__String linkName;
+  OOC_AST__Node procAST;
+  OOC_CHAR8 hasTryStatm;
+} OOC_SymbolTable__ProcDeclDesc;
+#define OOC_SymbolTable__unlimitedArgs 32767
+typedef struct OOC_SymbolTable__PredefProcDesc *OOC_SymbolTable__PredefProc;
+typedef struct OOC_SymbolTable__PredefProcDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_INT16 id;
+  OOC_INT16 minArgs;
+  OOC_INT16 maxArgs;
+} OOC_SymbolTable__PredefProcDesc;
+typedef struct OOC_SymbolTable__ConstDeclDesc *OOC_SymbolTable__ConstDecl;
+typedef struct OOC_SymbolTable__ConstDeclDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  Object_Boxed__Object value;
+  OOC_SymbolTable__PredefType type;
+  OOC_AST__Node constExpr;
+} OOC_SymbolTable__ConstDeclDesc;
+typedef struct OOC_SymbolTable__VarDeclDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_SymbolTable__Type type;
+  OOC_SymbolTable__Type srcCodeType;
+  OOC_CHAR8 isParameter;
+  OOC_CHAR8 isReceiver;
+  OOC_CHAR8 hasAliasList;
+  OOC_CHAR8 isVarParam;
+  OOC_CHAR8 isPassPerReference;
+  OOC_CHAR8 hasLocalCopy;
+  OOC_CHAR8 isReadOnly;
+  OOC_CHAR8 permitArgumentNIL;
+  OOC_CHAR8 supplementArgs;
+} OOC_SymbolTable__VarDeclDesc;
+typedef struct OOC_SymbolTable__FieldDeclDesc *OOC_SymbolTable__FieldDecl;
+typedef struct OOC_SymbolTable__FieldDeclDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_SymbolTable__Type type;
+  OOC_SymbolTable__Type srcCodeType;
+  OOC_INT32 offset;
+  OOC_CHAR8 shadowsPrivateBase;
+} OOC_SymbolTable__FieldDeclDesc;
+typedef struct OOC_SymbolTable__TypeDeclDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_SymbolTable__Type type;
+  OOC_SymbolTable__Type srcCodeType;
+  OOC_CHAR8 isTypeParameter;
+} OOC_SymbolTable__TypeDeclDesc;
+typedef struct OOC_SymbolTable__RedirectDesc *OOC_SymbolTable__Redirect;
+typedef struct OOC_SymbolTable__RedirectDesc {
+  OOC_SymbolTable__Item nextNested;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Item nestedItems;
+  OOC_SymbolTable__Item tailNestedItems;
+  OOC_SymbolTable__Flag flagList;
+  OOC_SymbolTable__Name name;
+  OOC_INT32 visibleFrom;
+  OOC_INT8 exportMark;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_Doc__Document docString;
+  OOC_CHAR8 deprecated;
+  OOC_CHAR8 __pad37;
+  OOC_CHAR8 __pad38;
+  OOC_CHAR8 __pad39;
+  OOC_Scanner_InputBuffer__CharArray cachedId;
+  OOC_INT32 usageCount;
+  OOC_SymbolTable__Name module;
+  OOC_SymbolTable__Name ident;
+} OOC_SymbolTable__RedirectDesc;
+extern OOC_SymbolTable__PredefType *OOC_SymbolTable__predefIdToType;
+typedef struct OOC_SymbolTable__WriterDesc *OOC_SymbolTable__Writer;
+typedef struct OOC_SymbolTable__WriterDesc {
+  OOC_INT8 byteOrder;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  IO__ByteChannel channel;
+  OOC_INT32 objCounter;
+  ADT_Object_Storage__TypeRefMap typeRefMap;
+  OOC_INT32 typeRefSize;
+  ADT_Dictionary_AddressKey_IntValue__Dictionary objHash;
+  ADT_Object_Storage__CharBuffer charBuffer;
+  ADT_Object_Storage__Writer docWriter;
+} OOC_SymbolTable__WriterDesc;
+typedef struct OOC_SymbolTable__ReaderDesc *OOC_SymbolTable__Reader;
+typedef struct OOC_SymbolTable__ReaderDesc {
+  OOC_INT8 byteOrder;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  IO__ByteChannel channel;
+  OOC_INT32 objCounter;
+  ADT_Object_Storage__ObjectArray objTab;
+  OOC_INT32 typeCounter;
+  ADT_Object_Storage__TypeArray typeTab;
+  ADT_Object_Storage__CharBuffer name;
+  ADT_Object_Storage__Reader docReader;
+} OOC_SymbolTable__ReaderDesc;
+extern void OOC_SymbolTable__WriterDesc_INIT(OOC_SymbolTable__Writer w, IO__ByteChannel ch, IO__ByteChannel chDoc);
+#define _TBN_OOC_SymbolTable__WriterDesc_INIT 19
+typedef void (*_TBP_OOC_SymbolTable__WriterDesc_INIT)(OOC_SymbolTable__Writer w, IO__ByteChannel ch, IO__ByteChannel chDoc);
+extern void OOC_SymbolTable__ReaderDesc_INIT(OOC_SymbolTable__Reader r, IO__ByteChannel ch, IO__ByteChannel chDoc);
+#define _TBN_OOC_SymbolTable__ReaderDesc_INIT 19
+typedef void (*_TBP_OOC_SymbolTable__ReaderDesc_INIT)(OOC_SymbolTable__Reader r, IO__ByteChannel ch, IO__ByteChannel chDoc);
+extern void OOC_SymbolTable__InitNamespace(OOC_SymbolTable__Namespace ns);
+extern OOC_SymbolTable__Declaration OOC_SymbolTable__NamespaceDesc_IdentifyLocal2(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition, OOC_CHAR8 *baseNotExported);
+#define _TBN_OOC_SymbolTable__NamespaceDesc_IdentifyLocal2 0
+typedef OOC_SymbolTable__Declaration (*_TBP_OOC_SymbolTable__NamespaceDesc_IdentifyLocal2)(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition, OOC_CHAR8 *baseNotExported);
+extern OOC_SymbolTable__Declaration OOC_SymbolTable__NamespaceDesc_IdentifyLocal(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition);
+#define _TBN_OOC_SymbolTable__NamespaceDesc_IdentifyLocal 1
+typedef OOC_SymbolTable__Declaration (*_TBP_OOC_SymbolTable__NamespaceDesc_IdentifyLocal)(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition);
+extern OOC_SymbolTable__Declaration OOC_SymbolTable__NamespaceDesc_Identify2(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition, OOC_CHAR8 *baseNotExported);
+#define _TBN_OOC_SymbolTable__NamespaceDesc_Identify2 2
+typedef OOC_SymbolTable__Declaration (*_TBP_OOC_SymbolTable__NamespaceDesc_Identify2)(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition, OOC_CHAR8 *baseNotExported);
+extern OOC_SymbolTable__Declaration OOC_SymbolTable__NamespaceDesc_Identify(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition);
+#define _TBN_OOC_SymbolTable__NamespaceDesc_Identify 3
+typedef OOC_SymbolTable__Declaration (*_TBP_OOC_SymbolTable__NamespaceDesc_Identify)(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition);
+extern OOC_SymbolTable__ProcDecl OOC_SymbolTable__NamespaceDesc_GetSuperProcByIndex(OOC_SymbolTable__Namespace ns, OOC_INT32 index);
+#define _TBN_OOC_SymbolTable__NamespaceDesc_GetSuperProcByIndex 4
+typedef OOC_SymbolTable__ProcDecl (*_TBP_OOC_SymbolTable__NamespaceDesc_GetSuperProcByIndex)(OOC_SymbolTable__Namespace ns, OOC_INT32 index);
+extern void OOC_SymbolTable__InitPosition(OOC_SymbolTable__Position position, OOC_INT32 pos, OOC_INT32 line, OOC_INT32 column);
+extern void OOC_SymbolTable__PositionDesc_Store(OOC_SymbolTable__Position position, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__PositionDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__PositionDesc_Store)(OOC_SymbolTable__Position position, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__PositionDesc_Load(OOC_SymbolTable__Position position, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__PositionDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__PositionDesc_Load)(OOC_SymbolTable__Position position, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitName(OOC_SymbolTable__Name name, OOC_Scanner_InputBuffer__CharArray str, OOC_INT32 pos, OOC_INT32 line, OOC_INT32 column);
+extern void OOC_SymbolTable__NameDesc_Store(OOC_SymbolTable__Name name, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__NameDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__NameDesc_Store)(OOC_SymbolTable__Name name, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__NameDesc_Load(OOC_SymbolTable__Name name, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__NameDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__NameDesc_Load)(OOC_SymbolTable__Name name, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitItem(OOC_SymbolTable__Item item, OOC_SymbolTable__Item parent);
+extern void OOC_SymbolTable__ItemDesc_Store(OOC_SymbolTable__Item item, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__ItemDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__ItemDesc_Store)(OOC_SymbolTable__Item item, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__ItemDesc_Load(OOC_SymbolTable__Item item, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__ItemDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__ItemDesc_Load)(OOC_SymbolTable__Item item, ADT_Storable__Reader r);
+extern OOC_SymbolTable__Module OOC_SymbolTable__ItemDesc_Module(OOC_SymbolTable__Item item);
+#define _TBN_OOC_SymbolTable__ItemDesc_Module 6
+typedef OOC_SymbolTable__Module (*_TBP_OOC_SymbolTable__ItemDesc_Module)(OOC_SymbolTable__Item item);
+extern OOC_CHAR8 OOC_SymbolTable__ItemDesc_InStandardModule(OOC_SymbolTable__Item item);
+#define _TBN_OOC_SymbolTable__ItemDesc_InStandardModule 7
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__ItemDesc_InStandardModule)(OOC_SymbolTable__Item item);
+extern OOC_SymbolTable__ProcDecl OOC_SymbolTable__ItemDesc_Procedure(OOC_SymbolTable__Item item);
+#define _TBN_OOC_SymbolTable__ItemDesc_Procedure 8
+typedef OOC_SymbolTable__ProcDecl (*_TBP_OOC_SymbolTable__ItemDesc_Procedure)(OOC_SymbolTable__Item item);
+extern void OOC_SymbolTable__ItemDesc_AddFlag(OOC_SymbolTable__Item item, OOC_SymbolTable__Name name);
+#define _TBN_OOC_SymbolTable__ItemDesc_AddFlag 9
+typedef void (*_TBP_OOC_SymbolTable__ItemDesc_AddFlag)(OOC_SymbolTable__Item item, OOC_SymbolTable__Name name);
+extern void OOC_SymbolTable__InitDeclaration(OOC_SymbolTable__Declaration decl, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString);
+extern void OOC_SymbolTable__DeclarationDesc_Store(OOC_SymbolTable__Declaration decl, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__DeclarationDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__DeclarationDesc_Store)(OOC_SymbolTable__Declaration decl, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__DeclarationDesc_Load(OOC_SymbolTable__Declaration decl, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__DeclarationDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__DeclarationDesc_Load)(OOC_SymbolTable__Declaration decl, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__DeclarationDesc_IncrUsageCounter(OOC_SymbolTable__Declaration decl);
+#define _TBN_OOC_SymbolTable__DeclarationDesc_IncrUsageCounter 11
+typedef void (*_TBP_OOC_SymbolTable__DeclarationDesc_IncrUsageCounter)(OOC_SymbolTable__Declaration decl);
+extern void OOC_SymbolTable__InitType(OOC_SymbolTable__Type type, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position);
+extern OOC_CHAR8 OOC_SymbolTable__TypeDesc_PreciousTypePars(OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__TypeDesc_PreciousTypePars 11
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__TypeDesc_PreciousTypePars)(OOC_SymbolTable__Type type);
+extern OOC_CHAR8 OOC_SymbolTable__TypeDesc_IsCheckedException(OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__TypeDesc_IsCheckedException 12
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__TypeDesc_IsCheckedException)(OOC_SymbolTable__Type type);
+extern void OOC_SymbolTable__TypeDesc_Store(OOC_SymbolTable__Type type, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__TypeDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__TypeDesc_Store)(OOC_SymbolTable__Type type, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__TypeDesc_Load(OOC_SymbolTable__Type type, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__TypeDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__TypeDesc_Load)(OOC_SymbolTable__Type type, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__TypeDesc_SetNamingDecl(OOC_SymbolTable__Type type, OOC_SymbolTable__TypeDecl namingDecl);
+#define _TBN_OOC_SymbolTable__TypeDesc_SetNamingDecl 13
+typedef void (*_TBP_OOC_SymbolTable__TypeDesc_SetNamingDecl)(OOC_SymbolTable__Type type, OOC_SymbolTable__TypeDecl namingDecl);
+extern void OOC_SymbolTable__TypeDesc_SetTypePars(OOC_SymbolTable__Type type, OOC_SymbolTable__TypePars typePars);
+#define _TBN_OOC_SymbolTable__TypeDesc_SetTypePars 14
+typedef void (*_TBP_OOC_SymbolTable__TypeDesc_SetTypePars)(OOC_SymbolTable__Type type, OOC_SymbolTable__TypePars typePars);
+extern void OOC_SymbolTable__TypeDesc_SetSize(OOC_SymbolTable__Type type, OOC_INT32 size, OOC_INT16 align);
+#define _TBN_OOC_SymbolTable__TypeDesc_SetSize 15
+typedef void (*_TBP_OOC_SymbolTable__TypeDesc_SetSize)(OOC_SymbolTable__Type type, OOC_INT32 size, OOC_INT16 align);
+extern OOC_INT32 OOC_SymbolTable__TypeDesc_ArrayDimensions(OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__TypeDesc_ArrayDimensions 16
+typedef OOC_INT32 (*_TBP_OOC_SymbolTable__TypeDesc_ArrayDimensions)(OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__Type OOC_SymbolTable__TypeDesc_Deparam(OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__TypeDesc_Deparam 17
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__TypeDesc_Deparam)(OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__Type OOC_SymbolTable__TypeDesc_Bound(OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__TypeDesc_Bound 18
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__TypeDesc_Bound)(OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__Type OOC_SymbolTable__TypeDesc_Closure(OOC_SymbolTable__Type type, OOC_SymbolTable__Type subType);
+#define _TBN_OOC_SymbolTable__TypeDesc_Closure 19
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__TypeDesc_Closure)(OOC_SymbolTable__Type type, OOC_SymbolTable__Type subType);
+extern void OOC_SymbolTable__LinkDirectiveDesc_Store(OOC_SymbolTable__LinkDirective l, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__LinkDirectiveDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__LinkDirectiveDesc_Store)(OOC_SymbolTable__LinkDirective l, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__LinkDirectiveDesc_Load(OOC_SymbolTable__LinkDirective l, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__LinkDirectiveDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__LinkDirectiveDesc_Load)(OOC_SymbolTable__LinkDirective l, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__LinkFileDesc_Store(OOC_SymbolTable__LinkFile l, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__LinkFileDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__LinkFileDesc_Store)(OOC_SymbolTable__LinkFile l, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__LinkFileDesc_Load(OOC_SymbolTable__LinkFile l, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__LinkFileDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__LinkFileDesc_Load)(OOC_SymbolTable__LinkFile l, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__LinkLibDesc_Store(OOC_SymbolTable__LinkLib l, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__LinkLibDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__LinkLibDesc_Store)(OOC_SymbolTable__LinkLib l, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__LinkLibDesc_Load(OOC_SymbolTable__LinkLib l, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__LinkLibDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__LinkLibDesc_Load)(OOC_SymbolTable__LinkLib l, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitModule(OOC_SymbolTable__Module mod, OOC_SymbolTable__Name name, OOC_Doc__Document docString, OOC_INT8 _class, OOC_INT8 callConv, OOC_AST__Node moduleAST, OOC_SymbolTable__ProcDecl bodyDecl);
+extern void OOC_SymbolTable__ModuleDesc_Store(OOC_SymbolTable__Module mod, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__ModuleDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__ModuleDesc_Store)(OOC_SymbolTable__Module mod, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__ModuleDesc_Load(OOC_SymbolTable__Module mod, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__ModuleDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__ModuleDesc_Load)(OOC_SymbolTable__Module mod, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__ModuleDesc_SetNamespace(OOC_SymbolTable__Module mod, OOC_SymbolTable__Namespace ns);
+#define _TBN_OOC_SymbolTable__ModuleDesc_SetNamespace 14
+typedef void (*_TBP_OOC_SymbolTable__ModuleDesc_SetNamespace)(OOC_SymbolTable__Module mod, OOC_SymbolTable__Namespace ns);
+extern void OOC_SymbolTable__ModuleDesc_SetLibraryName(OOC_SymbolTable__Module mod, Object__String name);
+#define _TBN_OOC_SymbolTable__ModuleDesc_SetLibraryName 15
+typedef void (*_TBP_OOC_SymbolTable__ModuleDesc_SetLibraryName)(OOC_SymbolTable__Module mod, Object__String name);
+extern Object__String OOC_SymbolTable__ModuleDesc_ClassToString(OOC_SymbolTable__Module mod);
+#define _TBN_OOC_SymbolTable__ModuleDesc_ClassToString 16
+typedef Object__String (*_TBP_OOC_SymbolTable__ModuleDesc_ClassToString)(OOC_SymbolTable__Module mod);
+extern Object__String OOC_SymbolTable__ModuleDesc_CallConvToString(OOC_SymbolTable__Module mod);
+#define _TBN_OOC_SymbolTable__ModuleDesc_CallConvToString 17
+typedef Object__String (*_TBP_OOC_SymbolTable__ModuleDesc_CallConvToString)(OOC_SymbolTable__Module mod);
+extern void OOC_SymbolTable__ModuleDesc_AddLinkFile(OOC_SymbolTable__Module mod, URI__HierarchicalURI file, Object__String prefixOption, Object__String suffixOption);
+#define _TBN_OOC_SymbolTable__ModuleDesc_AddLinkFile 18
+typedef void (*_TBP_OOC_SymbolTable__ModuleDesc_AddLinkFile)(OOC_SymbolTable__Module mod, URI__HierarchicalURI file, Object__String prefixOption, Object__String suffixOption);
+extern void OOC_SymbolTable__ModuleDesc_AddLinkLib(OOC_SymbolTable__Module mod, Object__String libraryName, Object__StringArrayPtr dependencies, Object__String prefixOption, Object__String suffixOption, OOC_INT32 type);
+#define _TBN_OOC_SymbolTable__ModuleDesc_AddLinkLib 19
+typedef void (*_TBP_OOC_SymbolTable__ModuleDesc_AddLinkLib)(OOC_SymbolTable__Module mod, Object__String libraryName, Object__StringArrayPtr dependencies, Object__String prefixOption, Object__String suffixOption, OOC_INT32 type);
+extern OOC_CHAR8 OOC_SymbolTable__ModuleDesc_NoObjectFile(OOC_SymbolTable__Module mod);
+#define _TBN_OOC_SymbolTable__ModuleDesc_NoObjectFile 20
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__ModuleDesc_NoObjectFile)(OOC_SymbolTable__Module mod);
+extern URI__HierarchicalURI OOC_SymbolTable__ModuleDesc_GetExternalSource(OOC_SymbolTable__Module mod, URI__HierarchicalURI rootURI);
+#define _TBN_OOC_SymbolTable__ModuleDesc_GetExternalSource 21
+typedef URI__HierarchicalURI (*_TBP_OOC_SymbolTable__ModuleDesc_GetExternalSource)(OOC_SymbolTable__Module mod, URI__HierarchicalURI rootURI);
+extern OOC_INT8 OOC_SymbolTable__StringToCallConv(Object__String str);
+extern void OOC_SymbolTable__InitImport(OOC_SymbolTable__Import import, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_Doc__Document docString, OOC_SymbolTable__Name moduleName);
+extern void OOC_SymbolTable__ImportDesc_SetExternalSymTab(OOC_SymbolTable__Import import, OOC_SymbolTable__Module symTab);
+#define _TBN_OOC_SymbolTable__ImportDesc_SetExternalSymTab 14
+typedef void (*_TBP_OOC_SymbolTable__ImportDesc_SetExternalSymTab)(OOC_SymbolTable__Import import, OOC_SymbolTable__Module symTab);
+extern OOC_CHAR8 OOC_SymbolTable__ImportDesc_IsInternalImport(OOC_SymbolTable__Import import);
+#define _TBN_OOC_SymbolTable__ImportDesc_IsInternalImport 15
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__ImportDesc_IsInternalImport)(OOC_SymbolTable__Import import);
+extern void OOC_SymbolTable__ImportDesc_Store(OOC_SymbolTable__Import import, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__ImportDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__ImportDesc_Store)(OOC_SymbolTable__Import import, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__ImportDesc_Load(OOC_SymbolTable__Import import, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__ImportDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__ImportDesc_Load)(OOC_SymbolTable__Import import, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitConstDecl(OOC_SymbolTable__ConstDecl constDecl, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, Object_Boxed__Object value, OOC_SymbolTable__PredefType type, OOC_AST__Node constExpr);
+extern void OOC_SymbolTable__ConstDeclDesc_SetValueType(OOC_SymbolTable__ConstDecl constDecl, Object_Boxed__Object value, OOC_SymbolTable__PredefType type);
+#define _TBN_OOC_SymbolTable__ConstDeclDesc_SetValueType 14
+typedef void (*_TBP_OOC_SymbolTable__ConstDeclDesc_SetValueType)(OOC_SymbolTable__ConstDecl constDecl, Object_Boxed__Object value, OOC_SymbolTable__PredefType type);
+extern void OOC_SymbolTable__ConstDeclDesc_Store(OOC_SymbolTable__ConstDecl constDecl, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__ConstDeclDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__ConstDeclDesc_Store)(OOC_SymbolTable__ConstDecl constDecl, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__ConstDeclDesc_Load(OOC_SymbolTable__ConstDecl constDecl, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__ConstDeclDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__ConstDeclDesc_Load)(OOC_SymbolTable__ConstDecl constDecl, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitExceptionName(OOC_SymbolTable__ExceptionName exceptionName, OOC_SymbolTable__Item parent, OOC_SymbolTable__Type type);
+extern void OOC_SymbolTable__ExceptionNameDesc_Store(OOC_SymbolTable__ExceptionName exceptionName, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__ExceptionNameDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__ExceptionNameDesc_Store)(OOC_SymbolTable__ExceptionName exceptionName, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__ExceptionNameDesc_Load(OOC_SymbolTable__ExceptionName exceptionName, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__ExceptionNameDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__ExceptionNameDesc_Load)(OOC_SymbolTable__ExceptionName exceptionName, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__VarDeclDesc_SetType(OOC_SymbolTable__VarDecl varDecl, OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__VarDeclDesc_SetType 14
+typedef void (*_TBP_OOC_SymbolTable__VarDeclDesc_SetType)(OOC_SymbolTable__VarDecl varDecl, OOC_SymbolTable__Type type);
+extern void OOC_SymbolTable__InitVarDecl(OOC_SymbolTable__VarDecl varDecl, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_CHAR8 isParameter, OOC_CHAR8 isReceiver, OOC_CHAR8 isVarParam, OOC_SymbolTable__Type type);
+extern void OOC_SymbolTable__VarDeclDesc_Store(OOC_SymbolTable__VarDecl varDecl, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__VarDeclDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__VarDeclDesc_Store)(OOC_SymbolTable__VarDecl varDecl, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__VarDeclDesc_Load(OOC_SymbolTable__VarDecl varDecl, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__VarDeclDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__VarDeclDesc_Load)(OOC_SymbolTable__VarDecl varDecl, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitTypeDecl(OOC_SymbolTable__TypeDecl typeDecl, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_SymbolTable__Type type, OOC_CHAR8 isTypeParameter);
+extern void OOC_SymbolTable__TypeDeclDesc_Store(OOC_SymbolTable__TypeDecl typeDecl, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__TypeDeclDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__TypeDeclDesc_Store)(OOC_SymbolTable__TypeDecl typeDecl, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__TypeDeclDesc_Load(OOC_SymbolTable__TypeDecl typeDecl, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__TypeDeclDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__TypeDeclDesc_Load)(OOC_SymbolTable__TypeDecl typeDecl, ADT_Storable__Reader r);
+extern OOC_CHAR8 OOC_SymbolTable__TypeDeclDesc_HasTypeParameters(OOC_SymbolTable__TypeDecl typeDecl);
+#define _TBN_OOC_SymbolTable__TypeDeclDesc_HasTypeParameters 14
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__TypeDeclDesc_HasTypeParameters)(OOC_SymbolTable__TypeDecl typeDecl);
+extern OOC_CHAR8 OOC_SymbolTable__TypeDeclDesc_IsTypeParameter(OOC_SymbolTable__TypeDecl typeDecl);
+#define _TBN_OOC_SymbolTable__TypeDeclDesc_IsTypeParameter 15
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__TypeDeclDesc_IsTypeParameter)(OOC_SymbolTable__TypeDecl typeDecl);
+extern OOC_SymbolTable__TypeDecl OOC_SymbolTable__TypeDeclDesc_ParametricType(OOC_SymbolTable__TypeDecl typeDecl);
+#define _TBN_OOC_SymbolTable__TypeDeclDesc_ParametricType 16
+typedef OOC_SymbolTable__TypeDecl (*_TBP_OOC_SymbolTable__TypeDeclDesc_ParametricType)(OOC_SymbolTable__TypeDecl typeDecl);
+extern void OOC_SymbolTable__InitRedirect(OOC_SymbolTable__Redirect redir, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_SymbolTable__Name module, OOC_SymbolTable__Name ident);
+extern void OOC_SymbolTable__RedirectDesc_Store(OOC_SymbolTable__Redirect redir, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__RedirectDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__RedirectDesc_Store)(OOC_SymbolTable__Redirect redir, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__RedirectDesc_Load(OOC_SymbolTable__Redirect redir, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__RedirectDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__RedirectDesc_Load)(OOC_SymbolTable__Redirect redir, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitFieldDecl(OOC_SymbolTable__FieldDecl fieldDecl, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_SymbolTable__Type type);
+extern void OOC_SymbolTable__FieldDeclDesc_Store(OOC_SymbolTable__FieldDecl fieldDecl, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__FieldDeclDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__FieldDeclDesc_Store)(OOC_SymbolTable__FieldDecl fieldDecl, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__FieldDeclDesc_Load(OOC_SymbolTable__FieldDecl fieldDecl, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__FieldDeclDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__FieldDeclDesc_Load)(OOC_SymbolTable__FieldDecl fieldDecl, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__FieldDeclDesc_SetOffset(OOC_SymbolTable__FieldDecl fieldDecl, OOC_INT32 offset);
+#define _TBN_OOC_SymbolTable__FieldDeclDesc_SetOffset 14
+typedef void (*_TBP_OOC_SymbolTable__FieldDeclDesc_SetOffset)(OOC_SymbolTable__FieldDecl fieldDecl, OOC_INT32 offset);
+extern void OOC_SymbolTable__InitPredefProc(OOC_SymbolTable__PredefProc proc, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT16 id, OOC_INT16 minArgs, OOC_INT16 maxArgs);
+extern void NORETURN OOC_SymbolTable__PredefProcDesc_Store(OOC_SymbolTable__PredefProc proc, ADT_Storable__Writer w) NORETURN2;
+#define _TBN_OOC_SymbolTable__PredefProcDesc_Store 4
+typedef void NORETURN (*_TBP_OOC_SymbolTable__PredefProcDesc_Store)(OOC_SymbolTable__PredefProc proc, ADT_Storable__Writer w) NORETURN2;
+extern void NORETURN OOC_SymbolTable__PredefProcDesc_Load(OOC_SymbolTable__PredefProc proc, ADT_Storable__Reader r) NORETURN2;
+#define _TBN_OOC_SymbolTable__PredefProcDesc_Load 5
+typedef void NORETURN (*_TBP_OOC_SymbolTable__PredefProcDesc_Load)(OOC_SymbolTable__PredefProc proc, ADT_Storable__Reader r) NORETURN2;
+extern void OOC_SymbolTable__InitProcDecl(OOC_SymbolTable__ProcDecl procDecl, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_INT8 procClass, OOC_CHAR8 isForwardDecl, OOC_AST__Node procAST);
+extern void OOC_SymbolTable__ProcDeclDesc_Store(OOC_SymbolTable__ProcDecl procDecl, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__ProcDeclDesc_Store)(OOC_SymbolTable__ProcDecl procDecl, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__ProcDeclDesc_Load(OOC_SymbolTable__ProcDecl procDecl, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__ProcDeclDesc_Load)(OOC_SymbolTable__ProcDecl procDecl, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__ProcDeclDesc_SetNamespace(OOC_SymbolTable__ProcDecl procDecl, OOC_SymbolTable__Namespace ns);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_SetNamespace 14
+typedef void (*_TBP_OOC_SymbolTable__ProcDeclDesc_SetNamespace)(OOC_SymbolTable__ProcDecl procDecl, OOC_SymbolTable__Namespace ns);
+extern void OOC_SymbolTable__ProcDeclDesc_SetLinkName(OOC_SymbolTable__ProcDecl procDecl, Object__String name);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_SetLinkName 15
+typedef void (*_TBP_OOC_SymbolTable__ProcDeclDesc_SetLinkName)(OOC_SymbolTable__ProcDecl procDecl, Object__String name);
+extern void OOC_SymbolTable__ProcDeclDesc_CopyTBProcIndex(OOC_SymbolTable__ProcDecl procDecl, OOC_SymbolTable__ProcDecl redefinition);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_CopyTBProcIndex 16
+typedef void (*_TBP_OOC_SymbolTable__ProcDeclDesc_CopyTBProcIndex)(OOC_SymbolTable__ProcDecl procDecl, OOC_SymbolTable__ProcDecl redefinition);
+extern OOC_CHAR8 OOC_SymbolTable__ProcDeclDesc_IsTypeBound(OOC_SymbolTable__ProcDecl procDecl);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_IsTypeBound 17
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__ProcDeclDesc_IsTypeBound)(OOC_SymbolTable__ProcDecl procDecl);
+extern OOC_SymbolTable__Record OOC_SymbolTable__ProcDeclDesc_Class(OOC_SymbolTable__ProcDecl procDecl);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_Class 18
+typedef OOC_SymbolTable__Record (*_TBP_OOC_SymbolTable__ProcDeclDesc_Class)(OOC_SymbolTable__ProcDecl procDecl);
+extern void OOC_SymbolTable__ProcDeclDesc_RegisterForwardDecl(OOC_SymbolTable__ProcDecl procDecl, OOC_SymbolTable__ProcDecl forward);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_RegisterForwardDecl 19
+typedef void (*_TBP_OOC_SymbolTable__ProcDeclDesc_RegisterForwardDecl)(OOC_SymbolTable__ProcDecl procDecl, OOC_SymbolTable__ProcDecl forward);
+extern OOC_CHAR8 OOC_SymbolTable__ProcDeclDesc_IsModuleBody(OOC_SymbolTable__ProcDecl procDecl);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_IsModuleBody 20
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__ProcDeclDesc_IsModuleBody)(OOC_SymbolTable__ProcDecl procDecl);
+extern void OOC_SymbolTable__InitPredefType(OOC_SymbolTable__PredefType ptype, OOC_SymbolTable__Item parent, OOC_INT16 id);
+extern void OOC_SymbolTable__PredefTypeDesc_Store(OOC_SymbolTable__PredefType tname, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__PredefTypeDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__PredefTypeDesc_Store)(OOC_SymbolTable__PredefType tname, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__PredefTypeDesc_Load(OOC_SymbolTable__PredefType tname, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__PredefTypeDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__PredefTypeDesc_Load)(OOC_SymbolTable__PredefType tname, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitTypeName(OOC_SymbolTable__TypeName tname, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Name module, OOC_SymbolTable__Name ident);
+extern OOC_CHAR8 OOC_SymbolTable__TypeNameDesc_IsPredefReference(OOC_SymbolTable__TypeName tname);
+#define _TBN_OOC_SymbolTable__TypeNameDesc_IsPredefReference 20
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__TypeNameDesc_IsPredefReference)(OOC_SymbolTable__TypeName tname);
+extern void OOC_SymbolTable__TypeNameDesc_MarkAsPredefReference(OOC_SymbolTable__TypeName tname);
+#define _TBN_OOC_SymbolTable__TypeNameDesc_MarkAsPredefReference 21
+typedef void (*_TBP_OOC_SymbolTable__TypeNameDesc_MarkAsPredefReference)(OOC_SymbolTable__TypeName tname);
+extern void OOC_SymbolTable__TypeNameDesc_Store(OOC_SymbolTable__TypeName tname, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__TypeNameDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__TypeNameDesc_Store)(OOC_SymbolTable__TypeName tname, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__TypeNameDesc_Load(OOC_SymbolTable__TypeName tname, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__TypeNameDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__TypeNameDesc_Load)(OOC_SymbolTable__TypeName tname, ADT_Storable__Reader r);
+extern OOC_SymbolTable__Import OOC_SymbolTable__TypeNameDesc_GetImport(OOC_SymbolTable__TypeName tname);
+#define _TBN_OOC_SymbolTable__TypeNameDesc_GetImport 22
+typedef OOC_SymbolTable__Import (*_TBP_OOC_SymbolTable__TypeNameDesc_GetImport)(OOC_SymbolTable__TypeName tname);
+extern void OOC_SymbolTable__InitRecord(OOC_SymbolTable__Record record, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType);
+extern void OOC_SymbolTable__RecordDesc_Store(OOC_SymbolTable__Record record, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__RecordDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__RecordDesc_Store)(OOC_SymbolTable__Record record, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__RecordDesc_Load(OOC_SymbolTable__Record record, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__RecordDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__RecordDesc_Load)(OOC_SymbolTable__Record record, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__RecordDesc_SetNamespace(OOC_SymbolTable__Record record, OOC_SymbolTable__Namespace ns);
+#define _TBN_OOC_SymbolTable__RecordDesc_SetNamespace 20
+typedef void (*_TBP_OOC_SymbolTable__RecordDesc_SetNamespace)(OOC_SymbolTable__Record record, OOC_SymbolTable__Namespace ns);
+extern void OOC_SymbolTable__RecordDesc_AssignTBProcIndex(OOC_SymbolTable__Record record, OOC_SymbolTable__ProcDecl procDecl);
+#define _TBN_OOC_SymbolTable__RecordDesc_AssignTBProcIndex 21
+typedef void (*_TBP_OOC_SymbolTable__RecordDesc_AssignTBProcIndex)(OOC_SymbolTable__Record record, OOC_SymbolTable__ProcDecl procDecl);
+extern void OOC_SymbolTable__InitTypeVar(OOC_SymbolTable__TypeVar typeVar, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type bound);
+extern void OOC_SymbolTable__TypeVarDesc_Store(OOC_SymbolTable__TypeVar typeVar, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__TypeVarDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__TypeVarDesc_Store)(OOC_SymbolTable__TypeVar typeVar, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__TypeVarDesc_Load(OOC_SymbolTable__TypeVar typeVar, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__TypeVarDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__TypeVarDesc_Load)(OOC_SymbolTable__TypeVar typeVar, ADT_Storable__Reader r);
+extern OOC_SymbolTable__Type OOC_SymbolTable__TypeVarDesc_Bound(OOC_SymbolTable__TypeVar typeVar);
+#define _TBN_OOC_SymbolTable__TypeVarDesc_Bound 18
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__TypeVarDesc_Bound)(OOC_SymbolTable__TypeVar typeVar);
+extern void OOC_SymbolTable__InitTypePars(OOC_SymbolTable__TypePars typePars, OOC_SymbolTable__Item parent);
+extern void OOC_SymbolTable__TypeParsDesc_Store(OOC_SymbolTable__TypePars typePars, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__TypeParsDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__TypeParsDesc_Store)(OOC_SymbolTable__TypePars typePars, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__TypeParsDesc_Load(OOC_SymbolTable__TypePars typePars, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__TypeParsDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__TypeParsDesc_Load)(OOC_SymbolTable__TypePars typePars, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__TypeParsDesc_SetNamespace(OOC_SymbolTable__TypePars typePars, OOC_SymbolTable__Namespace ns);
+#define _TBN_OOC_SymbolTable__TypeParsDesc_SetNamespace 11
+typedef void (*_TBP_OOC_SymbolTable__TypeParsDesc_SetNamespace)(OOC_SymbolTable__TypePars typePars, OOC_SymbolTable__Namespace ns);
+extern void OOC_SymbolTable__InitTypeRef(struct OOC_SymbolTable__TypeRef *typeRef, RT0__Struct typeRef__tag, OOC_SymbolTable__Type type);
+extern void OOC_SymbolTable__InitQualType(OOC_SymbolTable__QualType qualType, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType, OOC_SymbolTable__TypeRefArray arguments);
+extern OOC_SymbolTable__QualType OOC_SymbolTable__NewQualType(OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType, OOC_SymbolTable__TypeRefArray arguments);
+extern void OOC_SymbolTable__QualTypeDesc_Store(OOC_SymbolTable__QualType qualType, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__QualTypeDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__QualTypeDesc_Store)(OOC_SymbolTable__QualType qualType, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__QualTypeDesc_Load(OOC_SymbolTable__QualType qualType, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__QualTypeDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__QualTypeDesc_Load)(OOC_SymbolTable__QualType qualType, ADT_Storable__Reader r);
+extern OOC_SymbolTable__Type OOC_SymbolTable__QualTypeDesc_Deparam(OOC_SymbolTable__QualType qualType);
+#define _TBN_OOC_SymbolTable__QualTypeDesc_Deparam 17
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__QualTypeDesc_Deparam)(OOC_SymbolTable__QualType qualType);
+extern void OOC_SymbolTable__InitPointer(OOC_SymbolTable__Pointer pointer, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType);
+extern void OOC_SymbolTable__PointerDesc_Store(OOC_SymbolTable__Pointer pointer, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__PointerDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__PointerDesc_Store)(OOC_SymbolTable__Pointer pointer, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__PointerDesc_Load(OOC_SymbolTable__Pointer pointer, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__PointerDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__PointerDesc_Load)(OOC_SymbolTable__Pointer pointer, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__InitArray(OOC_SymbolTable__Array array, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_CHAR8 isOpenArray, OOC_SymbolTable__Type elementType, OOC_AST__Node lengthExpr);
+extern void OOC_SymbolTable__ArrayDesc_Store(OOC_SymbolTable__Array array, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__ArrayDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__ArrayDesc_Store)(OOC_SymbolTable__Array array, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__ArrayDesc_Load(OOC_SymbolTable__Array array, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__ArrayDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__ArrayDesc_Load)(OOC_SymbolTable__Array array, ADT_Storable__Reader r);
+extern void OOC_SymbolTable__ArrayDesc_SetLength(OOC_SymbolTable__Array array, OOC_INT32 length);
+#define _TBN_OOC_SymbolTable__ArrayDesc_SetLength 20
+typedef void (*_TBP_OOC_SymbolTable__ArrayDesc_SetLength)(OOC_SymbolTable__Array array, OOC_INT32 length);
+extern OOC_INT32 OOC_SymbolTable__ArrayDesc_GetOpenDimensions(OOC_SymbolTable__Array array);
+#define _TBN_OOC_SymbolTable__ArrayDesc_GetOpenDimensions 21
+typedef OOC_INT32 (*_TBP_OOC_SymbolTable__ArrayDesc_GetOpenDimensions)(OOC_SymbolTable__Array array);
+extern OOC_SymbolTable__Type OOC_SymbolTable__ArrayDesc_GetNonOpenElementType(OOC_SymbolTable__Array array);
+#define _TBN_OOC_SymbolTable__ArrayDesc_GetNonOpenElementType 22
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__ArrayDesc_GetNonOpenElementType)(OOC_SymbolTable__Array array);
+extern OOC_SymbolTable__Type OOC_SymbolTable__ArrayDesc_GetInnermostElementType(OOC_SymbolTable__Array array);
+#define _TBN_OOC_SymbolTable__ArrayDesc_GetInnermostElementType 23
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__ArrayDesc_GetInnermostElementType)(OOC_SymbolTable__Array array);
+extern OOC_SymbolTable__Type OOC_SymbolTable__ArrayDesc_GetNthElementType(OOC_SymbolTable__Array array, OOC_INT32 dim);
+#define _TBN_OOC_SymbolTable__ArrayDesc_GetNthElementType 24
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__ArrayDesc_GetNthElementType)(OOC_SymbolTable__Array array, OOC_INT32 dim);
+extern void OOC_SymbolTable__InitFormalPars(OOC_SymbolTable__FormalPars formalPars, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position);
+extern void OOC_SymbolTable__FormalParsDesc_EnableRestParameters(OOC_SymbolTable__FormalPars formalPars);
+#define _TBN_OOC_SymbolTable__FormalParsDesc_EnableRestParameters 20
+typedef void (*_TBP_OOC_SymbolTable__FormalParsDesc_EnableRestParameters)(OOC_SymbolTable__FormalPars formalPars);
+extern void OOC_SymbolTable__FormalParsDesc_SetResultType(OOC_SymbolTable__FormalPars formalPars, OOC_SymbolTable__Type resultType);
+#define _TBN_OOC_SymbolTable__FormalParsDesc_SetResultType 21
+typedef void (*_TBP_OOC_SymbolTable__FormalParsDesc_SetResultType)(OOC_SymbolTable__FormalPars formalPars, OOC_SymbolTable__Type resultType);
+extern void OOC_SymbolTable__FormalParsDesc_SetNamespace(OOC_SymbolTable__FormalPars formalPars, OOC_SymbolTable__Namespace ns);
+#define _TBN_OOC_SymbolTable__FormalParsDesc_SetNamespace 22
+typedef void (*_TBP_OOC_SymbolTable__FormalParsDesc_SetNamespace)(OOC_SymbolTable__FormalPars formalPars, OOC_SymbolTable__Namespace ns);
+extern void OOC_SymbolTable__FormalParsDesc_Store(OOC_SymbolTable__FormalPars formalPars, ADT_Storable__Writer w);
+#define _TBN_OOC_SymbolTable__FormalParsDesc_Store 4
+typedef void (*_TBP_OOC_SymbolTable__FormalParsDesc_Store)(OOC_SymbolTable__FormalPars formalPars, ADT_Storable__Writer w);
+extern void OOC_SymbolTable__FormalParsDesc_Load(OOC_SymbolTable__FormalPars formalPars, ADT_Storable__Reader r);
+#define _TBN_OOC_SymbolTable__FormalParsDesc_Load 5
+typedef void (*_TBP_OOC_SymbolTable__FormalParsDesc_Load)(OOC_SymbolTable__FormalPars formalPars, ADT_Storable__Reader r);
+extern OOC_SymbolTable__TypeClosure OOC_SymbolTable__NewTypeClosure(OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType, OOC_SymbolTable__TypeVarArray params, OOC_SymbolTable__TypeRefArray arguments);
+extern OOC_SymbolTable__Type OOC_SymbolTable__TypeClosureDesc_Deparam(OOC_SymbolTable__TypeClosure typeClosure);
+#define _TBN_OOC_SymbolTable__TypeClosureDesc_Deparam 17
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__TypeClosureDesc_Deparam)(OOC_SymbolTable__TypeClosure typeClosure);
+extern OOC_SymbolTable__Type OOC_SymbolTable__TypeClosureDesc_Lookup(OOC_SymbolTable__TypeClosure typeClosure, OOC_SymbolTable__TypeVar tv, OOC_SymbolTable__TypeVar _default);
+#define _TBN_OOC_SymbolTable__TypeClosureDesc_Lookup 20
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__TypeClosureDesc_Lookup)(OOC_SymbolTable__TypeClosure typeClosure, OOC_SymbolTable__TypeVar tv, OOC_SymbolTable__TypeVar _default);
+extern OOC_SymbolTable__Type OOC_SymbolTable__TypeClosureDesc_Closure(OOC_SymbolTable__TypeClosure closure, OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__TypeClosureDesc_Closure 19
+typedef OOC_SymbolTable__Type (*_TBP_OOC_SymbolTable__TypeClosureDesc_Closure)(OOC_SymbolTable__TypeClosure closure, OOC_SymbolTable__Type type);
+extern OOC_CHAR8 OOC_SymbolTable__TypeClosureDesc_ArgumentsInduced(OOC_SymbolTable__TypeClosure closure, OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable__TypeClosureDesc_ArgumentsInduced 21
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable__TypeClosureDesc_ArgumentsInduced)(OOC_SymbolTable__TypeClosure closure, OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__Type OOC_SymbolTable__Expand(OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__ItemDesc_Namespace(OOC_SymbolTable__Item item);
+#define _TBN_OOC_SymbolTable__ItemDesc_Namespace 10
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__ItemDesc_Namespace)(OOC_SymbolTable__Item item);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__ModuleDesc_Namespace(OOC_SymbolTable__Module item);
+#define _TBN_OOC_SymbolTable__ModuleDesc_Namespace 10
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__ModuleDesc_Namespace)(OOC_SymbolTable__Module item);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__ProcDeclDesc_Namespace(OOC_SymbolTable__ProcDecl item);
+#define _TBN_OOC_SymbolTable__ProcDeclDesc_Namespace 10
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__ProcDeclDesc_Namespace)(OOC_SymbolTable__ProcDecl item);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__FormalParsDesc_Namespace(OOC_SymbolTable__FormalPars item);
+#define _TBN_OOC_SymbolTable__FormalParsDesc_Namespace 10
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__FormalParsDesc_Namespace)(OOC_SymbolTable__FormalPars item);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__RecordDesc_Namespace(OOC_SymbolTable__Record item);
+#define _TBN_OOC_SymbolTable__RecordDesc_Namespace 10
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__RecordDesc_Namespace)(OOC_SymbolTable__Record item);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__TypeParsDesc_Namespace(OOC_SymbolTable__TypePars item);
+#define _TBN_OOC_SymbolTable__TypeParsDesc_Namespace 10
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__TypeParsDesc_Namespace)(OOC_SymbolTable__TypePars item);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__QualTypeDesc_Namespace(OOC_SymbolTable__QualType item);
+#define _TBN_OOC_SymbolTable__QualTypeDesc_Namespace 10
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__QualTypeDesc_Namespace)(OOC_SymbolTable__QualType item);
+extern void OOC_SymbolTable__Prune(OOC_SymbolTable__Module root, ADT_Dictionary_AddressKey__Dictionary keep);
+extern OOC_Scanner_InputBuffer__CharArray OOC_SymbolTable__DeclarationDesc_GetId(OOC_SymbolTable__Declaration decl);
+#define _TBN_OOC_SymbolTable__DeclarationDesc_GetId 12
+typedef OOC_Scanner_InputBuffer__CharArray (*_TBP_OOC_SymbolTable__DeclarationDesc_GetId)(OOC_SymbolTable__Declaration decl);
+extern OOC_SymbolTable__Namespace OOC_SymbolTable__DeclarationDesc_GetEmbeddedNamespace(OOC_SymbolTable__Declaration decl, OOC_CHAR8 followTypeNames);
+#define _TBN_OOC_SymbolTable__DeclarationDesc_GetEmbeddedNamespace 13
+typedef OOC_SymbolTable__Namespace (*_TBP_OOC_SymbolTable__DeclarationDesc_GetEmbeddedNamespace)(OOC_SymbolTable__Declaration decl, OOC_CHAR8 followTypeNames);
+extern void OOC_OOC_SymbolTable_init(void);
+extern void OOC_OOC_SymbolTable_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SymbolTable__Position;
+extern RT0__StructDesc _td_OOC_SymbolTable__PositionDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Name;
+extern RT0__StructDesc _td_OOC_SymbolTable__NameDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Flag;
+extern RT0__StructDesc _td_OOC_SymbolTable__FlagDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Item;
+extern RT0__StructDesc _td_OOC_SymbolTable__ItemDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Declaration;
+extern RT0__StructDesc _td_OOC_SymbolTable__DeclarationDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__9417;
+extern RT0__StructDesc _td_OOC_SymbolTable__DeclarationArray;
+extern RT0__StructDesc _td_OOC_SymbolTable__Namespace;
+extern RT0__StructDesc _td_OOC_SymbolTable__NamespaceDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypePars;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeVar;
+extern RT0__StructDesc _td_OOC_SymbolTable__10141;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeVarArray;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeParsDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Type;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeDecl;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__LinkDirective;
+extern RT0__StructDesc _td_OOC_SymbolTable__LinkDirectiveDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__LinkFile;
+extern RT0__StructDesc _td_OOC_SymbolTable__LinkFileDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__LinkLib;
+extern RT0__StructDesc _td_OOC_SymbolTable__LinkLibDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Module;
+extern RT0__StructDesc _td_OOC_SymbolTable__ModuleRef;
+extern RT0__StructDesc _td_OOC_SymbolTable__ModuleRefDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__17532;
+extern RT0__StructDesc _td_OOC_SymbolTable__ModuleRefArray;
+extern RT0__StructDesc _td_OOC_SymbolTable__ProcDecl;
+extern RT0__StructDesc _td_OOC_SymbolTable__ModuleDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Import;
+extern RT0__StructDesc _td_OOC_SymbolTable__ImportDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__PredefType;
+extern RT0__StructDesc _td_OOC_SymbolTable__PredefTypeDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeName;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeNameDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Pointer;
+extern RT0__StructDesc _td_OOC_SymbolTable__PointerDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__ExceptionName;
+extern RT0__StructDesc _td_OOC_SymbolTable__23173;
+extern RT0__StructDesc _td_OOC_SymbolTable__ExceptionNameArray;
+extern RT0__StructDesc _td_OOC_SymbolTable__ExceptionNameDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__VarDecl;
+extern RT0__StructDesc _td_OOC_SymbolTable__23791;
+extern RT0__StructDesc _td_OOC_SymbolTable__VarDeclArray;
+extern RT0__StructDesc _td_OOC_SymbolTable__FormalPars;
+extern RT0__StructDesc _td_OOC_SymbolTable__FormalParsDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Array;
+extern RT0__StructDesc _td_OOC_SymbolTable__ArrayDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Record;
+extern RT0__StructDesc _td_OOC_SymbolTable__RecordDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeVarDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__QualType;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeRef;
+extern RT0__StructDesc _td_OOC_SymbolTable__33583;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeRefArray;
+extern RT0__StructDesc _td_OOC_SymbolTable__QualTypeDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeClosure;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeClosureDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__ProcDeclDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__PredefProc;
+extern RT0__StructDesc _td_OOC_SymbolTable__PredefProcDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__ConstDecl;
+extern RT0__StructDesc _td_OOC_SymbolTable__ConstDeclDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__VarDeclDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__FieldDecl;
+extern RT0__StructDesc _td_OOC_SymbolTable__FieldDeclDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__TypeDeclDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Redirect;
+extern RT0__StructDesc _td_OOC_SymbolTable__RedirectDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__44158;
+extern RT0__StructDesc _td_OOC_SymbolTable__44147;
+extern RT0__StructDesc _td_OOC_SymbolTable__Writer;
+extern RT0__StructDesc _td_OOC_SymbolTable__WriterDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__Reader;
+extern RT0__StructDesc _td_OOC_SymbolTable__ReaderDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable__63965;
+#endif /* _MODULE_OOC_SymbolTable_ */
+
+/* --- */

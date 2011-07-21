@@ -1,0 +1,64 @@
+#ifndef _MODULE_OOC_Scanner_Pragma_
+#define _MODULE_OOC_Scanner_Pragma_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/Error.oh>
+#include <OOC/Scanner/InputBuffer.oh>
+#include <OOC/Scanner/Symbol.oh>
+#include <OOC/Scanner/SymList.oh>
+#include <OOC/Config/Pragmas.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 OOC_Scanner_Pragma__InputMode;
+#define OOC_Scanner_Pragma__inputText 0
+#define OOC_Scanner_Pragma__inputPragma 1
+#define OOC_Scanner_Pragma__inputSkippedText 2
+typedef struct OOC_Scanner_Pragma__ConditionStackDesc *OOC_Scanner_Pragma__ConditionStack;
+typedef struct OOC_Scanner_Pragma__ConditionStackDesc {
+  OOC_Scanner_Pragma__ConditionStack prev;
+  OOC_Scanner_SymList__Symbol ifPos;
+  OOC_CHAR8 skippedCond;
+  OOC_CHAR8 foundTrue;
+  OOC_CHAR8 elsePresent;
+  OOC_CHAR8 withStatm;
+} OOC_Scanner_Pragma__ConditionStackDesc;
+typedef struct OOC_Scanner_Pragma__State {
+  OOC_Scanner_InputBuffer__Buffer buffer;
+  OOC_Scanner_SymList__Builder builder;
+  OOC_Scanner_Pragma__ConditionStack condStack;
+  OOC_CHAR8 evalText;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_Scanner_SymList__Builder symList;
+  OOC_INT32 startCharPos;
+  OOC_INT32 startAbsPos;
+  OOC_INT32 startLine;
+  OOC_INT32 startColumn;
+  OOC_Config_Pragmas__History variableHistory;
+} OOC_Scanner_Pragma__State;
+typedef struct OOC_Scanner_Pragma__ErrorContextDesc *OOC_Scanner_Pragma__ErrorContext;
+typedef struct OOC_Scanner_Pragma__ErrorContextDesc {
+  Msg__StringPtr id;
+} OOC_Scanner_Pragma__ErrorContextDesc;
+extern void OOC_Scanner_Pragma__ErrorContextDesc_GetTemplate(OOC_Scanner_Pragma__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_Scanner_Pragma__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_Scanner_Pragma__ErrorContextDesc_GetTemplate)(OOC_Scanner_Pragma__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void OOC_Scanner_Pragma__Init(struct OOC_Scanner_Pragma__State *state, RT0__Struct state__tag, OOC_Scanner_SymList__Builder builder, OOC_Config_Pragmas__Section defaultPragmas);
+extern void OOC_Scanner_Pragma__AddSymbol(struct OOC_Scanner_Pragma__State *state, RT0__Struct state__tag, OOC_INT8 *inputMode, OOC_INT8 id, OOC_INT32 cstart, OOC_INT32 cend, OOC_INT32 line, OOC_INT32 column);
+extern void OOC_OOC_Scanner_Pragma_init(void);
+extern void OOC_OOC_Scanner_Pragma_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Scanner_Pragma__ConditionStack;
+extern RT0__StructDesc _td_OOC_Scanner_Pragma__ConditionStackDesc;
+extern RT0__StructDesc _td_OOC_Scanner_Pragma__State;
+extern RT0__StructDesc _td_OOC_Scanner_Pragma__ErrorContext;
+extern RT0__StructDesc _td_OOC_Scanner_Pragma__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_Scanner_Pragma__3675;
+extern RT0__StructDesc _td_OOC_Scanner_Pragma__ParsePragma_Value;
+#endif /* _MODULE_OOC_Scanner_Pragma_ */
+
+/* --- */

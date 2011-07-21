@@ -1,0 +1,705 @@
+[StringSearch:SubstringBF.FactoryDesc] pattern=`'
+matching against `'
+--> start=0, end=0
+[StringSearch:SubstringBF.FactoryDesc] pattern=`'
+matching against `a'
+--> start=0, end=0
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+matching against `a'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+matching against `ab'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`ab'
+matching against `ab'
+--> start=0, end=2
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a', ignoreCase
+matching against `a'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a', ignoreCase
+matching against `A'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`A', ignoreCase
+matching against `a'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`A', ignoreCase
+matching against `A'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+matching against `'
+--> no match
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+matching against `A'
+--> no match
+[StringSearch:SubstringBF.FactoryDesc] pattern=`ab'
+matching against `a'
+--> no match
+[StringSearch:SubstringBF.FactoryDesc] pattern=`ab'
+matching against `ac'
+--> no match
+[StringSearch:SubstringBF.FactoryDesc] pattern=`'
+searching in `'
+--> start=0, end=0
+[StringSearch:SubstringBF.FactoryDesc] pattern=`'
+searching in `a'
+--> start=0, end=0
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+searching in `abc'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`b'
+searching in `abc'
+--> start=1, end=2
+[StringSearch:SubstringBF.FactoryDesc] pattern=`c'
+searching in `abc'
+--> start=2, end=3
+[StringSearch:SubstringBF.FactoryDesc] pattern=`ab'
+searching in `ab'
+--> start=0, end=2
+[StringSearch:SubstringBF.FactoryDesc] pattern=`bc'
+searching in `bcd'
+--> start=0, end=2
+[StringSearch:SubstringBF.FactoryDesc] pattern=`sting'
+searching in `a string searching example consisting of'
+--> start=32, end=37
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a', ignoreCase
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a', ignoreCase
+searching in `A'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`A', ignoreCase
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`A', ignoreCase
+searching in `A'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abc', ignoreCase
+searching in `aBaCaBCabc'
+--> start=4, end=7
+[StringSearch:SubstringBF.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `nd row of fills for Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=68, end=78
+[StringSearch:SubstringBF.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `fills for Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=58, end=68
+[StringSearch:SubstringBF.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `r Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=50, end=60
+[StringSearch:SubstringBF.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=48, end=58
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBF.FactoryDesc] pattern=`ab'
+searching in `aab'
+--> start=1, end=3
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abc'
+searching in `aababc'
+--> start=3, end=6
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcd'
+searching in `aababcabcd'
+--> start=6, end=10
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcde'
+searching in `aababcabcdabcde'
+--> start=10, end=15
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdef'
+searching in `aababcabcdabcdeabcdef'
+--> start=15, end=21
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefg'
+searching in `aababcabcdabcdeabcdefabcdefg'
+--> start=21, end=28
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefgh'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefgh'
+--> start=28, end=36
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghi'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghi'
+--> start=36, end=45
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghij'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghij'
+--> start=45, end=55
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijk'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijk'
+--> start=55, end=66
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijkl'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijkl'
+--> start=66, end=78
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklm'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklm'
+--> start=78, end=91
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmn'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmn'
+--> start=91, end=105
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmno'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmno'
+--> start=105, end=120
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnop'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnop'
+--> start=120, end=136
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopq'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopq'
+--> start=136, end=153
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqr'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqr'
+--> start=153, end=171
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrs'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrs'
+--> start=171, end=190
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrst'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrst'
+--> start=190, end=210
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrstu'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstu'
+--> start=210, end=231
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrstuv'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuv'
+--> start=231, end=253
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrstuvw'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvw'
+--> start=253, end=276
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwx'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwx'
+--> start=276, end=300
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwxy'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwxabcdefghijklmnopqrstuvwxy'
+--> start=300, end=325
+[StringSearch:SubstringBF.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwxyz'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwxabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyz'
+--> start=325, end=351
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+searching in `'
+--> no match
+[StringSearch:SubstringBF.FactoryDesc] pattern=`a'
+searching in `A'
+--> no match
+[StringSearch:SubstringBF.FactoryDesc] pattern=`ab'
+searching in `a'
+--> no match
+[StringSearch:SubstringBF.FactoryDesc] pattern=`ab'
+searching in `ac'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`'
+matching against `'
+--> start=0, end=0
+[StringSearch:SubstringBM.FactoryDesc] pattern=`'
+matching against `a'
+--> start=0, end=0
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+matching against `a'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+matching against `ab'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`ab'
+matching against `ab'
+--> start=0, end=2
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a', ignoreCase
+matching against `a'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a', ignoreCase
+matching against `A'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`A', ignoreCase
+matching against `a'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`A', ignoreCase
+matching against `A'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+matching against `'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+matching against `A'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`ab'
+matching against `a'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`ab'
+matching against `ac'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`'
+searching in `'
+--> start=0, end=0
+[StringSearch:SubstringBM.FactoryDesc] pattern=`'
+searching in `a'
+--> start=0, end=0
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+searching in `abc'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`b'
+searching in `abc'
+--> start=1, end=2
+[StringSearch:SubstringBM.FactoryDesc] pattern=`c'
+searching in `abc'
+--> start=2, end=3
+[StringSearch:SubstringBM.FactoryDesc] pattern=`ab'
+searching in `ab'
+--> start=0, end=2
+[StringSearch:SubstringBM.FactoryDesc] pattern=`bc'
+searching in `bcd'
+--> start=0, end=2
+[StringSearch:SubstringBM.FactoryDesc] pattern=`sting'
+searching in `a string searching example consisting of'
+--> start=32, end=37
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a', ignoreCase
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a', ignoreCase
+searching in `A'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`A', ignoreCase
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`A', ignoreCase
+searching in `A'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abc', ignoreCase
+searching in `aBaCaBCabc'
+--> start=4, end=7
+[StringSearch:SubstringBM.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `nd row of fills for Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=68, end=78
+[StringSearch:SubstringBM.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `fills for Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=58, end=68
+[StringSearch:SubstringBM.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `r Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=50, end=60
+[StringSearch:SubstringBM.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=48, end=58
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+searching in `a'
+--> start=0, end=1
+[StringSearch:SubstringBM.FactoryDesc] pattern=`ab'
+searching in `aab'
+--> start=1, end=3
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abc'
+searching in `aababc'
+--> start=3, end=6
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcd'
+searching in `aababcabcd'
+--> start=6, end=10
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcde'
+searching in `aababcabcdabcde'
+--> start=10, end=15
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdef'
+searching in `aababcabcdabcdeabcdef'
+--> start=15, end=21
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefg'
+searching in `aababcabcdabcdeabcdefabcdefg'
+--> start=21, end=28
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefgh'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefgh'
+--> start=28, end=36
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghi'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghi'
+--> start=36, end=45
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghij'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghij'
+--> start=45, end=55
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijk'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijk'
+--> start=55, end=66
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijkl'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijkl'
+--> start=66, end=78
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklm'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklm'
+--> start=78, end=91
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmn'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmn'
+--> start=91, end=105
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmno'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmno'
+--> start=105, end=120
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnop'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnop'
+--> start=120, end=136
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopq'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopq'
+--> start=136, end=153
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqr'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqr'
+--> start=153, end=171
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrs'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrs'
+--> start=171, end=190
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrst'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrst'
+--> start=190, end=210
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrstu'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstu'
+--> start=210, end=231
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrstuv'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuv'
+--> start=231, end=253
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrstuvw'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvw'
+--> start=253, end=276
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwx'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwx'
+--> start=276, end=300
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwxy'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwxabcdefghijklmnopqrstuvwxy'
+--> start=300, end=325
+[StringSearch:SubstringBM.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwxyz'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwxabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyz'
+--> start=325, end=351
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+searching in `'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`a'
+searching in `A'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`ab'
+searching in `a'
+--> no match
+[StringSearch:SubstringBM.FactoryDesc] pattern=`ab'
+searching in `ac'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`'
+matching against `'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`'
+matching against `a'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+matching against `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+matching against `ab'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`ab'
+matching against `ab'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a', ignoreCase
+matching against `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a', ignoreCase
+matching against `A'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`A', ignoreCase
+matching against `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`A', ignoreCase
+matching against `A'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+matching against `'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+matching against `A'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`ab'
+matching against `a'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`ab'
+matching against `ac'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`'
+searching in `'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`'
+searching in `a'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+searching in `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+searching in `abc'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`b'
+searching in `abc'
+--> start=1, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`c'
+searching in `abc'
+--> start=2, end=3
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`ab'
+searching in `ab'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`bc'
+searching in `bcd'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`sting'
+searching in `a string searching example consisting of'
+--> start=32, end=37
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a', ignoreCase
+searching in `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a', ignoreCase
+searching in `A'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`A', ignoreCase
+searching in `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`A', ignoreCase
+searching in `A'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abc', ignoreCase
+searching in `aBaCaBCabc'
+--> start=4, end=7
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `nd row of fills for Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=68, end=78
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `fills for Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=58, end=68
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `r Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=50, end=60
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`- versus -', ignoreCase
+searching in `Versus - I can't fill 20+ files requests. [1/3] - Versus - VCD Screener CD1.r27 (#/67)'
+--> start=48, end=58
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+searching in `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`ab'
+searching in `aab'
+--> start=1, end=3
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abc'
+searching in `aababc'
+--> start=3, end=6
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcd'
+searching in `aababcabcd'
+--> start=6, end=10
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcde'
+searching in `aababcabcdabcde'
+--> start=10, end=15
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdef'
+searching in `aababcabcdabcdeabcdef'
+--> start=15, end=21
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefg'
+searching in `aababcabcdabcdeabcdefabcdefg'
+--> start=21, end=28
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefgh'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefgh'
+--> start=28, end=36
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghi'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghi'
+--> start=36, end=45
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghij'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghij'
+--> start=45, end=55
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijk'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijk'
+--> start=55, end=66
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijkl'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijkl'
+--> start=66, end=78
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklm'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklm'
+--> start=78, end=91
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmn'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmn'
+--> start=91, end=105
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmno'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmno'
+--> start=105, end=120
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnop'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnop'
+--> start=120, end=136
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopq'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopq'
+--> start=136, end=153
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqr'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqr'
+--> start=153, end=171
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrs'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrs'
+--> start=171, end=190
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrst'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrst'
+--> start=190, end=210
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrstu'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstu'
+--> start=210, end=231
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrstuv'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuv'
+--> start=231, end=253
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrstuvw'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvw'
+--> start=253, end=276
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwx'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwx'
+--> start=276, end=300
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwxy'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwxabcdefghijklmnopqrstuvwxy'
+--> start=300, end=325
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`abcdefghijklmnopqrstuvwxyz'
+searching in `aababcabcdabcdeabcdefabcdefgabcdefghabcdefghiabcdefghijabcdefghijkabcdefghijklabcdefghijklmabcdefghijklmnabcdefghijklmnoabcdefghijklmnopabcdefghijklmnopqabcdefghijklmnopqrabcdefghijklmnopqrsabcdefghijklmnopqrstabcdefghijklmnopqrstuabcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwabcdefghijklmnopqrstuvwxabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyz'
+--> start=325, end=351
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+searching in `'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+searching in `A'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`ab'
+searching in `a'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`ab'
+searching in `ac'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a|b'
+searching in `ab'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a|ab'
+searching in `ab'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a*'
+searching in `b'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a*'
+searching in `ab'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a*'
+searching in `aab'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a*ab'
+searching in `ab'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a*ab'
+searching in `aab'
+--> start=0, end=3
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a*|ab'
+searching in `abc'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a*|ab'
+searching in `aabc'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(ab)?ab'
+searching in `ab'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(ab)?ab'
+searching in `ababc'
+--> start=0, end=4
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`.'
+searching in `a'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`.'
+searching in `.'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`\.'
+searching in `.'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`.*'
+searching in `'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`.*'
+searching in `abc'
+--> start=0, end=3
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^b'
+searching in `bc'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^bc'
+searching in `bc'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`c$'
+searching in `bc'
+--> start=1, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`bc$'
+searching in `bc'
+--> start=0, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[abc]'
+searching in `abc'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[abc]?'
+searching in `abc'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[abc]*'
+searching in `abc'
+--> start=0, end=3
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[abc]+'
+searching in `abc'
+--> start=0, end=3
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[^abc]'
+searching in `abcd'
+--> start=3, end=4
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[^abc]?'
+searching in `abc'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[^abc]?'
+searching in `xabc'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[^abc]*'
+searching in `abc'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
+searching in `xax'
+--> start=1, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^a'
+searching in `xax'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^a'
+searching in `xax'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a$'
+searching in `xax'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a$'
+searching in `xax'
+--> start=1, end=2
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(a*a)*'
+searching in `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+--> start=0, end=32
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`X(.+)+X'
+searching in `=XX============================X'
+--> start=1, end=32
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(a?)*'
+searching in `xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaay'
+--> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(a?)*'
+searching in `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaay'
+--> start=0, end=30
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`bar[ .-]?1', ignoreCase
+searching in `Bar 1x'
+--> start=0, end=5
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`bar[ .-]?1', ignoreCase
+searching in `Bar-1x'
+--> start=0, end=5
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`bar[ .-]?1', ignoreCase
+searching in `Bar.1x'
+--> start=0, end=5
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`bar[ .-]?1', ignoreCase
+searching in `Bar 1x'
+--> start=0, end=5
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`high( tv|_?[23])', ignoreCase
+searching in `-High TV - '
+--> start=1, end=8
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`\.'
+searching in `a'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`a+'
+searching in `b'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`aa+'
+searching in `ab'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^b'
+searching in `abc'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^bc'
+searching in `abc'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`c$'
+searching in `bcd'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`bc$'
+searching in `bcd'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`[^abc]+'
+searching in `abc'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`X(.+)+X'
+searching in `=XX============================'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`-r-', ignoreCase
+searching in `rr-'
+--> no match

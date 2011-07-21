@@ -1,0 +1,8 @@
+MODULE NoCopy4;
+
+PROCEDURE P(a[NO_COPY]: ARRAY OF CHAR);
+  BEGIN
+    a[0] := 0X;
+  END P;
+
+END NoCopy4.

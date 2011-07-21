@@ -1,0 +1,97 @@
+#ifndef _MODULE_OOC_SymbolTable_Predef_
+#define _MODULE_OOC_SymbolTable_Predef_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object/Boxed.oh>
+#include <Object/BigInt.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/SymbolTable/Builder.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define OOC_SymbolTable_Predef__boolean 0
+#define OOC_SymbolTable_Predef__char 1
+#define OOC_SymbolTable_Predef__longchar 2
+#define OOC_SymbolTable_Predef__ucs4char 3
+#define OOC_SymbolTable_Predef__shortint 4
+#define OOC_SymbolTable_Predef__integer 5
+#define OOC_SymbolTable_Predef__longint 6
+#define OOC_SymbolTable_Predef__hugeint 7
+#define OOC_SymbolTable_Predef__real 8
+#define OOC_SymbolTable_Predef__longreal 9
+#define OOC_SymbolTable_Predef__set 10
+#define OOC_SymbolTable_Predef__address 6
+#define OOC_SymbolTable_Predef__byte 11
+#define OOC_SymbolTable_Predef__ptr 12
+#define OOC_SymbolTable_Predef__stringChar 13
+#define OOC_SymbolTable_Predef__stringLongChar 14
+#define OOC_SymbolTable_Predef__stringUCS4Char 15
+#define OOC_SymbolTable_Predef__nil 16
+#define OOC_SymbolTable_Predef__void 17
+#define OOC_SymbolTable_Predef__lastId 17
+#define OOC_SymbolTable_Predef__lengthType 6
+#define OOC_SymbolTable_Predef__minChar (OOC_CHAR8)'\000'
+#define OOC_SymbolTable_Predef__maxChar (OOC_CHAR8)'\377'
+#define OOC_SymbolTable_Predef__minLongChar (OOC_CHAR8)'\000'
+#define OOC_SymbolTable_Predef__maxLongChar (OOC_CHAR16)65535
+#define OOC_SymbolTable_Predef__minUCS4Char (OOC_CHAR8)'\000'
+#define OOC_SymbolTable_Predef__maxUCS4Char (OOC_CHAR32)1114111
+#define OOC_SymbolTable_Predef__assert 0
+#define OOC_SymbolTable_Predef__halt 1
+#define OOC_SymbolTable_Predef__len 2
+#define OOC_SymbolTable_Predef__size 3
+#define OOC_SymbolTable_Predef__inc 4
+#define OOC_SymbolTable_Predef__dec 5
+#define OOC_SymbolTable_Predef__incl 6
+#define OOC_SymbolTable_Predef__excl 7
+#define OOC_SymbolTable_Predef__abs 8
+#define OOC_SymbolTable_Predef__ash 9
+#define OOC_SymbolTable_Predef__cap 10
+#define OOC_SymbolTable_Predef__long 11
+#define OOC_SymbolTable_Predef__short 12
+#define OOC_SymbolTable_Predef__chr 13
+#define OOC_SymbolTable_Predef__longchr 14
+#define OOC_SymbolTable_Predef__ucs4chr 15
+#define OOC_SymbolTable_Predef__entier 16
+#define OOC_SymbolTable_Predef__odd 17
+#define OOC_SymbolTable_Predef__ord 18
+#define OOC_SymbolTable_Predef__max 19
+#define OOC_SymbolTable_Predef__min 20
+#define OOC_SymbolTable_Predef__new 21
+#define OOC_SymbolTable_Predef__copy 22
+#define OOC_SymbolTable_Predef__raise 23
+#define OOC_SymbolTable_Predef__adr 24
+#define OOC_SymbolTable_Predef__lsh 25
+#define OOC_SymbolTable_Predef__move 26
+#define OOC_SymbolTable_Predef__systemNew 27
+#define OOC_SymbolTable_Predef__rot 28
+#define OOC_SymbolTable_Predef__val 29
+#define OOC_SymbolTable_Predef__minExitCode 0
+#define OOC_SymbolTable_Predef__maxExitCode 128
+#define OOC_SymbolTable_Predef__defaultAssertCode 127
+#define OOC_SymbolTable_Predef__initMethod "INIT"
+extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__nameStringModule;
+extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__nameStringType;
+extern OOC_SymbolTable__Module OOC_SymbolTable_Predef__CreatePredef(OOC_SymbolTable_Builder__Builder stb, OOC_SymbolTable__VarDecl *exception);
+extern OOC_SymbolTable__Module OOC_SymbolTable_Predef__CreateSYSTEM(OOC_SymbolTable_Builder__Builder stb);
+extern OOC_SymbolTable__PredefType OOC_SymbolTable_Predef__GetType(OOC_INT16 id);
+extern Object_Boxed__Object OOC_SymbolTable_Predef__GetMin(OOC_SymbolTable__Type type);
+extern Object_Boxed__Object OOC_SymbolTable_Predef__GetMax(OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__Type OOC_SymbolTable_Predef__SmallestIntType(Object_BigInt__BigInt value);
+extern OOC_CHAR8 OOC_SymbolTable_Predef__IsStaticMethod(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
+extern void OOC_OOC_SymbolTable_Predef_init(void);
+extern void OOC_OOC_SymbolTable_Predef_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__3676;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__5717;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__6094;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__6772;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__7190;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__7529;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__8318;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__14792;
+#endif /* _MODULE_OOC_SymbolTable_Predef_ */
+
+/* --- */

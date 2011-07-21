@@ -1,0 +1,11 @@
+Enumeration starting at ``A''.
+
+@enumerate A
+@item
+One.
+
+@item
+Two.
+@end enumerate
+
+THE END

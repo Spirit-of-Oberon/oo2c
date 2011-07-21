@@ -1,0 +1,43 @@
+#ifndef _MODULE_URI_Query_Unparsed_
+#define _MODULE_URI_Query_Unparsed_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#include <ADT/StringBuffer.oh>
+#include <URI.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct URI_Query_Unparsed__QueryDesc *URI_Query_Unparsed__Query;
+typedef struct URI_Query_Unparsed__QueryDesc {
+  Object__String unparsed;
+} URI_Query_Unparsed__QueryDesc;
+extern void URI_Query_Unparsed__Init(URI_Query_Unparsed__Query query, Object__String unparsed);
+extern URI_Query_Unparsed__Query URI_Query_Unparsed__New(Object__String unparsed);
+extern URI_Query_Unparsed__Query URI_Query_Unparsed__QueryDesc_Clone(URI_Query_Unparsed__Query query);
+#define _TBN_URI_Query_Unparsed__QueryDesc_Clone 0
+typedef URI_Query_Unparsed__Query (*_TBP_URI_Query_Unparsed__QueryDesc_Clone)(URI_Query_Unparsed__Query query);
+extern void URI_Query_Unparsed__QueryDesc_Copy(URI_Query_Unparsed__Query query, URI__Query dest);
+#define _TBN_URI_Query_Unparsed__QueryDesc_Copy 1
+typedef void (*_TBP_URI_Query_Unparsed__QueryDesc_Copy)(URI_Query_Unparsed__Query query, URI__Query dest);
+extern void URI_Query_Unparsed__QueryDesc_ParseQuery(URI_Query_Unparsed__Query query, Object__CharsLatin1 str, OOC_INT16 offset);
+#define _TBN_URI_Query_Unparsed__QueryDesc_ParseQuery 2
+typedef void (*_TBP_URI_Query_Unparsed__QueryDesc_ParseQuery)(URI_Query_Unparsed__Query query, Object__CharsLatin1 str, OOC_INT16 offset);
+extern void URI_Query_Unparsed__QueryDesc_WriteXML(URI_Query_Unparsed__Query query, TextRider__Writer w);
+#define _TBN_URI_Query_Unparsed__QueryDesc_WriteXML 3
+typedef void (*_TBP_URI_Query_Unparsed__QueryDesc_WriteXML)(URI_Query_Unparsed__Query query, TextRider__Writer w);
+extern void URI_Query_Unparsed__QueryDesc_Append(URI_Query_Unparsed__Query query, ADT_StringBuffer__StringBuffer sb);
+#define _TBN_URI_Query_Unparsed__QueryDesc_Append 4
+typedef void (*_TBP_URI_Query_Unparsed__QueryDesc_Append)(URI_Query_Unparsed__Query query, ADT_StringBuffer__StringBuffer sb);
+extern void OOC_URI_Query_Unparsed_init(void);
+extern void OOC_URI_Query_Unparsed_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_URI_Query_Unparsed__Query;
+extern RT0__StructDesc _td_URI_Query_Unparsed__QueryDesc;
+#endif /* _MODULE_URI_Query_Unparsed_ */
+
+/* --- */

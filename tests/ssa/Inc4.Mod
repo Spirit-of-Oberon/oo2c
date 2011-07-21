@@ -1,0 +1,7 @@
+MODULE Inc4;
+
+VAR
+  x: SHORTINT;
+BEGIN
+  INC(x, 128);
+END Inc4.

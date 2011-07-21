@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M003' id=''>
+  <oberon-doc>
+    <summary>Empty module with doc comment.</summary>
+    <p pad-after='yes' no-indent='yes'>Empty module with doc comment.</p>
+  </oberon-doc>
+</interface-description>

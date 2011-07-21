@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <record_type id='1' pos='23' line='3' column='7' class='R0' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='2' name='R0' pos='18' line='3' column='2' class='R0' visible_from='33' export='no' type_id='1'/>
+  <type_name id='3' pos='50' line='4' column='15' ident_name='R0' ident_pos='50' ident_line='4' ident_column='15'/>
+  <record_type id='4' pos='42' line='4' column='7' class='R1' base_type_id='3' tb_proc_count='-1'/>
+  <type_decl id='5' name='R1' pos='37' line='4' column='2' class='R1' visible_from='57' export='no' type_id='4'/>
+  <procedure_decl id='6' name='ProcA' pos='84' line='6' column='24' visible_from='89' export='no' is_type_bound='yes' is_forward_decl='yes' tb_proc_index='-1'>
+    <procedure_type id='7' pos='60' line='6' column='0' receiver_id='9' resultType='#none'>
+      <type_name id='8' pos='80' line='6' column='20' ident_name='R0' ident_pos='80' ident_line='6' ident_column='20'/>
+      <var_decl id='9' name='r' pos='77' line='6' column='17' visible_from='82' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='yes' type_id='8'/>
+    </procedure_type>
+  </procedure_decl>
+  <procedure_decl id='10' name='ProcA' pos='114' line='8' column='22' visible_from='119' export='no' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='11' pos='92' line='8' column='0' receiver_id='13' resultType='#none'>
+      <type_name id='12' pos='110' line='8' column='18' ident_name='R1' ident_pos='110' ident_line='8' ident_column='18'/>
+      <var_decl id='13' name='r' pos='107' line='8' column='15' visible_from='112' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='yes' type_id='12'/>
+    </procedure_type>
+  </procedure_decl>
+  <procedure_decl id='14' name='ProcA' pos='159' line='11' column='22' visible_from='164' export='no' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='15' pos='137' line='11' column='0' receiver_id='17' resultType='#none'>
+      <type_name id='16' pos='155' line='11' column='18' ident_name='R0' ident_pos='155' ident_line='11' ident_column='18'/>
+      <var_decl id='17' name='r' pos='152' line='11' column='15' visible_from='157' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='yes' type_id='16'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

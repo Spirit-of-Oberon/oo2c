@@ -1,0 +1,55 @@
+#ifndef _MODULE_OOC_Make_TranslateToC_
+#define _MODULE_OOC_Make_TranslateToC_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <OOC/Error.oh>
+#include <OOC/Repository.oh>
+#include <OOC/IR.oh>
+#include <OOC/SymbolTable/Uses.oh>
+#include <OOC/C/DeclWriter.oh>
+#include <OOC/C/Naming.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_Make_TranslateToC__TranslatorDesc *OOC_Make_TranslateToC__Translator;
+typedef struct OOC_Make_TranslateToC__TranslatorDesc {
+  OOC_C_DeclWriter__Writer w;
+  OOC_C_DeclWriter__Writer wd;
+  OOC_IR__ProcedureList procList;
+  OOC_INT32 currentProc;
+  OOC_C_Naming__QualTypeData qtdData;
+} OOC_Make_TranslateToC__TranslatorDesc;
+extern void OOC_Make_TranslateToC__InitTranslator(OOC_Make_TranslateToC__Translator t);
+extern void OOC_Make_TranslateToC__TranslatorDesc_SetWriter(OOC_Make_TranslateToC__Translator t, OOC_C_DeclWriter__Writer w);
+#define _TBN_OOC_Make_TranslateToC__TranslatorDesc_SetWriter 0
+typedef void (*_TBP_OOC_Make_TranslateToC__TranslatorDesc_SetWriter)(OOC_Make_TranslateToC__Translator t, OOC_C_DeclWriter__Writer w);
+extern void OOC_Make_TranslateToC__TranslatorDesc_SetProcedureList(OOC_Make_TranslateToC__Translator t, OOC_IR__ProcedureList procList);
+#define _TBN_OOC_Make_TranslateToC__TranslatorDesc_SetProcedureList 1
+typedef void (*_TBP_OOC_Make_TranslateToC__TranslatorDesc_SetProcedureList)(OOC_Make_TranslateToC__Translator t, OOC_IR__ProcedureList procList);
+extern void OOC_Make_TranslateToC__TranslatorDesc_SetDataWriter(OOC_Make_TranslateToC__Translator t, OOC_C_DeclWriter__Writer wd);
+#define _TBN_OOC_Make_TranslateToC__TranslatorDesc_SetDataWriter 2
+typedef void (*_TBP_OOC_Make_TranslateToC__TranslatorDesc_SetDataWriter)(OOC_Make_TranslateToC__Translator t, OOC_C_DeclWriter__Writer wd);
+extern void OOC_Make_TranslateToC__TranslatorDesc_WriteProcBody(OOC_Make_TranslateToC__Translator t, OOC_IR__Procedure proc);
+#define _TBN_OOC_Make_TranslateToC__TranslatorDesc_WriteProcBody 3
+typedef void (*_TBP_OOC_Make_TranslateToC__TranslatorDesc_WriteProcBody)(OOC_Make_TranslateToC__Translator t, OOC_IR__Procedure proc);
+extern void OOC_Make_TranslateToC__TranslatorDesc_WriteProcedure(OOC_Make_TranslateToC__Translator t, OOC_INT32 procIndex);
+#define _TBN_OOC_Make_TranslateToC__TranslatorDesc_WriteProcedure 4
+typedef void (*_TBP_OOC_Make_TranslateToC__TranslatorDesc_WriteProcedure)(OOC_Make_TranslateToC__Translator t, OOC_INT32 procIndex);
+extern void OOC_Make_TranslateToC__TranslatorDesc_WriteNestedProcedures(OOC_Make_TranslateToC__Translator t);
+#define _TBN_OOC_Make_TranslateToC__TranslatorDesc_WriteNestedProcedures 5
+typedef void (*_TBP_OOC_Make_TranslateToC__TranslatorDesc_WriteNestedProcedures)(OOC_Make_TranslateToC__Translator t);
+extern OOC_Error__List OOC_Make_TranslateToC__Run(OOC_Repository__Module m, Object__String libraryName, OOC_CHAR8 analysisOnly, OOC_SymbolTable_Uses__Uses uses, OOC_CHAR8 writeAST, OOC_CHAR8 writeIR, OOC_Make_TranslateToC__Translator translator);
+extern void OOC_OOC_Make_TranslateToC_init(void);
+extern void OOC_OOC_Make_TranslateToC_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Make_TranslateToC__Translator;
+extern RT0__StructDesc _td_OOC_Make_TranslateToC__TranslatorDesc;
+extern RT0__StructDesc _td_OOC_Make_TranslateToC__4451;
+extern RT0__StructDesc _td_OOC_Make_TranslateToC__4528;
+extern RT0__StructDesc _td_OOC_Make_TranslateToC__4577;
+#endif /* _MODULE_OOC_Make_TranslateToC_ */
+
+/* --- */

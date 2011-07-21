@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <procedure_decl id='1' name='P' pos='21' line='2' column='10' visible_from='22' export='no' is_type_bound='no' is_forward_decl='no'>
+    <procedure_type id='2' pos='11' line='2' column='0' resultType='#none'/>
+  </procedure_decl>
+</module>

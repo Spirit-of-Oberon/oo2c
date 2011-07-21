@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <oberon-doc>
+    <summary>Also doc for module `M'.</summary>
+    <p pad-after='yes' no-indent='yes'>Also doc for module `M'.</p>
+  </oberon-doc>
+  <import id='1' name='x' pos='17' line='1' column='7' visible_from='28' export='no' imported_module_name='SYSTEM' imported_module_pos='22' imported_module_line='1' imported_module_column='12'/>
+</module>

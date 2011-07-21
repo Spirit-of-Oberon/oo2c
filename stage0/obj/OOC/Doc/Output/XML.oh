@@ -1,0 +1,28 @@
+#ifndef _MODULE_OOC_Doc_Output_XML_
+#define _MODULE_OOC_Doc_Output_XML_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/Dictionary.oh>
+#include <IO.oh>
+#include <XML/Writer.oh>
+#include <OOC/Config/Repositories.oh>
+#include <OOC/Repository.oh>
+#include <OOC/Doc.oh>
+#include <OOC/SymbolTable.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern void OOC_Doc_Output_XML__WriteOberonDoc(XML_Writer__Writer w, OOC_Doc__Document document, OOC_SymbolTable__Module localModule, ADT_Dictionary__Dictionary rewriteMap, OOC_Config_Repositories__Section repositories, ADT_Dictionary__Dictionary moduleDict);
+extern void OOC_Doc_Output_XML__Write(IO__ByteChannel cw, OOC_Doc__Document document, OOC_SymbolTable__Module localModule, ADT_Dictionary__Dictionary rewriteMap, OOC_Config_Repositories__Section repositories, ADT_Dictionary__Dictionary moduleDict);
+extern void OOC_OOC_Doc_Output_XML_init(void);
+extern void OOC_OOC_Doc_Output_XML_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Doc_Output_XML__1628;
+extern RT0__StructDesc _td_OOC_Doc_Output_XML__2550;
+extern RT0__StructDesc _td_OOC_Doc_Output_XML__2612;
+extern RT0__StructDesc _td_OOC_Doc_Output_XML__5649;
+#endif /* _MODULE_OOC_Doc_Output_XML_ */
+
+/* --- */

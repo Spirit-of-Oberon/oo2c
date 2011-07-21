@@ -1,0 +1,37 @@
+#ifndef _MODULE_OOC_Logger_
+#define _MODULE_OOC_Logger_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <URI.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern OOC_CHAR8 OOC_Logger__silence;
+extern void OOC_Logger__ReadFile(URI__URI uri);
+extern void OOC_Logger__ReadFileName(Object__String fileName);
+extern void OOC_Logger__WriteFile(URI__URI uri);
+extern void OOC_Logger__WriteFileName(Object__String fileName);
+extern void OOC_Logger__ShellCommand(Object__String str);
+extern void OOC_Logger__EnterMake(const OOC_CHAR8 rule__ref[], OOC_LEN rule_0d, const OOC_CHAR8 module__ref[], OOC_LEN module_0d);
+extern OOC_CHAR8 OOC_Logger__ExitMake(const OOC_CHAR8 rule__ref[], OOC_LEN rule_0d, const OOC_CHAR8 module__ref[], OOC_LEN module_0d, OOC_CHAR8 success);
+extern OOC_CHAR8 OOC_Logger__CachedMake(const OOC_CHAR8 rule__ref[], OOC_LEN rule_0d, const OOC_CHAR8 module__ref[], OOC_LEN module_0d, OOC_CHAR8 success);
+extern void OOC_Logger__ExplainMake(const OOC_CHAR8 s1__ref[], OOC_LEN s1_0d);
+extern void OOC_Logger__ExplainFileMake(const OOC_CHAR8 s1__ref[], OOC_LEN s1_0d, URI__URI uri1, const OOC_CHAR8 s2__ref[], OOC_LEN s2_0d);
+extern void OOC_Logger__ExplainFilesMake(const OOC_CHAR8 s1__ref[], OOC_LEN s1_0d, URI__URI uri1, const OOC_CHAR8 s2__ref[], OOC_LEN s2_0d, URI__URI uri2, const OOC_CHAR8 s3__ref[], OOC_LEN s3_0d);
+extern void OOC_OOC_Logger_init(void);
+extern void OOC_OOC_Logger_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Logger__1497;
+extern RT0__StructDesc _td_OOC_Logger__1773;
+extern RT0__StructDesc _td_OOC_Logger__2211;
+extern RT0__StructDesc _td_OOC_Logger__2628;
+extern RT0__StructDesc _td_OOC_Logger__2797;
+extern RT0__StructDesc _td_OOC_Logger__2858;
+extern RT0__StructDesc _td_OOC_Logger__3076;
+extern RT0__StructDesc _td_OOC_Logger__3138;
+extern RT0__StructDesc _td_OOC_Logger__3200;
+#endif /* _MODULE_OOC_Logger_ */
+
+/* --- */

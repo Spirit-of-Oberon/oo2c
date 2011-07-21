@@ -1,0 +1,73 @@
+#ifndef _MODULE_ADT_Storable_
+#define _MODULE_ADT_Storable_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <IO.oh>
+#include <IO/BinaryRider.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct ADT_Storable__ObjectDesc *ADT_Storable__Object;
+typedef struct ADT_Storable__ObjectDesc {
+  char __dummy;
+} ADT_Storable__ObjectDesc;
+typedef struct ADT_Storable__ReaderDesc *ADT_Storable__Reader;
+typedef struct ADT_Storable__ReaderDesc {
+  OOC_INT8 byteOrder;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  IO__ByteChannel channel;
+} ADT_Storable__ReaderDesc;
+typedef struct ADT_Storable__WriterDesc *ADT_Storable__Writer;
+typedef struct ADT_Storable__WriterDesc {
+  OOC_INT8 byteOrder;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  IO__ByteChannel channel;
+} ADT_Storable__WriterDesc;
+typedef struct ADT_Storable__TypeErrorDesc *ADT_Storable__TypeError;
+typedef struct ADT_Storable__TypeErrorDesc {
+  Object__String msg;
+  OOC_PTR backtrace[21];
+  OOC_INT32 backtraceSize;
+} ADT_Storable__TypeErrorDesc;
+extern void NORETURN ADT_Storable__RaiseTypeError(Object__String msg) NORETURN2;
+extern void ADT_Storable__ObjectDesc_Store(ADT_Storable__Object obj, ADT_Storable__Writer w);
+#define _TBN_ADT_Storable__ObjectDesc_Store 4
+typedef void (*_TBP_ADT_Storable__ObjectDesc_Store)(ADT_Storable__Object obj, ADT_Storable__Writer w);
+extern void ADT_Storable__ObjectDesc_Load(ADT_Storable__Object obj, ADT_Storable__Reader r);
+#define _TBN_ADT_Storable__ObjectDesc_Load 5
+typedef void (*_TBP_ADT_Storable__ObjectDesc_Load)(ADT_Storable__Object obj, ADT_Storable__Reader r);
+extern void ADT_Storable__InitWriter(ADT_Storable__Writer w, IO__ByteChannel ch);
+extern void ADT_Storable__InitReader(ADT_Storable__Reader r, IO__ByteChannel ch);
+extern void ADT_Storable__WriterDesc_WriteObject(ADT_Storable__Writer w, Object__Object obj);
+#define _TBN_ADT_Storable__WriterDesc_WriteObject 17
+typedef void (*_TBP_ADT_Storable__WriterDesc_WriteObject)(ADT_Storable__Writer w, Object__Object obj);
+extern void ADT_Storable__WriterDesc_Disconnect(ADT_Storable__Writer w);
+#define _TBN_ADT_Storable__WriterDesc_Disconnect 18
+typedef void (*_TBP_ADT_Storable__WriterDesc_Disconnect)(ADT_Storable__Writer w);
+extern void ADT_Storable__ReaderDesc_ReadObject(ADT_Storable__Reader r, Object__Object *obj);
+#define _TBN_ADT_Storable__ReaderDesc_ReadObject 17
+typedef void (*_TBP_ADT_Storable__ReaderDesc_ReadObject)(ADT_Storable__Reader r, Object__Object *obj);
+extern void ADT_Storable__ReaderDesc_Disconnect(ADT_Storable__Reader r);
+#define _TBN_ADT_Storable__ReaderDesc_Disconnect 18
+typedef void (*_TBP_ADT_Storable__ReaderDesc_Disconnect)(ADT_Storable__Reader r);
+extern void OOC_ADT_Storable_init(void);
+extern void OOC_ADT_Storable_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_ADT_Storable__Object;
+extern RT0__StructDesc _td_ADT_Storable__ObjectDesc;
+extern RT0__StructDesc _td_ADT_Storable__Reader;
+extern RT0__StructDesc _td_ADT_Storable__ReaderDesc;
+extern RT0__StructDesc _td_ADT_Storable__Writer;
+extern RT0__StructDesc _td_ADT_Storable__WriterDesc;
+extern RT0__StructDesc _td_ADT_Storable__TypeError;
+extern RT0__StructDesc _td_ADT_Storable__TypeErrorDesc;
+#endif /* _MODULE_ADT_Storable_ */
+
+/* --- */

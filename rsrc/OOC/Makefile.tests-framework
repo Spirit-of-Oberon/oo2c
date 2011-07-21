@@ -1,0 +1,82 @@
+# -*-mode: makefile-*-
+
+# TEST_SETUP: XML document listing all test cases.
+TEST_SETUP=$(OOC_DEV_ROOT)/$(TEST_BASE)/test-setup.xml
+
+# TEST_REPORT: Output file produced when running the test cases.
+TEST_REPORT=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.xml
+
+# TEST_SUMMARY: Created from XML report by means of an XSLT processor.
+TEST_SUMMARY=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.html
+
+# TEST_WORKING_DIR: The test program is started in this directory.
+TEST_WORKING_DIR=$(OOC_DEV_ROOT)/$(TEST_BASE)
+
+# TEST_TEMP_DIR: All files created by the testcases are placed here.
+TEST_TEMP_DIR=$(TEST_WORKING_DIR)/wd
+
+# TEST_DRIVER_BINARY: File name of the tested executable.
+TEST_DRIVER_BINARY=$(OOC_DEV_ROOT)/bin/$(TEST_DRIVER)
+
+# TEST_CREATE_SUMMARY: This command creates a HTML summary of a from an
+# XML report document.
+#TEST_CREATE_SUMMARY=java org.apache.xalan.xslt.Process -in $(TEST_REPORT) -xsl $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl -out $(TEST_SUMMARY)
+TEST_CREATE_SUMMARY=$(XSLTPROC) -o $(TEST_SUMMARY) $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl $(TEST_REPORT)
+
+
+
+# ------------------------------------------------------------------------
+# Test targets
+# ------------------------------------------------------------------------
+
+.PHONY: test1-setup test1-process test1-report test1-clean
+
+# The subdirectory $(OOC_DEV_ROOT)/tests/lib-TestCompile mirrors the library
+# modules from the "real" lib directory.  TestCompile must put its symbol
+# files there, because they are incompatible with those produced by "oo2c".
+$(OOC_DEV_ROOT)/tests/lib-TestCompile/src/RT0.Mod:
+	mkdir $(OOC_DEV_ROOT)/tests/lib-TestCompile
+	ln -s $(OOC_DEV_ROOT)/lib/src $(OOC_DEV_ROOT)/tests/lib-TestCompile/src
+	ln -s $(OOC_DEV_ROOT)/lib/pkginfo.xml $(OOC_DEV_ROOT)/tests/lib-TestCompile/pkginfo.xml
+
+# The subdirectory $(OOC_DEV_ROOT)/tests/lib-oo2c also mirrors the library
+# modules from the "real" lib directory.  The oo2c binary used in the tests
+# must put its symbol files there, because otherwise its environment cannot
+# be properly reset between tests.
+$(OOC_DEV_ROOT)/tests/lib-oo2c/src/RT0.Mod:
+	mkdir $(OOC_DEV_ROOT)/tests/lib-oo2c
+	ln -s $(OOC_DEV_ROOT)/lib/src $(OOC_DEV_ROOT)/tests/lib-oo2c/src
+	ln -s $(OOC_DEV_ROOT)/lib/pkginfo.xml $(OOC_DEV_ROOT)/tests/lib-oo2c/pkginfo.xml
+
+$(TEST_DRIVER_BINARY): $(OOC_DEV_ROOT)/oo2crc-install.xml
+	cd $(OOC_DEV_ROOT) && $(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -M $(OFLAGS) $(TEST_DRIVER)
+
+test1-setup: $(OOC_DEV_ROOT)/oo2crc-install.xml $(OOC_DEV_ROOT)/tests/lib-TestCompile/src/RT0.Mod $(OOC_DEV_ROOT)/tests/lib-oo2c/src/RT0.Mod $(TEST_DRIVER_BINARY)
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin
+ifdef TEST_PROCESSOR
+	cd $(OOC_DEV_ROOT) && $(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -M $(OFLAGS) $(TEST_PROCESSOR)
+endif
+	$(RM_R) $(TEST_TEMP_DIR) $(OOC_DEV_ROOT)/tests/lib-TestCompile/obj $(OOC_DEV_ROOT)/tests/lib-TestCompile/sym $(OOC_DEV_ROOT)/tests/lib-oo2c/obj $(OOC_DEV_ROOT)/tests/lib-oo2c/sym
+	$(MKDIR) $(TEST_TEMP_DIR)
+
+test1-process: test1-setup
+	cd $(TEST_WORKING_DIR) && $(TEST_DRIVER_BINARY) $(TEST_DRIVER_FLAGS) $(TEST_SETUP) $(TEST_REPORT)
+
+test1-runall: test1-setup
+	if cd $(TEST_WORKING_DIR) && $(TEST_DRIVER_BINARY) $(TEST_DRIVER_FLAGS) $(TEST_SETUP) $(TEST_REPORT); then \
+	  $(TEST_CREATE_SUMMARY); \
+	else \
+	  $(TEST_CREATE_SUMMARY); exit 1; \
+	fi
+
+test-runall: test1-runall
+
+test-clean:
+ifdef TEST_PROCESSOR
+	$(RM) $(OOC_DEV_ROOT)/bin/$(TEST_PROCESSOR)
+endif
+	$(RM) $(TEST_REPORT) $(TEST_SUMMARY) $(TEST_WORKING_DIR)/.memdump
+	$(RM_R) $(TEST_TEMP_DIR)
+
+# include main makefile
+include $(OOC_DEV_ROOT)/Makefile

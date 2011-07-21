@@ -1,0 +1,447 @@
+#ifndef _MODULE_XML_DTD_
+#define _MODULE_XML_DTD_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <URI.oh>
+#include <XML/UnicodeCodec.oh>
+#include <XML/UnicodeBuffer.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_CHAR16 XML_DTD__Char;
+typedef XML_UnicodeBuffer__CharArray XML_DTD__String;
+typedef OOC_CHAR16 XML_DTD__StringVar[];
+typedef OOC_INT32 XML_DTD__CharPos;
+typedef OOC_INT8 XML_DTD__StandaloneType;
+#define XML_DTD__standaloneYes 0
+#define XML_DTD__standaloneNo 1
+#define XML_DTD__standaloneNotPresent 2
+#define XML_DTD__standaloneNotApplicable 3
+typedef struct XML_DTD__NamespaceDesc *XML_DTD__Namespace;
+typedef struct XML_DTD__DeclarationDesc *XML_DTD__Declaration;
+typedef struct XML_DTD__BuilderDesc *XML_DTD__Builder;
+typedef struct XML_DTD__BuilderDesc {
+  XML_UnicodeBuffer__CharArray rootName;
+  XML_DTD__Namespace geNamespace;
+  XML_DTD__Namespace peNamespace;
+  XML_DTD__Namespace elementNamespace;
+  XML_DTD__Declaration attributeList;
+  XML_DTD__Declaration attributeTail;
+} XML_DTD__BuilderDesc;
+typedef struct XML_DTD__DeclarationDesc {
+  XML_DTD__Declaration next;
+  XML_UnicodeBuffer__CharArray name;
+} XML_DTD__DeclarationDesc;
+typedef struct XML_DTD__NamespaceDesc {
+  XML_DTD__Declaration declList;
+} XML_DTD__NamespaceDesc;
+typedef struct XML_DTD__FragmentDesc *XML_DTD__Fragment;
+typedef struct XML_DTD__FragmentDesc {
+  XML_DTD__Fragment next;
+} XML_DTD__FragmentDesc;
+typedef struct XML_DTD__CharactersDesc *XML_DTD__Characters;
+typedef struct XML_DTD__CharactersDesc {
+  XML_DTD__Fragment next;
+  XML_UnicodeBuffer__CharArray source;
+  OOC_INT32 sourceStart;
+  OOC_INT32 sourceEnd;
+} XML_DTD__CharactersDesc;
+typedef struct XML_DTD__EntityRefDesc *XML_DTD__EntityRef;
+typedef struct XML_DTD__EntityDesc *XML_DTD__Entity;
+typedef struct XML_DTD__EntityRefDesc {
+  XML_DTD__Fragment next;
+  XML_UnicodeBuffer__CharArray name;
+  XML_DTD__Entity entity;
+} XML_DTD__EntityRefDesc;
+typedef struct XML_DTD__AttValueDesc *XML_DTD__AttValue;
+typedef struct XML_DTD__AttValueDesc {
+  XML_DTD__Fragment fragmentList;
+  XML_DTD__Fragment fragmentTail;
+} XML_DTD__AttValueDesc;
+typedef struct XML_DTD__NameNodeDesc *XML_DTD__NameNode;
+typedef struct XML_DTD__NameNodeDesc {
+  XML_DTD__NameNode next;
+  XML_UnicodeBuffer__CharArray name;
+} XML_DTD__NameNodeDesc;
+typedef struct XML_DTD__EnumerationDesc *XML_DTD__Enumeration;
+typedef struct XML_DTD__EnumerationDesc {
+  XML_DTD__NameNode nameList;
+  XML_DTD__NameNode nameTail;
+} XML_DTD__EnumerationDesc;
+typedef OOC_INT8 XML_DTD__AttributeType;
+#define XML_DTD__attrID 0
+#define XML_DTD__attrIDREF 1
+#define XML_DTD__attrIDREFS 2
+#define XML_DTD__attrENTITY 3
+#define XML_DTD__attrENTITIES 4
+#define XML_DTD__attrNMTOKEN 5
+#define XML_DTD__attrNMTOKENS 6
+#define XML_DTD__attrNOTATION 7
+#define XML_DTD__attrENUMERATED 8
+#define XML_DTD__attrCDATA 9
+typedef OOC_INT8 XML_DTD__DefaultType;
+#define XML_DTD__attrRequired 0
+#define XML_DTD__attrImplied 1
+#define XML_DTD__attrDefault 2
+#define XML_DTD__attrFixed 3
+typedef struct XML_DTD__AttrDeclDesc *XML_DTD__AttrDecl;
+typedef struct XML_DTD__AttrDeclDesc {
+  XML_DTD__Declaration next;
+  XML_UnicodeBuffer__CharArray name;
+  XML_UnicodeBuffer__CharArray elementName;
+  OOC_INT8 type;
+  OOC_CHAR8 externalMarkupDecl;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  XML_DTD__Enumeration enumeration;
+  OOC_INT8 _default;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  XML_DTD__AttValue defaultValue;
+} XML_DTD__AttrDeclDesc;
+extern XML_DTD__AttrDecl XML_DTD__undefAttr;
+typedef OOC_INT8 XML_DTD__EntityType;
+#define XML_DTD__entityInternalGeneral 0
+#define XML_DTD__entityInternalParameter 1
+#define XML_DTD__entityExternalGeneral 2
+#define XML_DTD__entityExternalParameter 3
+#define XML_DTD__entityUnparsed 4
+#define XML_DTD__entityDocument 5
+#define XML_DTD__entityExternalDTDSubset 6
+typedef struct XML_DTD__EntityDesc {
+  XML_DTD__Declaration next;
+  XML_UnicodeBuffer__CharArray name;
+  OOC_INT8 type;
+  OOC_CHAR8 __pad9;
+  OOC_CHAR8 __pad10;
+  OOC_CHAR8 __pad11;
+  XML_UnicodeBuffer__CharArray entityValue;
+  OOC_CHAR8 externalMarkupDecl;
+  OOC_CHAR8 expanding;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  XML_DTD__AttValue attValue;
+} XML_DTD__EntityDesc;
+typedef struct XML_DTD__InternalEntityDesc *XML_DTD__InternalEntity;
+typedef struct XML_DTD__InternalEntityDesc {
+  XML_DTD__Declaration next;
+  XML_UnicodeBuffer__CharArray name;
+  OOC_INT8 type;
+  OOC_CHAR8 __pad9;
+  OOC_CHAR8 __pad10;
+  OOC_CHAR8 __pad11;
+  XML_UnicodeBuffer__CharArray entityValue;
+  OOC_CHAR8 externalMarkupDecl;
+  OOC_CHAR8 expanding;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  XML_DTD__AttValue attValue;
+} XML_DTD__InternalEntityDesc;
+typedef struct XML_DTD__ExternalEntityDesc *XML_DTD__ExternalEntity;
+typedef struct XML_DTD__ExternalEntityDesc {
+  XML_DTD__Declaration next;
+  XML_UnicodeBuffer__CharArray name;
+  OOC_INT8 type;
+  OOC_CHAR8 __pad9;
+  OOC_CHAR8 __pad10;
+  OOC_CHAR8 __pad11;
+  XML_UnicodeBuffer__CharArray entityValue;
+  OOC_CHAR8 externalMarkupDecl;
+  OOC_CHAR8 expanding;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  XML_DTD__AttValue attValue;
+  XML_UnicodeBuffer__CharArray _public;
+  XML_UnicodeBuffer__CharArray system;
+  XML_UnicodeBuffer__CharArray ndata;
+  URI__URI baseURI;
+  XML_UnicodeBuffer__CharArray version;
+  XML_UnicodeBuffer__CharArray encoding;
+  OOC_INT8 standalone;
+  OOC_CHAR8 __pad49;
+  OOC_CHAR8 __pad50;
+  OOC_CHAR8 __pad51;
+  XML_UnicodeCodec__Factory codecFactory;
+} XML_DTD__ExternalEntityDesc;
+typedef struct XML_DTD__NotationDesc *XML_DTD__Notation;
+typedef struct XML_DTD__NotationDesc {
+  XML_DTD__Declaration next;
+  XML_UnicodeBuffer__CharArray name;
+  XML_UnicodeBuffer__CharArray _public;
+  XML_UnicodeBuffer__CharArray system;
+  URI__URI baseURI;
+} XML_DTD__NotationDesc;
+typedef OOC_INT8 XML_DTD__CPModeType;
+#define XML_DTD__cpOnce 0
+#define XML_DTD__cpOptional 1
+#define XML_DTD__cpRepeat0 2
+#define XML_DTD__cpRepeat1 3
+typedef OOC_INT8 XML_DTD__ContentType;
+#define XML_DTD__contentEMPTY 0
+#define XML_DTD__contentANY 1
+#define XML_DTD__contentMixed 2
+#define XML_DTD__contentChildren 3
+typedef struct XML_DTD__CPDesc *XML_DTD__CP;
+typedef struct XML_DTD__CPDesc {
+  OOC_INT8 cpMode;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  XML_DTD__CP next;
+} XML_DTD__CPDesc;
+typedef struct XML_DTD__ChoiceCPDesc *XML_DTD__ChoiceCP;
+typedef struct XML_DTD__ChoiceCPDesc {
+  OOC_INT8 cpMode;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  XML_DTD__CP next;
+  XML_DTD__CP list;
+} XML_DTD__ChoiceCPDesc;
+typedef struct XML_DTD__SeqCPDesc *XML_DTD__SeqCP;
+typedef struct XML_DTD__SeqCPDesc {
+  OOC_INT8 cpMode;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  XML_DTD__CP next;
+  XML_DTD__CP list;
+} XML_DTD__SeqCPDesc;
+typedef struct XML_DTD__NameCPDesc *XML_DTD__NameCP;
+typedef struct XML_DTD__NameCPDesc {
+  OOC_INT8 cpMode;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  XML_DTD__CP next;
+  XML_UnicodeBuffer__CharArray name;
+} XML_DTD__NameCPDesc;
+typedef struct XML_DTD__RegexpInfoDesc *XML_DTD__RegexpInfo;
+typedef struct XML_DTD__RegexpInfoDesc {
+  char __dummy;
+} XML_DTD__RegexpInfoDesc;
+typedef struct XML_DTD__ElementDeclDesc *XML_DTD__ElementDecl;
+typedef struct XML_DTD__ElementDeclDesc {
+  XML_DTD__Declaration next;
+  XML_UnicodeBuffer__CharArray name;
+  XML_DTD__CP contentModel;
+  XML_DTD__RegexpInfo regexp;
+  OOC_INT8 contentType;
+  OOC_CHAR8 externalMarkupDecl;
+  OOC_CHAR8 multipleDecl;
+  OOC_CHAR8 __pad19;
+  XML_DTD__Namespace attrNamespace;
+  XML_DTD__AttrDecl idAttr;
+  XML_DTD__AttrDecl notationAttr;
+} XML_DTD__ElementDeclDesc;
+typedef OOC_INT8 XML_DTD__ElementWhitespaceType;
+#define XML_DTD__elementWhitespaceYes 0
+#define XML_DTD__elementWhitespaceNo 1
+#define XML_DTD__elementWhitespaceUnknown 2
+typedef struct XML_DTD__NamespaceDeclarationDesc *XML_DTD__NamespaceDeclaration;
+typedef OOC_CHAR8 *XML_DTD__StringURI;
+typedef struct XML_DTD__NamespaceDeclarationDesc {
+  XML_UnicodeBuffer__CharArray prefix;
+  XML_DTD__StringURI uri;
+} XML_DTD__NamespaceDeclarationDesc;
+extern void XML_DTD__InitDeclaration(XML_DTD__Declaration decl, XML_UnicodeBuffer__CharArray name);
+extern XML_DTD__Namespace XML_DTD__NewNamespace(void);
+extern OOC_CHAR8 XML_DTD__NamespaceDesc_Add(XML_DTD__Namespace ns, XML_DTD__Declaration decl);
+#define _TBN_XML_DTD__NamespaceDesc_Add 0
+typedef OOC_CHAR8 (*_TBP_XML_DTD__NamespaceDesc_Add)(XML_DTD__Namespace ns, XML_DTD__Declaration decl);
+extern XML_DTD__Declaration XML_DTD__NamespaceDesc_Get(XML_DTD__Namespace ns, XML_UnicodeBuffer__CharArray name);
+#define _TBN_XML_DTD__NamespaceDesc_Get 1
+typedef XML_DTD__Declaration (*_TBP_XML_DTD__NamespaceDesc_Get)(XML_DTD__Namespace ns, XML_UnicodeBuffer__CharArray name);
+extern void XML_DTD__InitFragment(XML_DTD__Fragment f);
+extern void XML_DTD__InitCharacters(XML_DTD__Characters chars, XML_UnicodeBuffer__CharArray source, OOC_INT32 start, OOC_INT32 end);
+extern XML_DTD__Characters XML_DTD__BuilderDesc_NewCharacters(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray source, OOC_INT32 start, OOC_INT32 end, OOC_CHAR8 createCopy);
+#define _TBN_XML_DTD__BuilderDesc_NewCharacters 0
+typedef XML_DTD__Characters (*_TBP_XML_DTD__BuilderDesc_NewCharacters)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray source, OOC_INT32 start, OOC_INT32 end, OOC_CHAR8 createCopy);
+extern void XML_DTD__InitEntityRef(XML_DTD__EntityRef entRef, XML_UnicodeBuffer__CharArray name, XML_DTD__Entity entity);
+extern XML_DTD__EntityRef XML_DTD__BuilderDesc_NewEntityRef(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_DTD__Entity entity);
+#define _TBN_XML_DTD__BuilderDesc_NewEntityRef 1
+typedef XML_DTD__EntityRef (*_TBP_XML_DTD__BuilderDesc_NewEntityRef)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_DTD__Entity entity);
+extern void XML_DTD__InitAttValue(XML_DTD__AttValue attValue);
+extern XML_DTD__AttValue XML_DTD__BuilderDesc_NewAttValue(XML_DTD__Builder b);
+#define _TBN_XML_DTD__BuilderDesc_NewAttValue 2
+typedef XML_DTD__AttValue (*_TBP_XML_DTD__BuilderDesc_NewAttValue)(XML_DTD__Builder b);
+extern void XML_DTD__AttValueDesc_Clear(XML_DTD__AttValue attValue);
+#define _TBN_XML_DTD__AttValueDesc_Clear 0
+typedef void (*_TBP_XML_DTD__AttValueDesc_Clear)(XML_DTD__AttValue attValue);
+extern void XML_DTD__AttValueDesc_Append(XML_DTD__AttValue attValue, XML_DTD__Fragment fragment);
+#define _TBN_XML_DTD__AttValueDesc_Append 1
+typedef void (*_TBP_XML_DTD__AttValueDesc_Append)(XML_DTD__AttValue attValue, XML_DTD__Fragment fragment);
+extern OOC_INT32 XML_DTD__AttValueDesc_Length(XML_DTD__AttValue attValue);
+#define _TBN_XML_DTD__AttValueDesc_Length 2
+typedef OOC_INT32 (*_TBP_XML_DTD__AttValueDesc_Length)(XML_DTD__AttValue attValue);
+extern XML_UnicodeBuffer__CharArray XML_DTD__AttValueDesc_FlattenValue(XML_DTD__AttValue attValue, OOC_CHAR8 normalizeWhitespace, OOC_CHAR8 *didNormalization);
+#define _TBN_XML_DTD__AttValueDesc_FlattenValue 3
+typedef XML_UnicodeBuffer__CharArray (*_TBP_XML_DTD__AttValueDesc_FlattenValue)(XML_DTD__AttValue attValue, OOC_CHAR8 normalizeWhitespace, OOC_CHAR8 *didNormalization);
+extern XML_UnicodeBuffer__CharArray XML_DTD__AttValueDesc_Flatten(XML_DTD__AttValue attValue, XML_DTD__AttrDecl attrDecl);
+#define _TBN_XML_DTD__AttValueDesc_Flatten 4
+typedef XML_UnicodeBuffer__CharArray (*_TBP_XML_DTD__AttValueDesc_Flatten)(XML_DTD__AttValue attValue, XML_DTD__AttrDecl attrDecl);
+extern XML_UnicodeBuffer__CharArray XML_DTD__AttValueDesc_FlattenNorm(XML_DTD__AttValue attValue, XML_DTD__AttrDecl attrDecl, OOC_CHAR8 *didNormalization);
+#define _TBN_XML_DTD__AttValueDesc_FlattenNorm 5
+typedef XML_UnicodeBuffer__CharArray (*_TBP_XML_DTD__AttValueDesc_FlattenNorm)(XML_DTD__AttValue attValue, XML_DTD__AttrDecl attrDecl, OOC_CHAR8 *didNormalization);
+extern XML_DTD__Enumeration XML_DTD__BuilderDesc_NewEnumeration(XML_DTD__Builder b);
+#define _TBN_XML_DTD__BuilderDesc_NewEnumeration 3
+typedef XML_DTD__Enumeration (*_TBP_XML_DTD__BuilderDesc_NewEnumeration)(XML_DTD__Builder b);
+extern void XML_DTD__EnumerationDesc_Append(XML_DTD__Enumeration _enum, XML_UnicodeBuffer__CharArray name);
+#define _TBN_XML_DTD__EnumerationDesc_Append 0
+typedef void (*_TBP_XML_DTD__EnumerationDesc_Append)(XML_DTD__Enumeration _enum, XML_UnicodeBuffer__CharArray name);
+extern OOC_CHAR8 XML_DTD__EnumerationDesc_Matches(XML_DTD__Enumeration _enum, XML_DTD__StringVar name, OOC_LEN name_0d);
+#define _TBN_XML_DTD__EnumerationDesc_Matches 1
+typedef OOC_CHAR8 (*_TBP_XML_DTD__EnumerationDesc_Matches)(XML_DTD__Enumeration _enum, XML_DTD__StringVar name, OOC_LEN name_0d);
+extern void XML_DTD__InitAttrDecl(XML_DTD__AttrDecl attrDecl, XML_UnicodeBuffer__CharArray elementName, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_DTD__Enumeration _enum, OOC_INT8 _default, XML_DTD__AttValue defaultValue, OOC_CHAR8 externalMarkupDecl);
+extern XML_DTD__AttrDecl XML_DTD__BuilderDesc_NewAttrDecl(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray elementName, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_DTD__Enumeration _enum, OOC_INT8 _default, XML_DTD__AttValue defaultValue, OOC_CHAR8 externalMarkupDecl);
+#define _TBN_XML_DTD__BuilderDesc_NewAttrDecl 4
+typedef XML_DTD__AttrDecl (*_TBP_XML_DTD__BuilderDesc_NewAttrDecl)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray elementName, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_DTD__Enumeration _enum, OOC_INT8 _default, XML_DTD__AttValue defaultValue, OOC_CHAR8 externalMarkupDecl);
+extern void XML_DTD__BuilderDesc_AddAttribute(XML_DTD__Builder b, XML_DTD__AttrDecl attrDecl);
+#define _TBN_XML_DTD__BuilderDesc_AddAttribute 5
+typedef void (*_TBP_XML_DTD__BuilderDesc_AddAttribute)(XML_DTD__Builder b, XML_DTD__AttrDecl attrDecl);
+extern void XML_DTD__BuilderDesc_AttachAttributes(XML_DTD__Builder b);
+#define _TBN_XML_DTD__BuilderDesc_AttachAttributes 6
+typedef void (*_TBP_XML_DTD__BuilderDesc_AttachAttributes)(XML_DTD__Builder b);
+extern void XML_DTD__EntityDesc_SetEntityValue(XML_DTD__Entity entity, XML_UnicodeBuffer__CharArray entityValue);
+#define _TBN_XML_DTD__EntityDesc_SetEntityValue 0
+typedef void (*_TBP_XML_DTD__EntityDesc_SetEntityValue)(XML_DTD__Entity entity, XML_UnicodeBuffer__CharArray entityValue);
+extern OOC_INT32 XML_DTD__EntityDesc_LengthValue(XML_DTD__Entity entity);
+#define _TBN_XML_DTD__EntityDesc_LengthValue 1
+typedef OOC_INT32 (*_TBP_XML_DTD__EntityDesc_LengthValue)(XML_DTD__Entity entity);
+extern OOC_CHAR8 XML_DTD__EntityDesc_IsDocumentEntity(XML_DTD__Entity entity);
+#define _TBN_XML_DTD__EntityDesc_IsDocumentEntity 2
+typedef OOC_CHAR8 (*_TBP_XML_DTD__EntityDesc_IsDocumentEntity)(XML_DTD__Entity entity);
+extern XML_DTD__InternalEntity XML_DTD__BuilderDesc_NewInternalEntity(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_UnicodeBuffer__CharArray entityValue, OOC_CHAR8 externalMarkupDecl);
+#define _TBN_XML_DTD__BuilderDesc_NewInternalEntity 7
+typedef XML_DTD__InternalEntity (*_TBP_XML_DTD__BuilderDesc_NewInternalEntity)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_UnicodeBuffer__CharArray entityValue, OOC_CHAR8 externalMarkupDecl);
+extern OOC_CHAR8 XML_DTD__BuilderDesc_IsValidEntityDecl(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_UnicodeBuffer__CharArray entityValue);
+#define _TBN_XML_DTD__BuilderDesc_IsValidEntityDecl 8
+typedef OOC_CHAR8 (*_TBP_XML_DTD__BuilderDesc_IsValidEntityDecl)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_UnicodeBuffer__CharArray entityValue);
+extern XML_DTD__ExternalEntity XML_DTD__BuilderDesc_NewExternalEntity(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, XML_UnicodeBuffer__CharArray ndata, URI__URI baseURI, OOC_CHAR8 externalMarkupDecl);
+#define _TBN_XML_DTD__BuilderDesc_NewExternalEntity 9
+typedef XML_DTD__ExternalEntity (*_TBP_XML_DTD__BuilderDesc_NewExternalEntity)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, XML_UnicodeBuffer__CharArray ndata, URI__URI baseURI, OOC_CHAR8 externalMarkupDecl);
+extern void XML_DTD__ExternalEntityDesc_SetCodecFactory(XML_DTD__ExternalEntity entity, XML_UnicodeCodec__Factory codecFactory);
+#define _TBN_XML_DTD__ExternalEntityDesc_SetCodecFactory 3
+typedef void (*_TBP_XML_DTD__ExternalEntityDesc_SetCodecFactory)(XML_DTD__ExternalEntity entity, XML_UnicodeCodec__Factory codecFactory);
+extern void XML_DTD__ExternalEntityDesc_SetVersion(XML_DTD__ExternalEntity entity, XML_UnicodeBuffer__CharArray version);
+#define _TBN_XML_DTD__ExternalEntityDesc_SetVersion 4
+typedef void (*_TBP_XML_DTD__ExternalEntityDesc_SetVersion)(XML_DTD__ExternalEntity entity, XML_UnicodeBuffer__CharArray version);
+extern void XML_DTD__ExternalEntityDesc_SetEncoding(XML_DTD__ExternalEntity entity, XML_UnicodeBuffer__CharArray encoding);
+#define _TBN_XML_DTD__ExternalEntityDesc_SetEncoding 5
+typedef void (*_TBP_XML_DTD__ExternalEntityDesc_SetEncoding)(XML_DTD__ExternalEntity entity, XML_UnicodeBuffer__CharArray encoding);
+extern void XML_DTD__ExternalEntityDesc_SetStandalone(XML_DTD__ExternalEntity entity, OOC_INT8 standalone);
+#define _TBN_XML_DTD__ExternalEntityDesc_SetStandalone 6
+typedef void (*_TBP_XML_DTD__ExternalEntityDesc_SetStandalone)(XML_DTD__ExternalEntity entity, OOC_INT8 standalone);
+extern OOC_CHAR8 XML_DTD__ExternalEntityDesc_IsDocumentEntity(XML_DTD__ExternalEntity entity);
+#define _TBN_XML_DTD__ExternalEntityDesc_IsDocumentEntity 2
+typedef OOC_CHAR8 (*_TBP_XML_DTD__ExternalEntityDesc_IsDocumentEntity)(XML_DTD__ExternalEntity entity);
+extern XML_DTD__ExternalEntity XML_DTD__BuilderDesc_NewExternalDTD(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, URI__URI baseURI);
+#define _TBN_XML_DTD__BuilderDesc_NewExternalDTD 10
+typedef XML_DTD__ExternalEntity (*_TBP_XML_DTD__BuilderDesc_NewExternalDTD)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, URI__URI baseURI);
+extern XML_DTD__ExternalEntity XML_DTD__BuilderDesc_NewDocumentEntity(XML_DTD__Builder b, URI__URI baseURI);
+#define _TBN_XML_DTD__BuilderDesc_NewDocumentEntity 11
+typedef XML_DTD__ExternalEntity (*_TBP_XML_DTD__BuilderDesc_NewDocumentEntity)(XML_DTD__Builder b, URI__URI baseURI);
+extern XML_DTD__Notation XML_DTD__BuilderDesc_NewNotation(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, URI__URI baseURI);
+#define _TBN_XML_DTD__BuilderDesc_NewNotation 12
+typedef XML_DTD__Notation (*_TBP_XML_DTD__BuilderDesc_NewNotation)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, URI__URI baseURI);
+extern void XML_DTD__CPDesc_SetNext(XML_DTD__CP cp, XML_DTD__CP next);
+#define _TBN_XML_DTD__CPDesc_SetNext 0
+typedef void (*_TBP_XML_DTD__CPDesc_SetNext)(XML_DTD__CP cp, XML_DTD__CP next);
+extern void XML_DTD__CPDesc_SetMode(XML_DTD__CP cp, OOC_INT8 cpMode);
+#define _TBN_XML_DTD__CPDesc_SetMode 1
+typedef void (*_TBP_XML_DTD__CPDesc_SetMode)(XML_DTD__CP cp, OOC_INT8 cpMode);
+extern void XML_DTD__InitChoiceCP(XML_DTD__ChoiceCP choiceCP, OOC_INT8 cpMode, XML_DTD__CP list);
+extern XML_DTD__ChoiceCP XML_DTD__BuilderDesc_NewChoiceCP(XML_DTD__Builder b, OOC_INT8 cpMode, XML_DTD__CP list);
+#define _TBN_XML_DTD__BuilderDesc_NewChoiceCP 13
+typedef XML_DTD__ChoiceCP (*_TBP_XML_DTD__BuilderDesc_NewChoiceCP)(XML_DTD__Builder b, OOC_INT8 cpMode, XML_DTD__CP list);
+extern void XML_DTD__InitSeqCP(XML_DTD__SeqCP seqCP, OOC_INT8 cpMode, XML_DTD__CP list);
+extern XML_DTD__SeqCP XML_DTD__BuilderDesc_NewSeqCP(XML_DTD__Builder b, OOC_INT8 cpMode, XML_DTD__CP list);
+#define _TBN_XML_DTD__BuilderDesc_NewSeqCP 14
+typedef XML_DTD__SeqCP (*_TBP_XML_DTD__BuilderDesc_NewSeqCP)(XML_DTD__Builder b, OOC_INT8 cpMode, XML_DTD__CP list);
+extern void XML_DTD__InitNameCP(XML_DTD__NameCP nameCP, OOC_INT8 cpMode, XML_UnicodeBuffer__CharArray name);
+extern XML_DTD__NameCP XML_DTD__BuilderDesc_NewNameCP(XML_DTD__Builder b, OOC_INT8 cpMode, XML_UnicodeBuffer__CharArray name);
+#define _TBN_XML_DTD__BuilderDesc_NewNameCP 15
+typedef XML_DTD__NameCP (*_TBP_XML_DTD__BuilderDesc_NewNameCP)(XML_DTD__Builder b, OOC_INT8 cpMode, XML_UnicodeBuffer__CharArray name);
+extern void XML_DTD__InitElementDecl(XML_DTD__ElementDecl elemDecl, XML_UnicodeBuffer__CharArray name, XML_DTD__CP contentModel, XML_DTD__Namespace attrNamespace, OOC_CHAR8 externalMarkupDecl);
+extern XML_DTD__ElementDecl XML_DTD__BuilderDesc_NewElementDecl(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_DTD__CP contentModel, OOC_CHAR8 externalMarkupDecl);
+#define _TBN_XML_DTD__BuilderDesc_NewElementDecl 16
+typedef XML_DTD__ElementDecl (*_TBP_XML_DTD__BuilderDesc_NewElementDecl)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name, XML_DTD__CP contentModel, OOC_CHAR8 externalMarkupDecl);
+extern void XML_DTD__ElementDeclDesc_SetRegexp(XML_DTD__ElementDecl elemDecl, XML_DTD__RegexpInfo regexp);
+#define _TBN_XML_DTD__ElementDeclDesc_SetRegexp 0
+typedef void (*_TBP_XML_DTD__ElementDeclDesc_SetRegexp)(XML_DTD__ElementDecl elemDecl, XML_DTD__RegexpInfo regexp);
+extern void XML_DTD__ElementDeclDesc_SetMultipleDecl(XML_DTD__ElementDecl elemDecl);
+#define _TBN_XML_DTD__ElementDeclDesc_SetMultipleDecl 1
+typedef void (*_TBP_XML_DTD__ElementDeclDesc_SetMultipleDecl)(XML_DTD__ElementDecl elemDecl);
+extern OOC_CHAR8 XML_DTD__ElementDeclDesc_IsEmpty(XML_DTD__ElementDecl elemDecl);
+#define _TBN_XML_DTD__ElementDeclDesc_IsEmpty 2
+typedef OOC_CHAR8 (*_TBP_XML_DTD__ElementDeclDesc_IsEmpty)(XML_DTD__ElementDecl elemDecl);
+extern OOC_CHAR8 XML_DTD__ElementDeclDesc_IsElementContent(XML_DTD__ElementDecl elemDecl);
+#define _TBN_XML_DTD__ElementDeclDesc_IsElementContent 3
+typedef OOC_CHAR8 (*_TBP_XML_DTD__ElementDeclDesc_IsElementContent)(XML_DTD__ElementDecl elemDecl);
+extern void XML_DTD__BuilderDesc_SetRootName(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name);
+#define _TBN_XML_DTD__BuilderDesc_SetRootName 17
+typedef void (*_TBP_XML_DTD__BuilderDesc_SetRootName)(XML_DTD__Builder b, XML_UnicodeBuffer__CharArray name);
+extern XML_DTD__NamespaceDeclaration XML_DTD__NewNamespaceDeclaration(XML_UnicodeBuffer__CharArray prefix, XML_DTD__StringURI uri);
+extern XML_UnicodeBuffer__CharArray XML_DTD__GetString(OOC_CHAR16 string[], OOC_LEN string_0d, OOC_INT32 start, OOC_INT32 end);
+extern XML_UnicodeBuffer__CharArray XML_DTD__GetStringValue(const OOC_CHAR16 string__ref[], OOC_LEN string_0d);
+extern XML_DTD__StringURI XML_DTD__GetStringURI(OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 start, OOC_INT32 end);
+extern void XML_DTD__Init(XML_DTD__Builder b);
+extern XML_DTD__Builder XML_DTD__New(void);
+extern void OOC_XML_DTD_init(void);
+extern void OOC_XML_DTD_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_DTD__StringVar;
+extern RT0__StructDesc _td_XML_DTD__Namespace;
+extern RT0__StructDesc _td_XML_DTD__Declaration;
+extern RT0__StructDesc _td_XML_DTD__Builder;
+extern RT0__StructDesc _td_XML_DTD__BuilderDesc;
+extern RT0__StructDesc _td_XML_DTD__DeclarationDesc;
+extern RT0__StructDesc _td_XML_DTD__NamespaceDesc;
+extern RT0__StructDesc _td_XML_DTD__Fragment;
+extern RT0__StructDesc _td_XML_DTD__FragmentDesc;
+extern RT0__StructDesc _td_XML_DTD__Characters;
+extern RT0__StructDesc _td_XML_DTD__CharactersDesc;
+extern RT0__StructDesc _td_XML_DTD__EntityRef;
+extern RT0__StructDesc _td_XML_DTD__Entity;
+extern RT0__StructDesc _td_XML_DTD__EntityRefDesc;
+extern RT0__StructDesc _td_XML_DTD__AttValue;
+extern RT0__StructDesc _td_XML_DTD__AttValueDesc;
+extern RT0__StructDesc _td_XML_DTD__NameNode;
+extern RT0__StructDesc _td_XML_DTD__NameNodeDesc;
+extern RT0__StructDesc _td_XML_DTD__Enumeration;
+extern RT0__StructDesc _td_XML_DTD__EnumerationDesc;
+extern RT0__StructDesc _td_XML_DTD__AttrDecl;
+extern RT0__StructDesc _td_XML_DTD__AttrDeclDesc;
+extern RT0__StructDesc _td_XML_DTD__EntityDesc;
+extern RT0__StructDesc _td_XML_DTD__InternalEntity;
+extern RT0__StructDesc _td_XML_DTD__InternalEntityDesc;
+extern RT0__StructDesc _td_XML_DTD__ExternalEntity;
+extern RT0__StructDesc _td_XML_DTD__ExternalEntityDesc;
+extern RT0__StructDesc _td_XML_DTD__Notation;
+extern RT0__StructDesc _td_XML_DTD__NotationDesc;
+extern RT0__StructDesc _td_XML_DTD__CP;
+extern RT0__StructDesc _td_XML_DTD__CPDesc;
+extern RT0__StructDesc _td_XML_DTD__ChoiceCP;
+extern RT0__StructDesc _td_XML_DTD__ChoiceCPDesc;
+extern RT0__StructDesc _td_XML_DTD__SeqCP;
+extern RT0__StructDesc _td_XML_DTD__SeqCPDesc;
+extern RT0__StructDesc _td_XML_DTD__NameCP;
+extern RT0__StructDesc _td_XML_DTD__NameCPDesc;
+extern RT0__StructDesc _td_XML_DTD__RegexpInfo;
+extern RT0__StructDesc _td_XML_DTD__RegexpInfoDesc;
+extern RT0__StructDesc _td_XML_DTD__ElementDecl;
+extern RT0__StructDesc _td_XML_DTD__ElementDeclDesc;
+extern RT0__StructDesc _td_XML_DTD__NamespaceDeclaration;
+extern RT0__StructDesc _td_XML_DTD__14383;
+extern RT0__StructDesc _td_XML_DTD__StringURI;
+extern RT0__StructDesc _td_XML_DTD__NamespaceDeclarationDesc;
+extern RT0__StructDesc _td_XML_DTD__36176;
+extern RT0__StructDesc _td_XML_DTD__36454;
+extern RT0__StructDesc _td_XML_DTD__36608;
+extern RT0__StructDesc _td_XML_DTD__37086;
+#endif /* _MODULE_XML_DTD_ */
+
+/* --- */

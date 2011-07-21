@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>This is a left quote <samp><left-quote/></samp> and this a right <samp><right-quote/></samp>.</summary>
+  <p pad-after='yes' no-indent='yes'>This is a left quote <samp><left-quote/></samp> and this a right <samp><right-quote/></samp>.</p>
+  <p pad-after='yes' no-indent='no'>Within text, this looks like <left-quote/>this<right-quote/>.</p>
+</oberon-doc>

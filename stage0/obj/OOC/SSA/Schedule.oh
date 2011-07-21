@@ -1,0 +1,188 @@
+#ifndef _MODULE_OOC_SSA_Schedule_
+#define _MODULE_OOC_SSA_Schedule_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <OOC/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_SSA_Schedule__BlockDesc *OOC_SSA_Schedule__Block;
+typedef struct OOC_SSA_Schedule__InstrProxyDesc *OOC_SSA_Schedule__InstrProxy;
+typedef struct OOC_SSA_Schedule__BranchBlockDesc *OOC_SSA_Schedule__BranchBlock;
+typedef struct OOC_SSA_Schedule__JumpBlockDesc *OOC_SSA_Schedule__JumpBlock;
+typedef struct OOC_SSA_Schedule__DeadEndBlockDesc *OOC_SSA_Schedule__DeadEndBlock;
+typedef struct OOC_SSA_Schedule__SwitchBlockDesc *OOC_SSA_Schedule__SwitchBlock;
+typedef struct OOC_SSA_Schedule__InfoDesc *OOC_SSA_Schedule__Info;
+typedef struct OOC_SSA_Schedule__InfoDesc {
+  char __dummy;
+} OOC_SSA_Schedule__InfoDesc;
+typedef struct OOC_SSA_Schedule__DependentDesc *OOC_SSA_Schedule__Dependent;
+typedef struct OOC_SSA_Schedule__DependentDesc {
+  OOC_SSA_Schedule__Dependent next;
+  OOC_SSA_Schedule__Block block;
+} OOC_SSA_Schedule__DependentDesc;
+typedef struct OOC_SSA_Schedule__JumpDesc *OOC_SSA_Schedule__Jump;
+typedef struct OOC_SSA_Schedule__JumpDesc {
+  OOC_SSA_Schedule__Block src;
+  OOC_SSA_Schedule__Block dest;
+  OOC_SSA_Schedule__Jump nextTargetUse;
+  OOC_CHAR8 isLoopBackedge;
+} OOC_SSA_Schedule__JumpDesc;
+typedef struct OOC_SSA_Schedule__BlockDesc {
+  OOC_SSA_Schedule__Block nextDom;
+  OOC_SSA_Schedule__Block parent;
+  OOC_SSA_Schedule__InstrProxy proxyList;
+  OOC_SSA_Schedule__InstrProxy proxyTail;
+  OOC_SSA_Schedule__Block domList;
+  OOC_SSA_Schedule__Dependent dependentList;
+  OOC_INT32 depCount;
+  OOC_CHAR8 isLoopHead;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_SSA_Schedule__Jump targetUseList;
+  OOC_INT32 degreeIn;
+  OOC_INT32 id;
+  OOC_SSA_Schedule__Info info;
+} OOC_SSA_Schedule__BlockDesc;
+typedef struct OOC_SSA_Schedule__BranchBlockDesc {
+  OOC_SSA_Schedule__Block nextDom;
+  OOC_SSA_Schedule__Block parent;
+  OOC_SSA_Schedule__InstrProxy proxyList;
+  OOC_SSA_Schedule__InstrProxy proxyTail;
+  OOC_SSA_Schedule__Block domList;
+  OOC_SSA_Schedule__Dependent dependentList;
+  OOC_INT32 depCount;
+  OOC_CHAR8 isLoopHead;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_SSA_Schedule__Jump targetUseList;
+  OOC_INT32 degreeIn;
+  OOC_INT32 id;
+  OOC_SSA_Schedule__Info info;
+  OOC_SSA_Schedule__Jump jump;
+  OOC_SSA__Opnd predicate;
+  OOC_CHAR8 branchOnTrue;
+  OOC_CHAR8 __pad57;
+  OOC_CHAR8 __pad58;
+  OOC_CHAR8 __pad59;
+  OOC_SSA_Schedule__Jump branchTo;
+} OOC_SSA_Schedule__BranchBlockDesc;
+typedef struct OOC_SSA_Schedule__JumpBlockDesc {
+  OOC_SSA_Schedule__Block nextDom;
+  OOC_SSA_Schedule__Block parent;
+  OOC_SSA_Schedule__InstrProxy proxyList;
+  OOC_SSA_Schedule__InstrProxy proxyTail;
+  OOC_SSA_Schedule__Block domList;
+  OOC_SSA_Schedule__Dependent dependentList;
+  OOC_INT32 depCount;
+  OOC_CHAR8 isLoopHead;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_SSA_Schedule__Jump targetUseList;
+  OOC_INT32 degreeIn;
+  OOC_INT32 id;
+  OOC_SSA_Schedule__Info info;
+  OOC_SSA_Schedule__Jump jump;
+} OOC_SSA_Schedule__JumpBlockDesc;
+typedef struct OOC_SSA_Schedule__DeadEndBlockDesc {
+  OOC_SSA_Schedule__Block nextDom;
+  OOC_SSA_Schedule__Block parent;
+  OOC_SSA_Schedule__InstrProxy proxyList;
+  OOC_SSA_Schedule__InstrProxy proxyTail;
+  OOC_SSA_Schedule__Block domList;
+  OOC_SSA_Schedule__Dependent dependentList;
+  OOC_INT32 depCount;
+  OOC_CHAR8 isLoopHead;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_SSA_Schedule__Jump targetUseList;
+  OOC_INT32 degreeIn;
+  OOC_INT32 id;
+  OOC_SSA_Schedule__Info info;
+} OOC_SSA_Schedule__DeadEndBlockDesc;
+typedef struct OOC_SSA_Schedule__SwitchBlockDesc {
+  OOC_SSA_Schedule__Block nextDom;
+  OOC_SSA_Schedule__Block parent;
+  OOC_SSA_Schedule__InstrProxy proxyList;
+  OOC_SSA_Schedule__InstrProxy proxyTail;
+  OOC_SSA_Schedule__Block domList;
+  OOC_SSA_Schedule__Dependent dependentList;
+  OOC_INT32 depCount;
+  OOC_CHAR8 isLoopHead;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_SSA_Schedule__Jump targetUseList;
+  OOC_INT32 degreeIn;
+  OOC_INT32 id;
+  OOC_SSA_Schedule__Info info;
+  OOC_SSA__Opnd expr;
+  OOC_SSA_Schedule__Jump *jump;
+  OOC_SSA_Schedule__JumpBlock *endOfPath;
+  OOC_SSA__Opnd *caseValues;
+} OOC_SSA_Schedule__SwitchBlockDesc;
+typedef struct OOC_SSA_Schedule__InstrProxyDesc {
+  OOC_SSA_Schedule__InstrProxy nextProxy;
+  OOC_SSA_Schedule__InstrProxy prevProxy;
+  OOC_SSA_Schedule__Block block;
+  OOC_SSA__Instr instr;
+} OOC_SSA_Schedule__InstrProxyDesc;
+extern void OOC_SSA_Schedule__InitInfo(OOC_SSA_Schedule__Info info);
+extern void OOC_SSA_Schedule__BlockDesc_SetInfo(OOC_SSA_Schedule__Block b, OOC_SSA_Schedule__Info info);
+#define _TBN_OOC_SSA_Schedule__BlockDesc_SetInfo 4
+typedef void (*_TBP_OOC_SSA_Schedule__BlockDesc_SetInfo)(OOC_SSA_Schedule__Block b, OOC_SSA_Schedule__Info info);
+extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__BlockDesc_DefaultTarget(OOC_SSA_Schedule__Block b);
+#define _TBN_OOC_SSA_Schedule__BlockDesc_DefaultTarget 5
+typedef OOC_SSA_Schedule__Block (*_TBP_OOC_SSA_Schedule__BlockDesc_DefaultTarget)(OOC_SSA_Schedule__Block b);
+extern OOC_CHAR8 OOC_SSA_Schedule__Dominates(OOC_SSA_Schedule__Block dominator, OOC_SSA_Schedule__Block child);
+extern void OOC_SSA_Schedule__ChangeJumpTarget(OOC_SSA_Schedule__Jump reference, OOC_SSA_Schedule__Block dest);
+extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__BranchBlockDesc_DefaultTarget(OOC_SSA_Schedule__BranchBlock b);
+#define _TBN_OOC_SSA_Schedule__BranchBlockDesc_DefaultTarget 5
+typedef OOC_SSA_Schedule__Block (*_TBP_OOC_SSA_Schedule__BranchBlockDesc_DefaultTarget)(OOC_SSA_Schedule__BranchBlock b);
+extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__JumpBlockDesc_DefaultTarget(OOC_SSA_Schedule__JumpBlock b);
+#define _TBN_OOC_SSA_Schedule__JumpBlockDesc_DefaultTarget 5
+typedef OOC_SSA_Schedule__Block (*_TBP_OOC_SSA_Schedule__JumpBlockDesc_DefaultTarget)(OOC_SSA_Schedule__JumpBlock b);
+extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__DeadEndBlockDesc_DefaultTarget(OOC_SSA_Schedule__DeadEndBlock b);
+#define _TBN_OOC_SSA_Schedule__DeadEndBlockDesc_DefaultTarget 5
+typedef OOC_SSA_Schedule__Block (*_TBP_OOC_SSA_Schedule__DeadEndBlockDesc_DefaultTarget)(OOC_SSA_Schedule__DeadEndBlock b);
+extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__SwitchBlockDesc_DefaultTarget(OOC_SSA_Schedule__SwitchBlock b);
+#define _TBN_OOC_SSA_Schedule__SwitchBlockDesc_DefaultTarget 5
+typedef OOC_SSA_Schedule__Block (*_TBP_OOC_SSA_Schedule__SwitchBlockDesc_DefaultTarget)(OOC_SSA_Schedule__SwitchBlock b);
+extern OOC_SSA_Schedule__Block OOC_SSA_Schedule__Schedule(OOC_SSA__ProcBlock pb);
+extern void OOC_OOC_SSA_Schedule_init(void);
+extern void OOC_OOC_SSA_Schedule_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Schedule__Block;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__InstrProxy;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__BranchBlock;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__JumpBlock;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__DeadEndBlock;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__SwitchBlock;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__Info;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__InfoDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__Dependent;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__DependentDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__Jump;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__JumpDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__BlockDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__BranchBlockDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__JumpBlockDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__DeadEndBlockDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__SwitchBlockDesc;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__5423;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__5412;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__5464;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__5453;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__5512;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__5501;
+extern RT0__StructDesc _td_OOC_SSA_Schedule__InstrProxyDesc;
+#endif /* _MODULE_OOC_SSA_Schedule_ */
+
+/* --- */

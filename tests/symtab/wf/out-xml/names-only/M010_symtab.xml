@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <record_type id='1' pos='20' line='2' column='9' base_type='#none' tb_proc_count='-1'>
+    <type_name id='2' pos='30' line='2' column='19' ident_name='INTEGER' ident_pos='30' ident_line='2' ident_column='19'/>
+    <field_decl id='3' name='a' pos='27' line='2' column='16' visible_from='37' export='no' type_id='2'/>
+  </record_type>
+  <type_decl id='4' name='R' pos='16' line='2' column='5' visible_from='41' export='no' type_id='1'/>
+</module>

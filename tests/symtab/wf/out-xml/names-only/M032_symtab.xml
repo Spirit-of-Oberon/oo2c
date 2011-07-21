@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <record_type id='1' pos='20' line='2' column='9' class='R' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='2' name='R' pos='16' line='2' column='5' class='R' visible_from='30' export='no' type_id='1'/>
+  <type_name id='3' pos='47' line='2' column='36' ident_name='R' ident_pos='47' ident_line='2' ident_column='36'/>
+  <pointer_type id='4' pos='36' line='2' column='25' base_type_id='3'/>
+  <type_decl id='5' name='P' pos='32' line='2' column='21' visible_from='48' export='no' type_id='4'/>
+  <procedure_decl id='6' name='Q' pos='68' line='4' column='17' visible_from='69' export='no' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='7' pos='51' line='4' column='0' receiver_id='9' resultType='#none'>
+      <type_name id='8' pos='65' line='4' column='14' ident_name='P' ident_pos='65' ident_line='4' ident_column='14'/>
+      <var_decl id='9' name='p' pos='62' line='4' column='11' visible_from='66' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='no' type_id='8'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

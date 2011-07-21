@@ -1,0 +1,8 @@
+
+
+
+Lots of empty lines at the beginning or at the end of a document are
+ignored.
+
+
+

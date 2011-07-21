@@ -1,0 +1,7 @@
+MODULE NilCompat2;
+
+PROCEDURE P(a[NIL_COMPAT]: INTEGER);
+  BEGIN
+  END P;
+
+END NilCompat2.

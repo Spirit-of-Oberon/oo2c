@@ -1,0 +1,25 @@
+#ifndef _MODULE_CharClass_
+#define _MODULE_CharClass_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define CharClass__eol (OOC_CHAR8)'\012'
+extern OOC_CHAR8 CharClass__systemEol[3];
+extern OOC_CHAR8 CharClass__IsNumeric(OOC_CHAR8 ch);
+extern OOC_CHAR8 CharClass__IsLetter(OOC_CHAR8 ch);
+extern OOC_CHAR8 CharClass__IsUpper(OOC_CHAR8 ch);
+extern OOC_CHAR8 CharClass__IsLower(OOC_CHAR8 ch);
+extern OOC_CHAR8 CharClass__IsControl(OOC_CHAR8 ch);
+extern OOC_CHAR8 CharClass__IsWhiteSpace(OOC_CHAR8 ch);
+extern OOC_CHAR8 CharClass__IsEol(OOC_CHAR8 ch);
+extern void OOC_CharClass_init(void);
+extern void OOC_CharClass_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_CharClass__1077;
+#endif /* _MODULE_CharClass_ */
+
+/* --- */

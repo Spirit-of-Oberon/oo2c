@@ -1,0 +1,100 @@
+
+Character Constants
+===================
+
+ACCEPT:
+
+  1) character values in the range 100X to 0FFFFX are LONGCHAR
+     values
+
+REJECT:
+
+  1) character constants larger than MAX(LONGCHAR)
+
+
+String Concatenation
+====================
+
+ACCEPT:
+
+  1) a+b and b+a, where `a' is a CHAR constant and `b' is a LONGCHAR
+     constant
+  2) a+b and b+a, where `a' is a CHAR constant and `b' is a LONGCHAR
+     string constant
+  3) a+b and b+a, where `a' is a CHAR string constant and `b' is a
+     LONGCHAR constant
+  4) a+b and b+a, where `a' is a CHAR string constant and `b' is a
+     LONGCHAR string constant
+
+REJECT:
+
+  1) a+b where either `a' or `b' is not a character or string constant
+
+
+Assignment
+==========
+
+ACCEPT:
+
+  1) l := c, where `l' is a variable of type LONGCHAR, and `c' a value
+     of type CHAR
+  2) la := c, where `la' is an ARRAY n OF LONGCHAR, and `c' a CHAR or
+     CHAR string constant (and the lengths are ok)
+  3) la := c, where `la' is an ARRAY n OF LONGCHAR, and `c' a LONGCHAR
+     or LONGCHAR string constant (and the lengths are ok)
+  4) CHAR string is passed to an ARRAY OF LONGCHAR
+  5) LONGCHAR string is passed to an ARRAY OF LONGCHAR
+
+REJECT:
+
+  1) c := l, where `c' is a variable of type CHAR, and `l' a value
+     of type LONGCHAR
+  2) ca := l, where `ca' is a variable of type ARRAY n OF CHAR, and
+     `l' a value of type LONGCHAR
+  3) ca := l, where `ca' is a variable of type ARRAY n OF CHAR, and
+     `l' a LONGCHAR string
+
+
+Comparisons
+===========
+
+ACCEPT:
+
+  1) `a op b', where `a' and `b' are character or string constants of
+     either type
+  2) `a op b', where `a' and `b' are of type LONGCHAR
+  3) `a op b', where `a' and `b' are of type ARRAY [n] OF LONGCHAR
+
+
+REJECT:
+
+  1) `a op b' and `b op a', where `a' is a LONGCHAR or LONGCHAR
+     string, and `b' an ARRAY [n] OF CHAR
+  2) `a op b' and `b op a', where `a' is an ARRAY [n] OF LONGCHAR, and
+     `b' an ARRAY [n] OF CHAR 
+
+
+Predefined Functions
+====================
+
+ACCEPT:
+
+  1) CAP(LONGCHAR)
+  2) LONG(CHAR)
+  3) LONG(CHAR string)
+  4) LONGCHAR(integer)
+  5) ORD(LONGCHAR)
+  6) SHORT(LONGCHAR)
+  7) SHORT(LONGCHAR string)
+
+
+Predefined Procedures
+=====================
+
+ACCEPT:
+
+  1) COPY(LONGCHAR array,LONGCHAR array)
+  2) COPY(CHAR array,LONGCHAR array)
+  3) COPY(LONGCHAR string,LONGCHAR array)
+  4) COPY(CHAR string,LONGCHAR array)
+

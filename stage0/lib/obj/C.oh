@@ -1,0 +1,37 @@
+#ifndef _MODULE_C_
+#define _MODULE_C_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_CHAR8 C__char;
+typedef OOC_INT8 C__signedchar;
+typedef OOC_INT16 C__shortint;
+typedef OOC_INT32 C__int;
+typedef OOC_UINT32 C__set;
+typedef OOC_INT32 C__longint;
+typedef OOC_UINT32 C__longset;
+typedef OOC_INT32 C__address;
+typedef OOC_REAL32 C__float;
+typedef OOC_REAL64 C__double;
+typedef OOC_INT32 C__enum1;
+typedef OOC_INT32 C__enum2;
+typedef OOC_INT32 C__enum4;
+typedef OOC_INT32 C__FILE;
+typedef OOC_INT32 C__size_t;
+typedef OOC_INT32 C__uid_t;
+typedef OOC_INT32 C__gid_t;
+typedef OOC_CHAR8 *C__charPtr1d;
+typedef C__charPtr1d *C__charPtr2d;
+typedef OOC_INT32 *C__intPtr1d;
+typedef OOC_CHAR8 *C__string;
+typedef void (*C__Proc)(void);
+extern void OOC_C_init(void);
+extern void OOC_C_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_C_ */
+
+/* --- */

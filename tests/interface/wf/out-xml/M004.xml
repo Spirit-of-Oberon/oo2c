@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M004' id=''>
+  <procedure name='Length' id='Length' export='yes'>
+    <oberon-doc>
+      <summary>Returns the length of <oberon-param href='#Length.stringVal'>stringVal</oberon-param>.</summary>
+      <p pad-after='yes' no-indent='yes'>Returns the length of <oberon-param href='#Length.stringVal'>stringVal</oberon-param>.  This is equal to the number of characters in <oberon-param href='#Length.stringVal'>stringVal</oberon-param> up to and excluding the first <code>0X</code>.</p>
+    </oberon-doc>
+    <formal-parameters>
+      <parameter-decl name='stringVal' id='Length.stringVal' export='no' variable-parameter='no'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+      <result-type>
+        <type-name module='#predef' name='INTEGER'/>
+      </result-type>
+    </formal-parameters>
+  </procedure>
+  <procedure name='Assign' id='Assign' export='yes'>
+    <oberon-doc>
+      <summary>Copies <oberon-param href='#Assign.source'>source</oberon-param> to <oberon-param href='#Assign.destination'>destination</oberon-param>.</summary>
+      <p pad-after='yes' no-indent='yes'>Copies <oberon-param href='#Assign.source'>source</oberon-param> to <oberon-param href='#Assign.destination'>destination</oberon-param>.  Equivalent to the predefined procedure <code>COPY</code>.  Unlike <code>COPY</code>, this procedure can be assigned to a procedure variable.</p>
+    </oberon-doc>
+    <formal-parameters>
+      <parameter-decl name='source' id='Assign.source' export='no' variable-parameter='no'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='destination' id='Assign.destination' export='no' variable-parameter='yes'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+    </formal-parameters>
+  </procedure>
+  <procedure name='Extract' id='Extract' export='yes'>
+    <oberon-doc>
+      <summary>Copies at most <oberon-param href='#Extract.numberToExtract'>numberToExtract</oberon-param> characters from <oberon-param href='#Extract.source'>source</oberon-param> to <oberon-param href='#Extract.destination'>destination</oberon-param>, starting at position <oberon-param href='#Extract.startPos'>startPos</oberon-param> in <oberon-param href='#Extract.source'>source</oberon-param>.</summary>
+      <p pad-after='yes' no-indent='yes'>Copies at most <oberon-param href='#Extract.numberToExtract'>numberToExtract</oberon-param> characters from <oberon-param href='#Extract.source'>source</oberon-param> to <oberon-param href='#Extract.destination'>destination</oberon-param>, starting at position <oberon-param href='#Extract.startPos'>startPos</oberon-param> in <oberon-param href='#Extract.source'>source</oberon-param>.  An empty string value will be extracted if <oberon-param href='#Extract.startPos'>startPos</oberon-param> is greater than or equal to <samp>Length(<oberon-param href='#Extract.source'>source</oberon-param>)</samp>.</p>
+      <pre-cond pad-after='yes'>
+        <p pad-after='yes' no-indent='yes'><oberon-param href='#Extract.startPos'>startPos</oberon-param> and <oberon-param href='#Extract.numberToExtract'>numberToExtract</oberon-param> are not negative.</p>
+        <p pad-after='no' no-indent='no'><oberon-param href='#Extract.source'>source</oberon-param> is terminated with a <code>0X</code>.</p>
+      </pre-cond>
+    </oberon-doc>
+    <formal-parameters>
+      <parameter-decl name='source' id='Extract.source' export='no' variable-parameter='no'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='startPos' id='Extract.startPos' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='INTEGER'/>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='numberToExtract' id='Extract.numberToExtract' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='INTEGER'/>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='destination' id='Extract.destination' export='no' variable-parameter='yes'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+    </formal-parameters>
+  </procedure>
+</interface-description>

@@ -1,0 +1,203 @@
+#ifndef _MODULE_OOC_IR_VisitAll_
+#define _MODULE_OOC_IR_VisitAll_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/IR.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_IR_VisitAll__VisitorDesc *OOC_IR_VisitAll__Visitor;
+typedef struct OOC_IR_VisitAll__VisitorDesc {
+  char __dummy;
+} OOC_IR_VisitAll__VisitorDesc;
+extern void OOC_IR_VisitAll__InitVisitor(OOC_IR_VisitAll__Visitor v);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitConst(OOC_IR_VisitAll__Visitor v, OOC_IR__Const _const);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitConst 0
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitConst)(OOC_IR_VisitAll__Visitor v, OOC_IR__Const _const);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitAbs(OOC_IR_VisitAll__Visitor v, OOC_IR__Abs abs);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitAbs 1
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitAbs)(OOC_IR_VisitAll__Visitor v, OOC_IR__Abs abs);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitAdr(OOC_IR_VisitAll__Visitor v, OOC_IR__Adr adr);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitAdr 2
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitAdr)(OOC_IR_VisitAll__Visitor v, OOC_IR__Adr adr);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitAsh(OOC_IR_VisitAll__Visitor v, OOC_IR__Ash ash);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitAsh 3
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitAsh)(OOC_IR_VisitAll__Visitor v, OOC_IR__Ash ash);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitBinaryArith(OOC_IR_VisitAll__Visitor v, OOC_IR__BinaryArith op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitBinaryArith 4
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitBinaryArith)(OOC_IR_VisitAll__Visitor v, OOC_IR__BinaryArith op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitBooleanOp(OOC_IR_VisitAll__Visitor v, OOC_IR__BooleanOp op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitBooleanOp 5
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitBooleanOp)(OOC_IR_VisitAll__Visitor v, OOC_IR__BooleanOp op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCap(OOC_IR_VisitAll__Visitor v, OOC_IR__Cap cap);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCap 6
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCap)(OOC_IR_VisitAll__Visitor v, OOC_IR__Cap cap);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitConcat(OOC_IR_VisitAll__Visitor v, OOC_IR__Concat op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitConcat 9
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitConcat)(OOC_IR_VisitAll__Visitor v, OOC_IR__Concat op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCompare(OOC_IR_VisitAll__Visitor v, OOC_IR__Compare op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCompare 8
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCompare)(OOC_IR_VisitAll__Visitor v, OOC_IR__Compare op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitConstructor(OOC_IR_VisitAll__Visitor v, OOC_IR__Constructor cons);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitConstructor 10
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitConstructor)(OOC_IR_VisitAll__Visitor v, OOC_IR__Constructor cons);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCurrentException(OOC_IR_VisitAll__Visitor v, OOC_IR__CurrentException ce);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCurrentException 11
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCurrentException)(OOC_IR_VisitAll__Visitor v, OOC_IR__CurrentException ce);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitDeref(OOC_IR_VisitAll__Visitor v, OOC_IR__Deref deref);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitDeref 12
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitDeref)(OOC_IR_VisitAll__Visitor v, OOC_IR__Deref deref);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitEntier(OOC_IR_VisitAll__Visitor v, OOC_IR__Entier entier);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitEntier 13
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitEntier)(OOC_IR_VisitAll__Visitor v, OOC_IR__Entier entier);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitIndex(OOC_IR_VisitAll__Visitor v, OOC_IR__Index index);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitIndex 14
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitIndex)(OOC_IR_VisitAll__Visitor v, OOC_IR__Index index);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitLen(OOC_IR_VisitAll__Visitor v, OOC_IR__Len len);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitLen 15
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitLen)(OOC_IR_VisitAll__Visitor v, OOC_IR__Len len);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitNegate(OOC_IR_VisitAll__Visitor v, OOC_IR__Negate neg);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitNegate 16
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitNegate)(OOC_IR_VisitAll__Visitor v, OOC_IR__Negate neg);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitNewBlock(OOC_IR_VisitAll__Visitor v, OOC_IR__NewBlock _new);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitNewBlock 17
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitNewBlock)(OOC_IR_VisitAll__Visitor v, OOC_IR__NewBlock _new);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitNewObject(OOC_IR_VisitAll__Visitor v, OOC_IR__NewObject _new);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitNewObject 18
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitNewObject)(OOC_IR_VisitAll__Visitor v, OOC_IR__NewObject _new);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitNot(OOC_IR_VisitAll__Visitor v, OOC_IR__Not neg);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitNot 19
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitNot)(OOC_IR_VisitAll__Visitor v, OOC_IR__Not neg);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitOdd(OOC_IR_VisitAll__Visitor v, OOC_IR__Odd odd);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitOdd 20
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitOdd)(OOC_IR_VisitAll__Visitor v, OOC_IR__Odd odd);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitSelectField(OOC_IR_VisitAll__Visitor v, OOC_IR__SelectField sf);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitSelectField 21
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitSelectField)(OOC_IR_VisitAll__Visitor v, OOC_IR__SelectField sf);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitSelectProc(OOC_IR_VisitAll__Visitor v, OOC_IR__SelectProc sp);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitSelectProc 22
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitSelectProc)(OOC_IR_VisitAll__Visitor v, OOC_IR__SelectProc sp);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitSetMember(OOC_IR_VisitAll__Visitor v, OOC_IR__SetMember range);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitSetMember 23
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitSetMember)(OOC_IR_VisitAll__Visitor v, OOC_IR__SetMember range);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitSetOp(OOC_IR_VisitAll__Visitor v, OOC_IR__SetOp op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitSetOp 24
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitSetOp)(OOC_IR_VisitAll__Visitor v, OOC_IR__SetOp op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitSetRange(OOC_IR_VisitAll__Visitor v, OOC_IR__SetRange range);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitSetRange 25
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitSetRange)(OOC_IR_VisitAll__Visitor v, OOC_IR__SetRange range);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitChangeElement(OOC_IR_VisitAll__Visitor v, OOC_IR__ChangeElement ch);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitChangeElement 7
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitChangeElement)(OOC_IR_VisitAll__Visitor v, OOC_IR__ChangeElement ch);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitShift(OOC_IR_VisitAll__Visitor v, OOC_IR__Shift shift);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitShift 26
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitShift)(OOC_IR_VisitAll__Visitor v, OOC_IR__Shift shift);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitTypeCast(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeCast op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitTypeCast 27
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitTypeCast)(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeCast op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitTypeConv(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeConv op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitTypeConv 28
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitTypeConv)(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeConv op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitTypeGuard(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeGuard op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitTypeGuard 31
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitTypeGuard)(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeGuard op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitTypeTag(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeTag op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitTypeTag 29
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitTypeTag)(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeTag op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitTypeTest(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeTest op);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitTypeTest 30
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitTypeTest)(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeTest op);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitModuleRef(OOC_IR_VisitAll__Visitor v, OOC_IR__ModuleRef modRef);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitModuleRef 32
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitModuleRef)(OOC_IR_VisitAll__Visitor v, OOC_IR__ModuleRef modRef);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitPredefProc(OOC_IR_VisitAll__Visitor v, OOC_IR__PredefProc pproc);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitPredefProc 33
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitPredefProc)(OOC_IR_VisitAll__Visitor v, OOC_IR__PredefProc pproc);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitProcedureRef(OOC_IR_VisitAll__Visitor v, OOC_IR__ProcedureRef procRef);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitProcedureRef 34
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitProcedureRef)(OOC_IR_VisitAll__Visitor v, OOC_IR__ProcedureRef procRef);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitTypeRef(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeRef typeRef);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitTypeRef 35
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitTypeRef)(OOC_IR_VisitAll__Visitor v, OOC_IR__TypeRef typeRef);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitVar(OOC_IR_VisitAll__Visitor v, OOC_IR__Var var);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitVar 36
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitVar)(OOC_IR_VisitAll__Visitor v, OOC_IR__Var var);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitAssert(OOC_IR_VisitAll__Visitor v, OOC_IR__Assert assert);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitAssert 37
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitAssert)(OOC_IR_VisitAll__Visitor v, OOC_IR__Assert assert);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitAssignment(OOC_IR_VisitAll__Visitor v, OOC_IR__Assignment assignment);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitAssignment 38
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitAssignment)(OOC_IR_VisitAll__Visitor v, OOC_IR__Assignment assignment);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitAssignOp(OOC_IR_VisitAll__Visitor v, OOC_IR__AssignOp assignOp);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitAssignOp 39
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitAssignOp)(OOC_IR_VisitAll__Visitor v, OOC_IR__AssignOp assignOp);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCall(OOC_IR_VisitAll__Visitor v, OOC_IR__Call call);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCall 40
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCall)(OOC_IR_VisitAll__Visitor v, OOC_IR__Call call);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCopy(OOC_IR_VisitAll__Visitor v, OOC_IR__Copy cp);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCopy 41
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCopy)(OOC_IR_VisitAll__Visitor v, OOC_IR__Copy cp);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCopyParameter(OOC_IR_VisitAll__Visitor v, OOC_IR__CopyParameter cp);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCopyParameter 42
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCopyParameter)(OOC_IR_VisitAll__Visitor v, OOC_IR__CopyParameter cp);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCopyString(OOC_IR_VisitAll__Visitor v, OOC_IR__CopyString cp);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCopyString 43
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCopyString)(OOC_IR_VisitAll__Visitor v, OOC_IR__CopyString cp);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitExit(OOC_IR_VisitAll__Visitor v, OOC_IR__Exit exit);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitExit 44
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitExit)(OOC_IR_VisitAll__Visitor v, OOC_IR__Exit exit);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitForStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__ForStatm forStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitForStatm 45
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitForStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__ForStatm forStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitIfStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__IfStatm ifStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitIfStatm 46
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitIfStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__IfStatm ifStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCase(OOC_IR_VisitAll__Visitor v, OOC_IR__Case _case);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCase 47
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCase)(OOC_IR_VisitAll__Visitor v, OOC_IR__Case _case);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCaseStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__CaseStatm caseStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCaseStatm 48
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCaseStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__CaseStatm caseStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitLoopStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__LoopStatm loopStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitLoopStatm 49
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitLoopStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__LoopStatm loopStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitMoveBlock(OOC_IR_VisitAll__Visitor v, OOC_IR__MoveBlock move);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitMoveBlock 50
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitMoveBlock)(OOC_IR_VisitAll__Visitor v, OOC_IR__MoveBlock move);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitRaise(OOC_IR_VisitAll__Visitor v, OOC_IR__Raise raise);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitRaise 51
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitRaise)(OOC_IR_VisitAll__Visitor v, OOC_IR__Raise raise);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitRepeatStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__RepeatStatm repeatStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitRepeatStatm 52
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitRepeatStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__RepeatStatm repeatStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitReturn(OOC_IR_VisitAll__Visitor v, OOC_IR__Return _return);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitReturn 53
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitReturn)(OOC_IR_VisitAll__Visitor v, OOC_IR__Return _return);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitCatchClause(OOC_IR_VisitAll__Visitor v, OOC_IR__CatchClause _catch);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitCatchClause 54
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitCatchClause)(OOC_IR_VisitAll__Visitor v, OOC_IR__CatchClause _catch);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitTryStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__TryStatm tryStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitTryStatm 55
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitTryStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__TryStatm tryStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitWhileStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__WhileStatm whileStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitWhileStatm 56
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitWhileStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__WhileStatm whileStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitWithStatm(OOC_IR_VisitAll__Visitor v, OOC_IR__WithStatm withStatm);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitWithStatm 57
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitWithStatm)(OOC_IR_VisitAll__Visitor v, OOC_IR__WithStatm withStatm);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitProcedure(OOC_IR_VisitAll__Visitor v, OOC_IR__Procedure procedure);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitProcedure 58
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitProcedure)(OOC_IR_VisitAll__Visitor v, OOC_IR__Procedure procedure);
+extern void OOC_IR_VisitAll__VisitorDesc_VisitModule(OOC_IR_VisitAll__Visitor v, OOC_IR__Module module);
+#define _TBN_OOC_IR_VisitAll__VisitorDesc_VisitModule 59
+typedef void (*_TBP_OOC_IR_VisitAll__VisitorDesc_VisitModule)(OOC_IR_VisitAll__Visitor v, OOC_IR__Module module);
+extern void OOC_OOC_IR_VisitAll_init(void);
+extern void OOC_OOC_IR_VisitAll_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_IR_VisitAll__Visitor;
+extern RT0__StructDesc _td_OOC_IR_VisitAll__VisitorDesc;
+#endif /* _MODULE_OOC_IR_VisitAll_ */
+
+/* --- */

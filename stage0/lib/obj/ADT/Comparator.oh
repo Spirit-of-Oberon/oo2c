@@ -1,0 +1,34 @@
+#ifndef _MODULE_ADT_Comparator_
+#define _MODULE_ADT_Comparator_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct ADT_Comparator__ComparatorDesc *ADT_Comparator__Comparator;
+typedef struct ADT_Comparator__ComparatorDesc {
+  char __dummy;
+} ADT_Comparator__ComparatorDesc;
+typedef struct ADT_Comparator__StringDesc *ADT_Comparator__String;
+typedef struct ADT_Comparator__StringDesc {
+  char __dummy;
+} ADT_Comparator__StringDesc;
+extern OOC_INT32 ADT_Comparator__ComparatorDesc_Compare(ADT_Comparator__Comparator cmp, Object__Object o1, Object__Object o2);
+#define _TBN_ADT_Comparator__ComparatorDesc_Compare 4
+typedef OOC_INT32 (*_TBP_ADT_Comparator__ComparatorDesc_Compare)(ADT_Comparator__Comparator cmp, Object__Object o1, Object__Object o2);
+extern OOC_INT32 ADT_Comparator__StringDesc_Compare(ADT_Comparator__String cmp, Object__Object o1, Object__Object o2);
+#define _TBN_ADT_Comparator__StringDesc_Compare 4
+typedef OOC_INT32 (*_TBP_ADT_Comparator__StringDesc_Compare)(ADT_Comparator__String cmp, Object__Object o1, Object__Object o2);
+extern void OOC_ADT_Comparator_init(void);
+extern void OOC_ADT_Comparator_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_ADT_Comparator__Comparator;
+extern RT0__StructDesc _td_ADT_Comparator__ComparatorDesc;
+extern RT0__StructDesc _td_ADT_Comparator__String;
+extern RT0__StructDesc _td_ADT_Comparator__StringDesc;
+#endif /* _MODULE_ADT_Comparator_ */
+
+/* --- */

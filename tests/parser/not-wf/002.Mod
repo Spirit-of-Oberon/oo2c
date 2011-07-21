@@ -1,0 +1,2 @@
+MODULE Simple;
+END NotSimple.

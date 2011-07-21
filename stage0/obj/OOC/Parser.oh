@@ -1,0 +1,39 @@
+#ifndef _MODULE_OOC_Parser_
+#define _MODULE_OOC_Parser_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/Error.oh>
+#include <OOC/Scanner/SymList.oh>
+#include <OOC/AST.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define OOC_Parser__enableFlags 0
+#define OOC_Parser__enableMultiPartIdent 1
+#define OOC_Parser__enableRestParam 2
+#define OOC_Parser__enableDocComment 3
+#define OOC_Parser__enableTypeParams 4
+#define OOC_Parser__onlyParseImport 5
+#define OOC_Parser__enableAll (-33)
+typedef struct OOC_Parser__ErrorContextDesc *OOC_Parser__ErrorContext;
+typedef struct OOC_Parser__ErrorContextDesc {
+  Msg__StringPtr id;
+} OOC_Parser__ErrorContextDesc;
+extern void OOC_Parser__ErrorContextDesc_GetTemplate(OOC_Parser__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_Parser__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_Parser__ErrorContextDesc_GetTemplate)(OOC_Parser__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern OOC_AST__Node OOC_Parser__Module(OOC_Scanner_SymList__Symbol sym, OOC_AST__Builder ast, OOC_Error__List errList, OOC_UINT32 parseOptions);
+extern void OOC_OOC_Parser_init(void);
+extern void OOC_OOC_Parser_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Parser__ErrorContext;
+extern RT0__StructDesc _td_OOC_Parser__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_Parser__3176;
+extern RT0__StructDesc _td_OOC_Parser__7704;
+extern RT0__StructDesc _td_OOC_Parser__7728;
+extern RT0__StructDesc _td_OOC_Parser__12376;
+#endif /* _MODULE_OOC_Parser_ */
+
+/* --- */

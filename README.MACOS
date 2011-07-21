@@ -1,0 +1,80 @@
+
+Using OOC under Mac OS
+======================
+
+This document describes options for using OOC on Apple Macintosh operating
+systems.
+
+OOC works under Darwin, Apple's open-source operating system based on 4.4BSD.
+OOC also works under OS X, which is based on Darwin. Earlier versions of Mac OS
+are not supported.
+
+OOC requires the GNU C compiler (gcc) which is available as part of the
+"Developer Tools" package available from Apple.
+
+Issues:
+======
+
+1) Apple's distribution of gcc defaults to ANSI with precompiled headers. OOC
+requires GNU extensions. Precompiled headers often go wrong. The
+"-no-cpp-precomp" option must be specified to gcc.  This seems to fix both
+problems.
+
+2) OOC requires Hans Boehm's conservative garbage collector. Until version 6.2,
+there were issues with dynamic loading and thread safety under Darwin. Also,
+earlier versions of the GC would only work reliably on specific versions of OS
+X. Users should install version 6.2 or later. If using threads, the argument
+"-DGC_DARWIN_THREADS" must be specified, both to build the GC and to build any
+clients of the GC library.
+
+3) Apple supplies a version of libtool which is incompatible with the standard
+GNU libtool. OOC may detect this version, but it will not work. For dynamic
+library support, users should install GNU libtool. This is available as part of
+the "Fink" project (fink.sf.net). Alternatively, dynamic linking can be
+disabled by specifying "--disable-libs" during configuration.
+
+Installation:
+============
+
+- Install the developer tools from developer.apple.com. Download is free for
+  ADC (Apple Developer Connection) members. Free membership of ADC is
+  available. Developer tools are also available on CD.
+
+- Install version 6.2 (or later) of the GC. Specify "-DGC_DARWIN_THREADS" if
+  using threads.
+
+- If dynamic library support is required, install glibtool.
+
+- Follow the regular instructions. Common configurations are outlined below.
+
+  For static linking:
+    env "CFLAGS=-O2" "CPPFLAGS=-no-cpp-precomp" ./configure --disable-libs
+
+  For dynamic linking:
+    env "CFLAGS=-O2" "CPPFLAGS=-no-cpp-precomp" ./configure
+
+  For dynamic linking with threads:
+    env "CFLAGS=-O2" "CPPFLAGS=-no-cpp-precomp -DGC_DARWIN_THREADS" \
+      ./configure --enable-threads=pthreads
+
+Problems?
+========
+
+1) While linking, the compiler complains about undefined GC_pthread_sigmask?
+   Make sure that you specify "-DGC_DARWIN_THREADS" in CPPFLAGS when
+   configuring OOC.
+
+2) You installed programs or libraries with "Fink", but OOC cannot find them?
+   Fink does not install its components in the regular places (eg. /usr/local)
+   so the default searches will not work. As documented by Fink, you should
+   set the symbols CFLAGS, CXXFLAGS, CPPFLAGS and LDFLAGS to point to your
+   Fink installation. Normally, this is done in .cshrc using:
+     setenv CFLAGS -I/sw/include
+     setenv LDFLAGS -L/sw/lib
+     setenv CXXFLAGS $CFLAGS
+     setenv CPPFLAGS $CXXFLAGS
+     source /sw/bin/init.csh
+
+-- Stewart Greenhill <sgreenhill@users.sf.net>
+
+

@@ -1,0 +1,19 @@
+#ifndef _MODULE_OOC_AST_CreateIR_
+#define _MODULE_OOC_AST_CreateIR_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/AST.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/IR.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern OOC_IR__Module OOC_AST_CreateIR__CreateIR(OOC_AST__Module module, OOC_SymbolTable__Module symTab, OOC_IR__Builder b);
+extern void OOC_OOC_AST_CreateIR_init(void);
+extern void OOC_OOC_AST_CreateIR_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_AST_CreateIR_ */
+
+/* --- */

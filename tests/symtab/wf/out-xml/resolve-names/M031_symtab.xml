@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <record_type id='1' pos='20' line='2' column='9' class='R' base_type='#none' tb_proc_count='1'/>
+  <type_decl id='2' name='R' pos='16' line='2' column='5' class='R' visible_from='30' export='no' type_id='1'/>
+  <procedure_decl id='3' name='P' pos='54' line='4' column='21' class='R' visible_from='55' export='no' is_type_bound='yes' is_forward_decl='no' tb_proc_index='0'>
+    <procedure_type id='4' pos='33' line='4' column='0' receiver_id='6' resultType='#none'>
+      <type_name id='5' pos='51' line='4' column='18' ident_name='R' ident_pos='51' ident_line='4' ident_column='18'/>
+      <var_decl id='6' name='r' pos='48' line='4' column='15' visible_from='52' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='yes' type_id='1'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

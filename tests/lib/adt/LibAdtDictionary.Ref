@@ -1,0 +1,14 @@
+Test fixed size 1
+done
+Test fixed size 32
+done
+Test fixed size 1024
+done
+Test delete 16
+done
+Test delete 1024
+done
+Test fixed size 131072
+done
+Test delete 131072
+done

@@ -1,0 +1,100 @@
+<!-- Package Meta Data:
+
+     Packages are units of delivery.  Packages are identified by a
+     name and have a current version.  Software distributed as a
+     package may include libraries, exectuables, and static files.
+     Its meta data lists the files that are to be installed on the
+     target system.
+
+     The primary purpose of the package support of the OOC compiler is
+     to aid in the deployment of libraries, and to build executables.
+     It is _not_ a general purpose installation tool.
+
+     After installation, the package's meta data is incorporated into
+     the target repository to provide information on how to deinstall
+     the package cleanly.  -->
+
+<!ELEMENT package (version, requires*, options?, pragmas?,
+                   library*, executable*, file-set*)>
+<!ATTLIST package name CDATA #REQUIRED>
+
+
+<!-- Versioning uses the numbering scheme of GNU libtool.  Quoting the
+     libtool manual (version 1.4.2a):
+
+     CURRENT
+	  The most recent interface number that this library implements.
+
+     REVISION
+	  The implementation number of the CURRENT interface.
+
+     AGE
+	  The difference between the newest and oldest interfaces that this
+	  library implements.  In other words, the library implements all the
+	  interface numbers in the range from number `CURRENT - AGE' to
+	  `CURRENT'.
+-->
+<!ELEMENT version EMPTY>
+<!ATTLIST version current CDATA #REQUIRED
+                  revision CDATA #REQUIRED
+                  age CDATA #IMPLIED>
+
+<!-- A package may provide a list of other packages that must be
+     installed for its own operation.
+
+     NOTE: Package and version checks are currently not implemented.  -->
+
+<!ELEMENT requires EMPTY>
+<!ATTLIST requires package CDATA #REQUIRED
+                   version CDATA #REQUIRED
+                   revision CDATA #IMPLIED>
+
+<!-- A library entry describes a set of modules which are transformed
+     into a library (static or shared) during package build.  The
+     library includes all modules from the current package that are 
+     imported directly or indirectly by the given main module.
+
+     The version information is passed directly to libtool and
+     determines the version number of the produced shared library.
+     It is not processed in any other way by OOC itself.  -->
+
+<!ELEMENT library (version)>
+<!ATTLIST library name CDATA #REQUIRED
+                  main-module CDATA #REQUIRED>
+
+<!-- For every executable entry, a binary is produced from the given 
+     main module during package build.  -->
+
+<!ELEMENT executable EMPTY>
+<!ATTLIST executable main-module CDATA #REQUIRED>
+
+<!-- When a package is installed, files listed in the file-set 
+     elements are copied into the target repository.  All paths
+     are interpreted relative to the current directory and the
+     target directory.  That is, this mechanism cannot be used
+     to copy files from/to arbitrary locations.  -->
+
+<!ELEMENT file-set (file-set|file)+>
+<!ATTLIST file-set source-dir CDATA #REQUIRED
+                   dest-dir CDATA #IMPLIED>
+
+<!ELEMENT file EMPTY>
+<!ATTLIST file name CDATA #REQUIRED
+               dest-name CDATA #IMPLIED>
+
+
+<!-- Repository Meta Data:
+
+     A repository is a set of installed packages.  Its primary purpose
+     is to efficiently provide all information to the compiler that is
+     required to use the packages' modules and files.  Secondary
+     purposes are to report on the installed packages, and to support
+     deinstallation of packages.
+
+     Repository documents are created and maintained automatically,
+     after install and uninstall of packages.  -->
+
+<!ELEMENT repository (installed*, options, pragmas)>
+
+<!ELEMENT installed EMPTY>
+<!ATTLIST installed package CDATA #REQUIRED>

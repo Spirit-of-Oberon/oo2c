@@ -1,0 +1,8 @@
+MODULE Inc5;
+
+VAR
+  x: SHORTINT;
+  y: INTEGER;
+BEGIN
+  INC(x, y);
+END Inc5.

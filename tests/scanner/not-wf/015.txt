@@ -1,0 +1,1 @@
+<*IF predef_false THEN DEFINE a=12 END*>

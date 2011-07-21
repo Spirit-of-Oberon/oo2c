@@ -1,0 +1,73 @@
+#ifndef _MODULE_OOC_Config_Pragmas_
+#define _MODULE_OOC_Config_Pragmas_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Config.oh>
+#include <Config/Section/Options.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef Config_Section_Options__Option OOC_Config_Pragmas__Pragma;
+typedef struct OOC_Config_Pragmas__SectionDesc *OOC_Config_Pragmas__Section;
+typedef struct OOC_Config_Pragmas__SectionDesc {
+  XML_UnicodeBuffer__CharArray name;
+  Config_Section_Options__Option optionList;
+  ADT_Dictionary__Dictionary typeMap;
+} OOC_Config_Pragmas__SectionDesc;
+typedef OOC_INT32 OOC_Config_Pragmas__CharPos;
+typedef struct OOC_Config_Pragmas__VariableDesc *OOC_Config_Pragmas__Variable;
+typedef Config__Variable *OOC_Config_Pragmas__ValueArray;
+typedef OOC_INT32 *OOC_Config_Pragmas__CharPosArray;
+typedef struct OOC_Config_Pragmas__VariableDesc {
+  OOC_Config_Pragmas__Variable next;
+  Object__String name;
+  OOC_Config_Pragmas__ValueArray values;
+  OOC_Config_Pragmas__CharPosArray valuePos;
+  OOC_INT32 numValues;
+} OOC_Config_Pragmas__VariableDesc;
+typedef struct OOC_Config_Pragmas__HistoryDesc *OOC_Config_Pragmas__History;
+typedef struct OOC_Config_Pragmas__HistoryDesc {
+  OOC_Config_Pragmas__Section startVariables;
+  OOC_Config_Pragmas__Variable varList;
+  OOC_INT32 lastCharPos;
+  OOC_Config_Pragmas__CharPosArray pushes;
+  OOC_INT32 numPushes;
+} OOC_Config_Pragmas__HistoryDesc;
+extern OOC_Config_Pragmas__Section OOC_Config_Pragmas__New(void);
+extern void OOC_Config_Pragmas__SectionDesc_Copy(OOC_Config_Pragmas__Section s, Config_Section_Options__Section dest);
+#define _TBN_OOC_Config_Pragmas__SectionDesc_Copy 5
+typedef void (*_TBP_OOC_Config_Pragmas__SectionDesc_Copy)(OOC_Config_Pragmas__Section s, Config_Section_Options__Section dest);
+extern OOC_Config_Pragmas__Section OOC_Config_Pragmas__SectionDesc_Clone(OOC_Config_Pragmas__Section s);
+#define _TBN_OOC_Config_Pragmas__SectionDesc_Clone 6
+typedef OOC_Config_Pragmas__Section (*_TBP_OOC_Config_Pragmas__SectionDesc_Clone)(OOC_Config_Pragmas__Section s);
+extern OOC_Config_Pragmas__History OOC_Config_Pragmas__NewHistory(OOC_Config_Pragmas__Section startVariables);
+extern Config__Variable OOC_Config_Pragmas__HistoryDesc_GetValue(OOC_Config_Pragmas__History h, Object__String name, OOC_INT32 charPos);
+#define _TBN_OOC_Config_Pragmas__HistoryDesc_GetValue 0
+typedef Config__Variable (*_TBP_OOC_Config_Pragmas__HistoryDesc_GetValue)(OOC_Config_Pragmas__History h, Object__String name, OOC_INT32 charPos);
+extern void OOC_Config_Pragmas__HistoryDesc_SetValue(OOC_Config_Pragmas__History h, Object__String name, OOC_INT32 charPos, Config__Variable value);
+#define _TBN_OOC_Config_Pragmas__HistoryDesc_SetValue 1
+typedef void (*_TBP_OOC_Config_Pragmas__HistoryDesc_SetValue)(OOC_Config_Pragmas__History h, Object__String name, OOC_INT32 charPos, Config__Variable value);
+extern void OOC_Config_Pragmas__HistoryDesc_Push(OOC_Config_Pragmas__History h);
+#define _TBN_OOC_Config_Pragmas__HistoryDesc_Push 2
+typedef void (*_TBP_OOC_Config_Pragmas__HistoryDesc_Push)(OOC_Config_Pragmas__History h);
+extern void OOC_Config_Pragmas__HistoryDesc_Pop(OOC_Config_Pragmas__History h, OOC_INT32 charPos);
+#define _TBN_OOC_Config_Pragmas__HistoryDesc_Pop 3
+typedef void (*_TBP_OOC_Config_Pragmas__HistoryDesc_Pop)(OOC_Config_Pragmas__History h, OOC_INT32 charPos);
+extern void OOC_OOC_Config_Pragmas_init(void);
+extern void OOC_OOC_Config_Pragmas_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Config_Pragmas__Section;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__SectionDesc;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__Variable;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__1172;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__ValueArray;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__1226;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__CharPosArray;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__VariableDesc;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__History;
+extern RT0__StructDesc _td_OOC_Config_Pragmas__HistoryDesc;
+#endif /* _MODULE_OOC_Config_Pragmas_ */
+
+/* --- */

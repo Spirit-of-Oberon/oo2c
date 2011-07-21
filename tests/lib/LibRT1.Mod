@@ -1,0 +1,9 @@
+MODULE LibRT1;
+
+IMPORT RT0, Object;
+
+PROCEDURE Test* ();
+  BEGIN
+  END Test;
+
+END LibRT1.

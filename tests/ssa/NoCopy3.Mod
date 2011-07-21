@@ -1,0 +1,6 @@
+MODULE NoCopy3;
+
+PROCEDURE P(a[NO_COPY]: LONGINT);
+  END P;
+
+END NoCopy3.

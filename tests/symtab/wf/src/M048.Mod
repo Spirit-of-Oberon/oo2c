@@ -1,0 +1,10 @@
+MODULE M;
+
+TYPE
+  R = RECORD END;
+
+PROCEDURE Proc;
+  TYPE R = RECORD p: POINTER TO R END;
+  END Proc;
+
+END M.

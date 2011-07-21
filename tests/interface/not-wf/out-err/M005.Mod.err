@@ -1,0 +1,13 @@
+In file not-wf/src/M005.Mod: 
+Invalid character `$' in reference command
+char=$
+column=29
+line=3
+pos=98
+
+Invalid character `$' in reference command
+char=$
+column=29
+line=3
+pos=98
+

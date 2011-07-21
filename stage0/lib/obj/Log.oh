@@ -1,0 +1,63 @@
+#ifndef _MODULE_Log_
+#define _MODULE_Log_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <StdChannels.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern TextRider__Writer Log__writer;
+extern OOC_CHAR8 Log__Done(void);
+extern void Log__ClearError(void);
+extern void Log__SetWriter(TextRider__Writer w);
+extern void Log__Flush(void);
+extern void Log__Char(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_CHAR8 ch);
+extern void Log__String(const OOC_CHAR8 msg[], OOC_LEN msg_0d, const OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void Log__LString(const OOC_CHAR8 msg[], OOC_LEN msg_0d, const OOC_CHAR16 s[], OOC_LEN s_0d);
+extern void Log__Object(const OOC_CHAR8 msg[], OOC_LEN msg_0d, Object__Object obj);
+extern void Log__Bool(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_CHAR8 _bool);
+extern void Log__LongInt(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_INT32 lint);
+extern void Log__ShortInt(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_INT8 sint);
+extern void Log__Int(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_INT32 _int);
+extern void Log__Hex(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_INT32 lint);
+extern void Log__LongReal(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_REAL64 lreal);
+extern void Log__Real(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_REAL32 real);
+extern void Log__LongRealEng(OOC_REAL64 lreal);
+extern void Log__RealEng(OOC_REAL32 real);
+extern void Log__Set(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_UINT32 s);
+extern void Log__Msg(const OOC_CHAR8 msg[], OOC_LEN msg_0d);
+extern void Log__Ln(void);
+extern void Log__Ptr(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_PTR ptr);
+extern void Log__Adr(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_CHAR8 x[], OOC_LEN x_0d);
+extern void Log__Type(const OOC_CHAR8 msg[], OOC_LEN msg_0d, OOC_PTR ptr);
+extern void OOC_Log_init(void);
+extern void OOC_Log_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Log__1999;
+extern RT0__StructDesc _td_Log__2192;
+extern RT0__StructDesc _td_Log__2219;
+extern RT0__StructDesc _td_Log__2404;
+extern RT0__StructDesc _td_Log__2431;
+extern RT0__StructDesc _td_Log__3244;
+extern RT0__StructDesc _td_Log__3445;
+extern RT0__StructDesc _td_Log__3646;
+extern RT0__StructDesc _td_Log__3852;
+extern RT0__StructDesc _td_Log__4055;
+extern RT0__StructDesc _td_Log__4250;
+extern RT0__StructDesc _td_Log__4449;
+extern RT0__StructDesc _td_Log__4825;
+extern RT0__StructDesc _td_Log__5037;
+extern RT0__StructDesc _td_Log__5446;
+extern RT0__StructDesc _td_Log__5629;
+extern RT0__StructDesc _td_Log__5800;
+extern RT0__StructDesc _td_Log__5988;
+extern RT0__StructDesc _td_Log__6010;
+extern RT0__StructDesc _td_Log__6107;
+extern RT0__StructDesc _td_Log__6351;
+#endif /* _MODULE_Log_ */
+
+/* --- */

@@ -1,0 +1,74 @@
+#ifndef _MODULE_OOC_SSA_IGraph_
+#define _MODULE_OOC_SSA_IGraph_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_UINT32 OOC_SSA_IGraph__SetType;
+typedef OOC_UINT32 *OOC_SSA_IGraph__BitMatrix;
+typedef OOC_INT32 OOC_SSA_IGraph__Color;
+typedef OOC_INT32 *OOC_SSA_IGraph__ColorArray;
+typedef OOC_UINT32 *OOC_SSA_IGraph__Vector;
+typedef struct OOC_SSA_IGraph__GraphDesc *OOC_SSA_IGraph__Graph;
+typedef struct OOC_SSA_IGraph__GraphDesc {
+  OOC_SSA_IGraph__BitMatrix m;
+  OOC_INT32 size;
+} OOC_SSA_IGraph__GraphDesc;
+extern void OOC_SSA_IGraph__GraphDesc_Clear(OOC_SSA_IGraph__Graph g);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_Clear 0
+typedef void (*_TBP_OOC_SSA_IGraph__GraphDesc_Clear)(OOC_SSA_IGraph__Graph g);
+extern OOC_SSA_IGraph__Graph OOC_SSA_IGraph__NewGraph(OOC_INT32 size);
+extern OOC_SSA_IGraph__Vector OOC_SSA_IGraph__GraphDesc_NewVector(OOC_SSA_IGraph__Graph g);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_NewVector 1
+typedef OOC_SSA_IGraph__Vector (*_TBP_OOC_SSA_IGraph__GraphDesc_NewVector)(OOC_SSA_IGraph__Graph g);
+extern OOC_SSA_IGraph__Vector OOC_SSA_IGraph__GraphDesc_CopyVector(OOC_SSA_IGraph__Graph g, OOC_SSA_IGraph__Vector v);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_CopyVector 2
+typedef OOC_SSA_IGraph__Vector (*_TBP_OOC_SSA_IGraph__GraphDesc_CopyVector)(OOC_SSA_IGraph__Graph g, OOC_SSA_IGraph__Vector v);
+extern void OOC_SSA_IGraph__GraphDesc_Interfere(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_Interfere 3
+typedef void (*_TBP_OOC_SSA_IGraph__GraphDesc_Interfere)(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+extern void OOC_SSA_IGraph__GraphDesc_MergeRowColumn(OOC_SSA_IGraph__Graph g, OOC_INT32 source, OOC_INT32 target);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_MergeRowColumn 4
+typedef void (*_TBP_OOC_SSA_IGraph__GraphDesc_MergeRowColumn)(OOC_SSA_IGraph__Graph g, OOC_INT32 source, OOC_INT32 target);
+extern void OOC_SSA_IGraph__GraphDesc_AddToLive(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_AddToLive 5
+typedef void (*_TBP_OOC_SSA_IGraph__GraphDesc_AddToLive)(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+extern void OOC_SSA_IGraph__GraphDesc_RemoveFromLive(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_RemoveFromLive 6
+typedef void (*_TBP_OOC_SSA_IGraph__GraphDesc_RemoveFromLive)(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+extern OOC_CHAR8 OOC_SSA_IGraph__GraphDesc_In(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_In 7
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_IGraph__GraphDesc_In)(OOC_SSA_IGraph__Graph g, OOC_INT32 res, OOC_SSA_IGraph__Vector live);
+extern OOC_CHAR8 OOC_SSA_IGraph__GraphDesc_Conflicts(OOC_SSA_IGraph__Graph g, OOC_INT32 i, OOC_INT32 j);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_Conflicts 8
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_IGraph__GraphDesc_Conflicts)(OOC_SSA_IGraph__Graph g, OOC_INT32 i, OOC_INT32 j);
+extern void OOC_SSA_IGraph__GraphDesc_MergeVector(OOC_SSA_IGraph__Graph g, OOC_SSA_IGraph__Vector source, OOC_SSA_IGraph__Vector dest);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_MergeVector 9
+typedef void (*_TBP_OOC_SSA_IGraph__GraphDesc_MergeVector)(OOC_SSA_IGraph__Graph g, OOC_SSA_IGraph__Vector source, OOC_SSA_IGraph__Vector dest);
+extern void OOC_SSA_IGraph__GraphDesc_SymmetricMatrix(OOC_SSA_IGraph__Graph g);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_SymmetricMatrix 10
+typedef void (*_TBP_OOC_SSA_IGraph__GraphDesc_SymmetricMatrix)(OOC_SSA_IGraph__Graph g);
+extern OOC_SSA_IGraph__ColorArray OOC_SSA_IGraph__GraphDesc_ColorGraphTrivial(OOC_SSA_IGraph__Graph g);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_ColorGraphTrivial 11
+typedef OOC_SSA_IGraph__ColorArray (*_TBP_OOC_SSA_IGraph__GraphDesc_ColorGraphTrivial)(OOC_SSA_IGraph__Graph g);
+extern OOC_SSA_IGraph__ColorArray OOC_SSA_IGraph__GraphDesc_ColorGraphSimple(OOC_SSA_IGraph__Graph g);
+#define _TBN_OOC_SSA_IGraph__GraphDesc_ColorGraphSimple 12
+typedef OOC_SSA_IGraph__ColorArray (*_TBP_OOC_SSA_IGraph__GraphDesc_ColorGraphSimple)(OOC_SSA_IGraph__Graph g);
+extern void OOC_OOC_SSA_IGraph_init(void);
+extern void OOC_OOC_SSA_IGraph_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_IGraph__976;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__967;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__BitMatrix;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__1088;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__ColorArray;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__1127;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__Vector;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__Graph;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__GraphDesc;
+#endif /* _MODULE_OOC_SSA_IGraph_ */
+
+/* --- */

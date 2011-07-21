@@ -1,0 +1,17 @@
+MODULE Undef26;
+
+TYPE
+  P0 = POINTER TO R0; R0 = RECORD END;
+  P1 = POINTER TO R1; R1 = RECORD (R0) END;
+  P2 = POINTER TO R2; R2 = RECORD (R1) END;
+  
+PROCEDURE P*(p: P0): INTEGER;
+  BEGIN
+    WITH p: P2 DO
+      RETURN 2;
+    | p: P1 DO
+      RETURN 1;
+    END;
+  END P;
+
+END Undef26.

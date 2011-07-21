@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Please note that it does make a difference in the ASCII version of this document, if there are paragraph separators in front or behind a list command.</summary>
+  <p pad-after='no' no-indent='yes'>Please note that it does make a difference in the ASCII version of this document, if there are paragraph separators in front or behind a list command.  Here is an @itemize without surrounding paragraph separators:</p>
+  <itemize pad-after='no'>
+    <itemize-mark><minus/></itemize-mark>
+    <item pad-after='yes'>
+      <p pad-after='no' no-indent='yes'>Item 1.</p>
+    </item>
+    <item pad-after='no'>
+      <p pad-after='no' no-indent='yes'>Item 2.</p>
+    </item>
+  </itemize>
+  <p pad-after='yes' no-indent='no'>And this is the end of the list.</p>
+</oberon-doc>

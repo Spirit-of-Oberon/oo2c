@@ -1,0 +1,1 @@
+"this string has the character 8X >><< in it"

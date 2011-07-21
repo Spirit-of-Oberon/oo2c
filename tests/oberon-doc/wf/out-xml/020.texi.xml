@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <pre-cond pad-after='yes'>
+    <p pad-after='yes' no-indent='yes'>Paragraph 1.</p>
+    <p pad-after='no' no-indent='no'>Paragraph 2.</p>
+  </pre-cond>
+</oberon-doc>

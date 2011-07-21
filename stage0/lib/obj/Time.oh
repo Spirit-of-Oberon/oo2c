@@ -1,0 +1,60 @@
+#ifndef _MODULE_Time_
+#define _MODULE_Time_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <SysClock.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define Time__msecPerSec 1000
+#define Time__msecPerMin 60000
+#define Time__msecPerHour 3600000
+#define Time__msecPerDay 86400000
+typedef struct Time__TimeStamp {
+  OOC_INT32 days;
+  OOC_INT32 msecs;
+} Time__TimeStamp;
+typedef struct Time__Interval {
+  OOC_INT32 dayInt;
+  OOC_INT32 msecInt;
+} Time__Interval;
+extern void Time__InitTimeStamp(struct Time__TimeStamp *t, RT0__Struct t__tag, OOC_INT32 days, OOC_INT32 msecs);
+extern void Time__GetTime(struct Time__TimeStamp *t, RT0__Struct t__tag);
+extern void Time__TimeStamp_Add(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+#define _TBN_Time__TimeStamp_Add 0
+typedef void (*_TBP_Time__TimeStamp_Add)(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+extern void Time__TimeStamp_Sub(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+#define _TBN_Time__TimeStamp_Sub 1
+typedef void (*_TBP_Time__TimeStamp_Sub)(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+extern void Time__TimeStamp_Delta(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__TimeStamp *b__ref, struct Time__Interval *c, RT0__Struct c__tag);
+#define _TBN_Time__TimeStamp_Delta 2
+typedef void (*_TBP_Time__TimeStamp_Delta)(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__TimeStamp *b__ref, struct Time__Interval *c, RT0__Struct c__tag);
+extern OOC_INT8 Time__TimeStamp_Cmp(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__TimeStamp *b__ref);
+#define _TBN_Time__TimeStamp_Cmp 3
+typedef OOC_INT8 (*_TBP_Time__TimeStamp_Cmp)(struct Time__TimeStamp *a, RT0__Struct a__tag, const struct Time__TimeStamp *b__ref);
+extern void Time__InitInterval(struct Time__Interval *_int, RT0__Struct _int__tag, OOC_INT32 days, OOC_INT32 msecs);
+extern void Time__Interval_Add(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+#define _TBN_Time__Interval_Add 0
+typedef void (*_TBP_Time__Interval_Add)(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+extern void Time__Interval_Sub(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+#define _TBN_Time__Interval_Sub 1
+typedef void (*_TBP_Time__Interval_Sub)(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+extern OOC_INT8 Time__Interval_Cmp(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+#define _TBN_Time__Interval_Cmp 2
+typedef OOC_INT8 (*_TBP_Time__Interval_Cmp)(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+extern void Time__Interval_Scale(struct Time__Interval *a, RT0__Struct a__tag, OOC_REAL64 b);
+#define _TBN_Time__Interval_Scale 3
+typedef void (*_TBP_Time__Interval_Scale)(struct Time__Interval *a, RT0__Struct a__tag, OOC_REAL64 b);
+extern OOC_REAL64 Time__Interval_Fraction(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+#define _TBN_Time__Interval_Fraction 4
+typedef OOC_REAL64 (*_TBP_Time__Interval_Fraction)(struct Time__Interval *a, RT0__Struct a__tag, const struct Time__Interval *b__ref);
+extern void OOC_Time_init(void);
+extern void OOC_Time_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Time__TimeStamp;
+extern RT0__StructDesc _td_Time__Interval;
+#endif /* _MODULE_Time_ */
+
+/* --- */

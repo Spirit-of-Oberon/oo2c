@@ -1,0 +1,7 @@
+MODULE Proc1;
+
+VAR
+  x: INTEGER;
+BEGIN
+  x(123, 456);
+END Proc1.

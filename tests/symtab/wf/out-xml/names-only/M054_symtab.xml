@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M054' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <import id='1' name='M005' pos='21' line='2' column='7' visible_from='25' export='no' imported_module_name='M005' imported_module_pos='21' imported_module_line='2' imported_module_column='7'/>
+  <type_name id='2' pos='37' line='5' column='5' module_name='M005' module_pos='37' module_line='5' module_column='5' ident_name='T' ident_pos='42' ident_line='5' ident_column='10'/>
+  <var_decl id='3' name='x' pos='34' line='5' column='2' visible_from='43' export='no' is_parameter='no' is_receiver='no' is_var_parameter='no' type_id='2'/>
+</module>

@@ -1,0 +1,13 @@
+In file not-wf/src/M009.Mod: 
+Could not resolve identifier `invalid'
+column=29
+ident=invalid
+line=3
+pos=98
+
+Could not resolve identifier `invalid'
+column=29
+ident=invalid
+line=3
+pos=98
+

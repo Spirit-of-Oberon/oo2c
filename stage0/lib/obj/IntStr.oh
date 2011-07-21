@@ -1,0 +1,27 @@
+#ifndef _MODULE_IntStr_
+#define _MODULE_IntStr_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ConvTypes.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 IntStr__ConvResults;
+#define IntStr__strAllRight 0
+#define IntStr__strOutOfRange 1
+#define IntStr__strWrongFormat 2
+#define IntStr__strEmpty 3
+extern void IntStr__StrToInt(const OOC_CHAR8 str__ref[], OOC_LEN str_0d, OOC_INT32 *_int, OOC_INT8 *res);
+extern void IntStr__IntToStr(OOC_INT32 _int, OOC_CHAR8 str[], OOC_LEN str_0d);
+extern void OOC_IntStr_init(void);
+extern void OOC_IntStr_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_IntStr__1626;
+extern RT0__StructDesc _td_IntStr__2138;
+extern RT0__StructDesc _td_IntStr__2435;
+extern RT0__StructDesc _td_IntStr__2663;
+#endif /* _MODULE_IntStr_ */
+
+/* --- */

@@ -1,0 +1,1 @@
+env ENV_VAR1=yes $TEST_PROG

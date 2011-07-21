@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+
+<!-- The `repository-base' attributes and the `base-class' elements
+are deprecated and will be removed in the future.  Currently, they are
+required for the XSLT stylesheet that generated HTML documentation for
+the module interfaces.  Similarly, the "class" stuff should go.  -->
+
+
+<!ENTITY % oberon-doc SYSTEM "oberon-doc.dtd">
+%oberon-doc;
+
+
+<!ENTITY % declaration-list "(const-decl|type-decl|var-decl)*, procedure*">
+
+
+<!ELEMENT interface-description (oberon-doc?,
+                                 import-decl*, 
+				 class*,
+				 %declaration-list;)>
+
+
+<!ATTLIST module-interface name CDATA #REQUIRED
+                           export (yes|no|read-only) #REQUIRED
+                           repository-base CDATA #IMPLIED
+                           class (standard|internal|
+                                  foreign|interface) #REQUIRED
+                           call-conv (default|internal|C|Pascal) #REQUIRED>
+
+<!ELEMENT import-decl (oberon-doc?)>
+<!ATTLIST import-decl name CDATA #REQUIRED
+                      export (yes|no|read-only) #REQUIRED
+                      module CDATA #REQUIRED
+                      repository-base CDATA #IMPLIED>
+
+<!ELEMENT const-decl (oberon-doc?)>
+<!ATTLIST const-decl name CDATA #REQUIRED
+                     export (yes|no|read-only) #REQUIRED
+                     value CDATA #REQUIRED>
+
+<!ELEMENT type-decl (oberon-doc?, type)>
+<!ATTLIST type-decl name CDATA #REQUIRED
+                    export (yes|no|read-only) #REQUIRED>
+
+<!ELEMENT var-decl (oberon-doc?, type)>
+<!ATTLIST var-decl name CDATA #REQUIRED
+                   export (yes|no|read-only) #REQUIRED>
+
+<!ELEMENT receiver-decl (oberon-doc?, type)>
+<!ATTLIST receiver-decl name CDATA #REQUIRED
+                        export (yes|no|read-only) #REQUIRED
+                        variable-parameter (yes|no) #REQUIRED>
+
+<!ELEMENT parameter-decl (oberon-doc?, type)>
+<!ATTLIST parameter-decl name CDATA #REQUIRED
+                         export (yes|no|read-only) #REQUIRED
+                         variable-parameter (yes|no) #REQUIRED>
+
+<!ELEMENT field-decl (oberon-doc?, type)>
+<!ATTLIST field-decl name CDATA #REQUIRED
+                     export (yes|no|read-only) #REQUIRED>
+
+<!ELEMENT procedure (oberon-doc?, formal-parameters)>
+<!ATTLIST procedure name CDATA #REQUIRED
+                    export (yes|no|read-only) #REQUIRED
+                    class CDATA #IMPLIED>
+
+
+
+<!ELEMENT type-name EMPTY>
+<!ATTLIST type-name module CDATA ""
+                    name CDATA #REQUIRED>
+
+<!ELEMENT pointer (pointer-base)>
+<!ATTLIST pointer class CDATA #IMPLIED>
+
+<!ELEMENT pointer-base (type-name|array|record)>
+
+<!ELEMENT array (length?, element-type)>
+
+<!ELEMENT length (#PCDATA)>
+
+<!ELEMENT element-type (type-name|array|record|pointer|formal-parameters)>
+
+<!ELEMENT record ((base-type, base-class)?, field-decl*)>
+<!ATTLIST record class CDATA #IMPLIED>
+
+<!ELEMENT base-type (type-name)>
+<!ELEMENT base-class (base-class?)>
+<!ATTLIST base-class class CDATA #REQUIRED
+                     module CDATA #REQUIRED
+                     repository-base CDATA #IMPLIED>
+
+<!ELEMENT formal-parameters (receiver-decl?, parameter-decl*, result-type?)>
+
+<!ELEMENT result-type (type-name)>
+
+<!ELEMENT type (type-name|pointer|array|record|formal-parameters)>

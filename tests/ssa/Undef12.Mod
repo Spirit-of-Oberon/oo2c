@@ -1,0 +1,8 @@
+MODULE Undef12;
+
+PROCEDURE Fct*(): BOOLEAN;
+  BEGIN
+    ASSERT(TRUE);
+  END Fct;
+
+END Undef12.

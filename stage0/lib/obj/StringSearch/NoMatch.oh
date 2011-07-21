@@ -1,0 +1,50 @@
+#ifndef _MODULE_StringSearch_NoMatch_
+#define _MODULE_StringSearch_NoMatch_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <StringSearch.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct StringSearch_NoMatch__FactoryDesc *StringSearch_NoMatch__Factory;
+typedef struct StringSearch_NoMatch__FactoryDesc {
+  char __dummy;
+} StringSearch_NoMatch__FactoryDesc;
+typedef struct StringSearch_NoMatch__MatcherDesc *StringSearch_NoMatch__Matcher;
+typedef struct StringSearch_NoMatch__MatcherDesc {
+  Object__String8 pattern;
+  OOC_UINT32 flags;
+  OOC_INT32 groups;
+} StringSearch_NoMatch__MatcherDesc;
+extern StringSearch_NoMatch__Factory StringSearch_NoMatch__factory;
+extern StringSearch_NoMatch__Matcher StringSearch_NoMatch__matcher;
+extern StringSearch__MatchObject StringSearch_NoMatch__MatcherDesc_MatchChars(StringSearch_NoMatch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch_NoMatch__MatcherDesc_MatchChars 5
+typedef StringSearch__MatchObject (*_TBP_StringSearch_NoMatch__MatcherDesc_MatchChars)(StringSearch_NoMatch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+extern StringSearch__MatchObject StringSearch_NoMatch__MatcherDesc_Match(StringSearch_NoMatch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch_NoMatch__MatcherDesc_Match 6
+typedef StringSearch__MatchObject (*_TBP_StringSearch_NoMatch__MatcherDesc_Match)(StringSearch_NoMatch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+extern StringSearch__MatchObject StringSearch_NoMatch__MatcherDesc_SearchChars(StringSearch_NoMatch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch_NoMatch__MatcherDesc_SearchChars 7
+typedef StringSearch__MatchObject (*_TBP_StringSearch_NoMatch__MatcherDesc_SearchChars)(StringSearch_NoMatch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+extern StringSearch__MatchObject StringSearch_NoMatch__MatcherDesc_Search(StringSearch_NoMatch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch_NoMatch__MatcherDesc_Search 8
+typedef StringSearch__MatchObject (*_TBP_StringSearch_NoMatch__MatcherDesc_Search)(StringSearch_NoMatch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+extern StringSearch_NoMatch__Matcher StringSearch_NoMatch__FactoryDesc_Compile(StringSearch_NoMatch__Factory f, Object__String8 pattern, OOC_UINT32 flags);
+#define _TBN_StringSearch_NoMatch__FactoryDesc_Compile 5
+typedef StringSearch_NoMatch__Matcher (*_TBP_StringSearch_NoMatch__FactoryDesc_Compile)(StringSearch_NoMatch__Factory f, Object__String8 pattern, OOC_UINT32 flags);
+extern void OOC_StringSearch_NoMatch_init(void);
+extern void OOC_StringSearch_NoMatch_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_StringSearch_NoMatch__Factory;
+extern RT0__StructDesc _td_StringSearch_NoMatch__FactoryDesc;
+extern RT0__StructDesc _td_StringSearch_NoMatch__Matcher;
+extern RT0__StructDesc _td_StringSearch_NoMatch__MatcherDesc;
+extern RT0__StructDesc _td_StringSearch_NoMatch__1809;
+extern RT0__StructDesc _td_StringSearch_NoMatch__2125;
+#endif /* _MODULE_StringSearch_NoMatch_ */
+
+/* --- */

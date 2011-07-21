@@ -1,0 +1,113 @@
+Summary of results for:
+
+  Benchmark --all --normalise
+
+All tests are based on oo2c-2.0.6.
+
+--------
+
+gcc-3.2.2, -march=pentium2 -O2, Mobile Pentium II, 400MHz (mva)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  ZeroArray1         16664.2  100.0%
+  ZeroArray2         16661.0   99.9%
+  ZeroArray4         16659.9  100.0%
+  CopyArray1         11948.2   98.1%
+  CopyArray2         11457.3  104.3%
+  CopyArray4         10005.5   94.4%
+  CopyArrayMove      13090.2  100.0%
+  AddArray1           8788.5   97.0%
+  AddArray2           9148.0   90.4%
+  AddArray4          10929.0  100.6%
+  ZeroArray1C        16671.6
+  ZeroArray2C        16670.5
+  ZeroArray4C        16662.0
+  ZeroArrayBlockC    19696.7
+  CopyArray1C        12182.5
+  CopyArray2C        10983.1
+  CopyArray4C        10603.7
+  CopyArrayBlockC    13083.6
+  AddArray1C          9058.8
+  AddArray2C         10123.7
+  AddArray4C         10864.7
+  QSORT                369.9   99.3%
+  QSORTC               372.6
+  BSORT                157.6  100.0%
+  BSORTC               157.6
+  FFT                 4850.2  120.3%
+  FFTC                4031.0
+  FFT2                3661.4   87.5%
+  FFT2C               4185.2
+  -------------------------- -------
+
+gcc-3.2.2, -march=athlon-xp -O2, Athlon XP 1800, 1.5GHz (mva)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  ZeroArray1         76099.6  100.0%
+  ZeroArray2        101429.3  100.0%
+  ZeroArray4        151342.4   99.7%
+  CopyArray1         47038.2   77.5%
+  CopyArray2         64995.7   99.5%
+  CopyArray4         69222.1   99.9%
+  CopyArrayMove      67671.9   99.8%
+  AddArray1          34155.6   99.5%
+  AddArray2          40611.0  102.8%
+  AddArray4          40311.2  103.0%
+  ZeroArray1C        76132.7
+  ZeroArray2C       101439.1
+  ZeroArray4C       151758.6
+  ZeroArrayBlockC   150538.5
+  CopyArray1C        60667.4
+  CopyArray2C        65299.3
+  CopyArray4C        69281.5
+  CopyArrayBlockC    67807.6
+  AddArray1C         34330.0
+  AddArray2C         39521.2
+  AddArray4C         39137.7
+  QSORT               1168.4   89.9%
+  QSORTC              1299.7
+  BSORT                758.9  100.0%
+  BSORTC               758.9
+  FFT                22834.8  142.7%
+  FFTC               16003.9
+  FFT2               16659.9   90.2%
+  FFT2C              18472.6
+  -------------------------- -------
+
+gcc-3.1, -O2, PPC G3, 700MHz (sg)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  ZeroArray1         23005.2   81.8%
+  ZeroArray2         29637.5   94.6%
+  ZeroArray4         37743.0  106.8%
+  CopyArray1         15963.9   87.7%
+  CopyArray2         18818.7   99.9%
+  CopyArray4         19490.3  103.6%
+  CopyArrayMove      24621.4   99.8%
+  AddArray1           9139.0  114.9%
+  AddArray2          10338.5  100.0%
+  AddArray4          10965.6  102.0%
+  ZeroArray1C        28136.1
+  ZeroArray2C        31313.9
+  ZeroArray4C        35324.6
+  ZeroArrayBlockC    45881.5
+  CopyArray1C        18200.7
+  CopyArray2C        18829.5
+  CopyArray4C        18818.7
+  CopyArrayBlockC    24658.5
+  AddArray1C          7955.8
+  AddArray2C         10340.2
+  AddArray4C         10750.7
+  QSORT                268.5   60.7%
+  QSORTC               442.7
+  BSORT                153.4   99.9%
+  BSORTC               153.5
+  FFT                 6702.4  102.9%
+  FFTC                6516.5
+  FFT2                5580.4   98.5%
+  FFT2C               5667.2
+  -------------------------- -------
+

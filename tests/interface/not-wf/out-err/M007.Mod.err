@@ -1,0 +1,13 @@
+In file not-wf/src/M007.Mod: 
+Expected module name, but found `$'
+char=$
+column=29
+line=3
+pos=98
+
+Expected module name, but found `$'
+char=$
+column=29
+line=3
+pos=98
+

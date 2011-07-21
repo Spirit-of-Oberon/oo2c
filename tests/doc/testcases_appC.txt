@@ -1,0 +1,123 @@
+Still missing: The functions BIT, GET, PUT, and NEW are not
+implemented (the question is if they should be implemented...).
+
+
+
+Appendix C: The module SYSTEM
+
+### ADR(v)
+
+ACCEPT
+
+  1) ADR(some variable)  [Adr1]
+  2) ADR(string constant)  [Adr1]
+  3) address of variable parameter equals original address of argument
+     [Adr1]
+
+REJECT
+
+  1) argument is a type  [Adr3]
+  2) v is a scalar constant  [Adr2]
+
+
+BIT(a,n)  ...not implemented yet
+
+ACCEPT
+
+  Mh, this one is probably beyond testing.  Drop this function?
+
+REJECT
+
+  1) a or n are not integer
+  2) type of a is larger than SYSTEM.ADDRESS
+
+
+### LSH(x,n)
+
+ACCEPT
+
+  1) For integer types, number of significant bits is taken from the
+     first argument.  Bits above this limit are cleared.  Test
+     positive, negative, and zero n.  Shift with ABS(n) larger than
+     bits in x is undefined.  [Lsh1]
+  2) LSH(char,n) and LSH(longchar) for +-0  [Lsh1]
+  3) LSH(byte,n) for +-0  [Lsh1]
+
+REJECT
+
+  1) some other scalar type, e.g. x being REAL  [Lsh2]
+  2) offset is not integer  [Lsh3]
+
+
+### ROT(x,n)
+
+ACCEPT
+
+  1) For integer types, number of significant bits is taken from the
+     first argument.  Bits above this limit wrap around.  Test
+     positive, negative, and zero n.  Shift with ABS(n) larger than
+     bits in x is undefined.  [Rot1]
+  2) ROT(char,n) and ROT(longchar) for +-0  [Rot1]
+  3) ROT(byte,n) for +-0  [Rot1]
+
+REJECT
+
+  1) some other scalar type, e.g. x being REAL  [Rot2]
+  2) offset is not integer  [Rot3]
+
+
+### VAL(T,x)
+
+ACCEPT
+
+  1) VAL(REAL,longint)  [Val1 Val4]
+  2) VAL(LONGINT,real)  [Val4]
+  3) VAL(SET,longint)   [Val2 Val4]
+  4) VAL(LONGINT,set)   [Val4]
+
+REJECT
+
+  1) first argument is not a type name  [Val5]
+  2) size of T and x differ  [Val6]
+
+
+GET(a,v)  ...not implemented yet
+PUT(a,x)  ...not implemented yet
+
+ACCEPT
+
+  1) Check that a local variable of a procedure can be read.
+  2) Check that a local variable of a procedure can be written.
+
+REJECT
+
+  1) v has non-scalar type
+  2) v is not a variable
+  3) a is not integer
+  4) type of a is larger than SYSTEM.ADDRESS
+
+
+
+### MOVE(a0,a1,n)
+
+ACCEPT
+
+  1) Check that a local variable of a procedure can be source or
+     target.  [Move1]
+
+REJECT
+
+  1) a0, a1, or n is not integer  [untested]
+  2) type of a0 or a1 is larger than SYSTEM.ADDRESS  [don't care ;-]
+
+
+NEW(v,n)  ...not implemented yet
+
+ACCEPT
+
+  1) v is PTR
+  2) v is POINTER TO something
+
+REJECT
+
+  1) n is not integer

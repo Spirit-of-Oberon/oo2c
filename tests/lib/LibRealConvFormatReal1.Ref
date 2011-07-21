@@ -1,0 +1,22 @@
+str='', format=empty
+str='   ', format=empty
+str='0', format=all right
+str=' 0', format=all right
+str='1', format=all right
+str='+1', format=all right
+str=' -1', format=all right
+str='1.', format=all right
+str='1.0', format=all right
+str='1E1', format=all right
+str='1e1', format=all right
+str='1.E1', format=all right
+str='1.0E1', format=all right
+str='1E+12', format=all right
+str='1E-12', format=all right
+str='.1', format=wrong format
+str=' 0 ', format=wrong format
+str='1. ', format=wrong format
+str='E1', format=wrong format
+str='1E', format=wrong format
+str='1E-', format=wrong format
+str='1E1.2', format=wrong format

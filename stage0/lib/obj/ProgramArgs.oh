@@ -1,0 +1,86 @@
+#ifndef _MODULE_ProgramArgs_
+#define _MODULE_ProgramArgs_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Channel.oh>
+#include <Time.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define ProgramArgs__done  0
+#define ProgramArgs__outOfRange 4
+#define ProgramArgs__readAfterEnd 5
+#define ProgramArgs__channelClosed 6
+#define ProgramArgs__noWriteAccess 10
+#define ProgramArgs__noModTime 12
+typedef struct ProgramArgs__ChannelDesc *ProgramArgs__Channel;
+typedef struct ProgramArgs__ChannelDesc {
+  Msg__Msg res;
+  OOC_CHAR8 readable;
+  OOC_CHAR8 writable;
+  OOC_CHAR8 open;
+} ProgramArgs__ChannelDesc;
+typedef struct ProgramArgs__ReaderDesc *ProgramArgs__Reader;
+typedef struct ProgramArgs__ReaderDesc {
+  Channel__Channel base;
+  Msg__Msg res;
+  OOC_INT32 bytesRead;
+  OOC_CHAR8 positionable;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 pos0;
+  OOC_INT32 pos1;
+} ProgramArgs__ReaderDesc;
+extern ProgramArgs__Channel ProgramArgs__args;
+typedef struct ProgramArgs__ErrorContextDesc {
+  Msg__StringPtr id;
+} ProgramArgs__ErrorContextDesc;
+extern OOC_INT32 ProgramArgs__ReaderDesc_Pos(ProgramArgs__Reader r);
+#define _TBN_ProgramArgs__ReaderDesc_Pos 0
+typedef OOC_INT32 (*_TBP_ProgramArgs__ReaderDesc_Pos)(ProgramArgs__Reader r);
+extern OOC_INT32 ProgramArgs__ReaderDesc_Available(ProgramArgs__Reader r);
+#define _TBN_ProgramArgs__ReaderDesc_Available 1
+typedef OOC_INT32 (*_TBP_ProgramArgs__ReaderDesc_Available)(ProgramArgs__Reader r);
+extern void ProgramArgs__ReaderDesc_SetPos(ProgramArgs__Reader r, OOC_INT32 newPos);
+#define _TBN_ProgramArgs__ReaderDesc_SetPos 2
+typedef void (*_TBP_ProgramArgs__ReaderDesc_SetPos)(ProgramArgs__Reader r, OOC_INT32 newPos);
+extern void ProgramArgs__ReaderDesc_ReadByte(ProgramArgs__Reader r, OOC_CHAR8 *x);
+#define _TBN_ProgramArgs__ReaderDesc_ReadByte 3
+typedef void (*_TBP_ProgramArgs__ReaderDesc_ReadByte)(ProgramArgs__Reader r, OOC_CHAR8 *x);
+extern void ProgramArgs__ReaderDesc_ReadBytes(ProgramArgs__Reader r, OOC_CHAR8 x[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+#define _TBN_ProgramArgs__ReaderDesc_ReadBytes 4
+typedef void (*_TBP_ProgramArgs__ReaderDesc_ReadBytes)(ProgramArgs__Reader r, OOC_CHAR8 x[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+extern OOC_INT32 ProgramArgs__ChannelDesc_Length(ProgramArgs__Channel ch);
+#define _TBN_ProgramArgs__ChannelDesc_Length 0
+typedef OOC_INT32 (*_TBP_ProgramArgs__ChannelDesc_Length)(ProgramArgs__Channel ch);
+extern OOC_INT32 ProgramArgs__ChannelDesc_ArgNumber(ProgramArgs__Channel ch);
+#define _TBN_ProgramArgs__ChannelDesc_ArgNumber 7
+typedef OOC_INT32 (*_TBP_ProgramArgs__ChannelDesc_ArgNumber)(ProgramArgs__Channel ch);
+extern void ProgramArgs__ChannelDesc_GetModTime(ProgramArgs__Channel ch, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag);
+#define _TBN_ProgramArgs__ChannelDesc_GetModTime 1
+typedef void (*_TBP_ProgramArgs__ChannelDesc_GetModTime)(ProgramArgs__Channel ch, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag);
+extern ProgramArgs__Reader ProgramArgs__ChannelDesc_NewReader(ProgramArgs__Channel ch);
+#define _TBN_ProgramArgs__ChannelDesc_NewReader 2
+typedef ProgramArgs__Reader (*_TBP_ProgramArgs__ChannelDesc_NewReader)(ProgramArgs__Channel ch);
+extern void ProgramArgs__ChannelDesc_Flush(ProgramArgs__Channel ch);
+#define _TBN_ProgramArgs__ChannelDesc_Flush 4
+typedef void (*_TBP_ProgramArgs__ChannelDesc_Flush)(ProgramArgs__Channel ch);
+extern void ProgramArgs__ChannelDesc_Close(ProgramArgs__Channel ch);
+#define _TBN_ProgramArgs__ChannelDesc_Close 5
+typedef void (*_TBP_ProgramArgs__ChannelDesc_Close)(ProgramArgs__Channel ch);
+extern void OOC_ProgramArgs_init(void);
+extern void OOC_ProgramArgs_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_ProgramArgs__Channel;
+extern RT0__StructDesc _td_ProgramArgs__ChannelDesc;
+extern RT0__StructDesc _td_ProgramArgs__Reader;
+extern RT0__StructDesc _td_ProgramArgs__ReaderDesc;
+extern RT0__StructDesc _td_ProgramArgs__ErrorContext;
+extern RT0__StructDesc _td_ProgramArgs__ErrorContextDesc;
+extern RT0__StructDesc _td_ProgramArgs__5299;
+#endif /* _MODULE_ProgramArgs_ */
+
+/* --- */

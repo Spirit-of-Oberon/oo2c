@@ -1,0 +1,11 @@
+MODULE Abstract6;
+
+TYPE
+  R = RECORD [ABSTRACT] END;
+  P = POINTER TO R;
+
+PROCEDURE (p: P) [ABSTRACT] Proc*;
+  BEGIN
+  END Proc;
+
+END Abstract6.

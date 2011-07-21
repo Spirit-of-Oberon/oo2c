@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M011' id=''>
+  <oberon-doc>
+    <summary>External reference <oberon-var href='OOC:Doc#Position'>OOC:Doc.Position</oberon-var>.</summary>
+    <p pad-after='yes' no-indent='yes'>External reference <oberon-var href='OOC:Doc#Position'>OOC:Doc.Position</oberon-var>.  Reference to a non-existent module: <oberon-var href='NoSuchModule#x'>NoSuchModule.x</oberon-var>.</p>
+  </oberon-doc>
+  <module-ref name='OOC:Doc'>
+    <ref-target type='html' relative-uri='../../../../../oocdoc/html/OOC/Doc.html'/>
+  </module-ref>
+</interface-description>

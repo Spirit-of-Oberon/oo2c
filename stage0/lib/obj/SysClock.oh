@@ -1,0 +1,42 @@
+#ifndef _MODULE_SysClock_
+#define _MODULE_SysClock_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define SysClock__maxSecondParts 999
+#define SysClock__zoneMin (-780)
+#define SysClock__zoneMax 720
+#define SysClock__localTime (-32768)
+#define SysClock__unknownZone (-32767)
+#define SysClock__unknown (-1)
+#define SysClock__inactive 0
+#define SysClock__active 1
+typedef struct SysClock__DateTime {
+  OOC_INT16 year;
+  OOC_INT8 month;
+  OOC_INT8 day;
+  OOC_INT8 hour;
+  OOC_INT8 minute;
+  OOC_INT8 second;
+  OOC_INT8 summerTimeFlag;
+  OOC_INT16 fractions;
+  OOC_INT16 zone;
+} SysClock__DateTime;
+extern OOC_CHAR8 SysClock__CanGetClock(void);
+extern OOC_CHAR8 SysClock__CanSetClock(void);
+extern OOC_CHAR8 SysClock__IsValidDateTime(const struct SysClock__DateTime *d__ref);
+extern void SysClock__GetClock(struct SysClock__DateTime *userData, RT0__Struct userData__tag);
+extern void SysClock__SetClock(const struct SysClock__DateTime *userData__ref);
+extern void SysClock__MakeLocalTime(struct SysClock__DateTime *c, RT0__Struct c__tag);
+extern OOC_INT32 SysClock__GetTimeOfDay(OOC_INT32 *sec, OOC_INT32 *usec);
+extern void OOC_SysClock_init(void);
+extern void OOC_SysClock_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_SysClock__DateTime;
+#endif /* _MODULE_SysClock_ */
+
+/* --- */

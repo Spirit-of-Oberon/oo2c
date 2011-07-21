@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M005' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='22' line='2' column='8' ident_name='INTEGER' ident_pos='22' ident_line='2' ident_column='8'/>
+  <type_decl id='2' name='T' pos='19' line='2' column='5' visible_from='29' export='yes' type_id='1'/>
+</module>

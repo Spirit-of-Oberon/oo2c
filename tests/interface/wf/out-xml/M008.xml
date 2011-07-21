@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M008' id=''>
+  <oberon-doc>
+    <summary><oberon-param href='#P.x'>P.x</oberon-param></summary>
+    <p pad-after='yes' no-indent='yes'><oberon-param href='#P.x'>P.x</oberon-param></p>
+  </oberon-doc>
+  <procedure name='P' id='P' export='yes'>
+    <formal-parameters>
+      <parameter-decl name='x' id='P.x' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='INTEGER'/>
+        </type>
+      </parameter-decl>
+    </formal-parameters>
+  </procedure>
+</interface-description>

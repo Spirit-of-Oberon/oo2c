@@ -1,0 +1,106 @@
+Summary of results for:
+
+  Benchmark --all --normalise
+
+OOC2 Benchmarks
+---------------
+
+Code is compiled with ooc2 SSA/C output near 26/August 2002. This
+version includes a pseudo register file for float types.
+
+This comparison includes results for both gcc2.95.2 and gcc3.1. Code
+produced by gcc3.1 seems to be slower for many tests (in particular,
+QSORT). The relative performance of FFT is improved, but this is
+primarily because the referenece test FFTC runs slower.
+ 
+PowerPC G3 / 700Mhz  (sg)
+
+  gcc 2.95.2
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                376.1   85.8%
+  QSORTC               438.5
+  BSORT                172.8  112.4%
+  BSORTC               153.8
+  FFT                 6660.5   93.3%
+  FFTC                7142.1
+  FFT2                5682.0  103.7%
+  FFT2C               5477.8
+  -------------------------- -------
+  
+  gcc 3.1
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                223.5   50.3%
+  QSORTC               443.9
+  BSORT                153.5   99.9%
+  BSORTC               153.7
+  FFT                 6424.5   98.4%
+  FFTC                6528.1
+  FFT2                5657.9   99.7%
+  FFT2C               5676.1
+  -------------------------- -------
+
+PPC G4 / Dual 800Mhz (sg)
+
+  gcc 2.95.2
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                501.8   99.3%
+  QSORTC               505.5
+  BSORT                158.7   99.8%
+  BSORTC               159.1
+  FFT                 5796.1   85.0%
+  FFTC                6815.0
+  FFT2                5401.9  108.0%
+  FFT2C               5000.1
+  -------------------------- -------
+  
+  gcc 3.1
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                338.6   66.1%
+  QSORTC               512.1
+  BSORT                149.0   93.7%
+  BSORTC               158.9
+  FFT                 5712.2   94.0%
+  FFTC                6076.0
+  FFT2                5379.3   99.3%
+  FFT2C               5418.9
+  -------------------------- -------
+
+
+For completeness, the results for i386 with the current code base.
+The ratio between the C version and the O2 version seem to improve a
+bit for the FFT tests on the Athlon, but there is virtually no change
+in all the other test cases.
+
+Pentium-II / 400Mhz  (mva)
+gcc 2.95.2, -O2
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                362.4   99.5%
+  QSORTC               364.1
+  BSORT                131.5   83.6%
+  BSORTC               157.4
+  FFT                 4064.2   94.1%
+  FFTC                4317.8
+  FFT2                3621.6   92.3%
+  FFT2C               3921.7
+  -------------------------- -------
+
+Athlon XP / 1544Mhz (mva)
+gcc 2.95.2, -O2
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT               1316.7   99.3%
+  QSORTC              1325.7
+  BSORT                563.7   80.4%
+  BSORTC               701.2
+  FFT                16654.6   96.7%
+  FFTC               17223.7
+  FFT2               15453.9   95.7%
+  FFT2C              16155.8
+  -------------------------- -------

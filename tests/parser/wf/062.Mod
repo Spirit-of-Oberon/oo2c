@@ -1,0 +1,3 @@
+MODULE M;
+TYPE T = RECORD a, b-, c*: CHAR END;
+END M.

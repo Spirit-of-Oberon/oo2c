@@ -1,0 +1,55 @@
+Module Name
+
+Import List
+
+    Lists the names of all modules imported by the interface.  The
+    names are links to the modules' HTML files.
+
+Class List
+
+    Lists all classes that are defined in the module.  The class name
+    is a local link to class summary.  The link is relative to the
+    current document, using the name of the record of the class as the
+    fragment identifier.  The class name is accompanied by the summary
+    of the class, i.e., by the first sentence of the documentation of
+    the record type's declaration.
+
+Summary Sections
+
+    Class Summary
+
+        For every class appearing in the class list, there is a
+        summary section.  Before the summary, there are anchors for
+        every type declaration (record or pointer) that belong to this
+        class.  From the header of a given class summary, a link
+        "Detail" leads to the class details.  The class summary begins
+        with an overview of the class and its base classes, followed
+        by the description of the class.
+
+        The summary also contains a table with all field, constructor,
+        and method names.  The names are links to the detailed
+        information for the declared object.  The first sentence of
+        the documentation of a declaration is given besides the name.
+
+        Inherited fields and methods are listed with their defining
+        module.  The names are links to the corresponding HTML file.
+
+    Type Summary
+
+        Record and pointer types that have been identified with
+        classes are not displayed in the type list.
+
+    Procedure Summary
+
+    Variable Summary
+
+    Constant Summary
+
+Detail Sections
+
+    Type Detail
+
+        Record and pointer types that have been identified with
+        classes are not displayed in the type list.
+
+    ... Detail

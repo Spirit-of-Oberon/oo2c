@@ -1,0 +1,9 @@
+MODULE New4;
+
+TYPE
+  P = POINTER TO ARRAY OF CHAR;
+VAR
+  p: P;
+BEGIN
+  NEW(p, 2, 3);
+END New4.

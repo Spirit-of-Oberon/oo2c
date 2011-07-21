@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <record_type id='1' pos='22' line='3' column='6' base_type='#none' tb_proc_count='0'/>
+  <type_decl id='2' name='R' pos='18' line='3' column='2' visible_from='32' export='no' type_id='1'/>
+  <procedure_decl id='3' name='Proc' pos='45' line='5' column='10' visible_from='49' export='no' is_type_bound='no' is_forward_decl='no'>
+    <procedure_type id='4' pos='35' line='5' column='0' resultType='#none'/>
+    <record_type id='5' pos='62' line='6' column='11' base_type='#none' tb_proc_count='0'>
+      <type_name id='6' pos='83' line='6' column='32' ident_name='R' ident_pos='83' ident_line='6' ident_column='32'/>
+      <pointer_type id='7' pos='72' line='6' column='21' base_type_id='1'/>
+      <field_decl id='8' name='p' pos='69' line='6' column='18' visible_from='84' export='no' type_id='7'/>
+    </record_type>
+    <type_decl id='9' name='R' pos='58' line='6' column='7' visible_from='88' export='no' type_id='5'/>
+  </procedure_decl>
+</module>

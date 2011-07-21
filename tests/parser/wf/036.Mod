@@ -1,0 +1,4 @@
+MODULE M;
+BEGIN
+  x := -a * 10 MOD 20
+END M.

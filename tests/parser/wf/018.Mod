@@ -1,0 +1,6 @@
+MODULE M;
+
+PROCEDURE P(): CHAR;
+  END P;
+  
+END M.

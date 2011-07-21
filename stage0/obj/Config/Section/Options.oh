@@ -1,0 +1,75 @@
+#ifndef _MODULE_Config_Section_Options_
+#define _MODULE_Config_Section_Options_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <Channel.oh>
+#include <XML/Locator.oh>
+#include <Config.oh>
+#include <Config/Parser.oh>
+#include <Config/Section.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct Config_Section_Options__SectionDesc *Config_Section_Options__Section;
+typedef struct Config_Section_Options__OptionDesc *Config_Section_Options__Option;
+typedef struct Config_Section_Options__SectionDesc {
+  XML_UnicodeBuffer__CharArray name;
+  Config_Section_Options__Option optionList;
+  ADT_Dictionary__Dictionary typeMap;
+} Config_Section_Options__SectionDesc;
+typedef struct Config_Section_Options__OptionDesc {
+  Config_Section_Options__Option next;
+  Object__String name;
+  Config__Variable value;
+} Config_Section_Options__OptionDesc;
+typedef struct Config_Section_Options__ErrorContextDesc *Config_Section_Options__ErrorContext;
+typedef struct Config_Section_Options__ErrorContextDesc {
+  Msg__StringPtr id;
+  XML_Error__Mapping mapping;
+} Config_Section_Options__ErrorContextDesc;
+extern void Config_Section_Options__ErrorContextDesc_GetTemplate(Config_Section_Options__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_Config_Section_Options__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_Config_Section_Options__ErrorContextDesc_GetTemplate)(Config_Section_Options__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void Config_Section_Options__Init(Config_Section_Options__Section s, const Config_Parser__String id__ref, OOC_LEN id_0d, ADT_Dictionary__Dictionary typeMap);
+extern Config_Section_Options__Section Config_Section_Options__New(const Config_Parser__String sectionName__ref, OOC_LEN sectionName_0d, ADT_Dictionary__Dictionary typeMap);
+extern void Config_Section_Options__OptionDesc_Set(Config_Section_Options__Option opt, Config__Variable value);
+#define _TBN_Config_Section_Options__OptionDesc_Set 0
+typedef void (*_TBP_Config_Section_Options__OptionDesc_Set)(Config_Section_Options__Option opt, Config__Variable value);
+extern Config_Section_Options__Option Config_Section_Options__SectionDesc_Get(Config_Section_Options__Section s, Object__String name);
+#define _TBN_Config_Section_Options__SectionDesc_Get 2
+typedef Config_Section_Options__Option (*_TBP_Config_Section_Options__SectionDesc_Get)(Config_Section_Options__Section s, Object__String name);
+extern Config_Section_Options__Option Config_Section_Options__SectionDesc_Set(Config_Section_Options__Section s, Object__String name, Config__Variable value);
+#define _TBN_Config_Section_Options__SectionDesc_Set 3
+typedef Config_Section_Options__Option (*_TBP_Config_Section_Options__SectionDesc_Set)(Config_Section_Options__Section s, Object__String name, Config__Variable value);
+extern Config__Variable Config_Section_Options__SectionDesc_GetValue(Config_Section_Options__Section s, Object__String name);
+#define _TBN_Config_Section_Options__SectionDesc_GetValue 4
+typedef Config__Variable (*_TBP_Config_Section_Options__SectionDesc_GetValue)(Config_Section_Options__Section s, Object__String name);
+extern void Config_Section_Options__SectionDesc_Copy(Config_Section_Options__Section s, Config_Section_Options__Section dest);
+#define _TBN_Config_Section_Options__SectionDesc_Copy 5
+typedef void (*_TBP_Config_Section_Options__SectionDesc_Copy)(Config_Section_Options__Section s, Config_Section_Options__Section dest);
+extern Config_Section_Options__Section Config_Section_Options__SectionDesc_Clone(Config_Section_Options__Section s);
+#define _TBN_Config_Section_Options__SectionDesc_Clone 6
+typedef Config_Section_Options__Section (*_TBP_Config_Section_Options__SectionDesc_Clone)(Config_Section_Options__Section s);
+extern void Config_Section_Options__SectionDesc_ProcessElements(volatile Config_Section_Options__Section s, volatile Config_Parser__Element sectionRoot, volatile XML_Locator__ErrorListener errorListener);
+#define _TBN_Config_Section_Options__SectionDesc_ProcessElements 0
+typedef void (*_TBP_Config_Section_Options__SectionDesc_ProcessElements)(Config_Section_Options__Section s, Config_Parser__Element sectionRoot, XML_Locator__ErrorListener errorListener);
+extern void Config_Section_Options__SectionDesc_DumpContent(Config_Section_Options__Section s, Channel__Channel ch);
+#define _TBN_Config_Section_Options__SectionDesc_DumpContent 1
+typedef void (*_TBP_Config_Section_Options__SectionDesc_DumpContent)(Config_Section_Options__Section s, Channel__Channel ch);
+extern void OOC_Config_Section_Options_init(void);
+extern void OOC_Config_Section_Options_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Config_Section_Options__Section;
+extern RT0__StructDesc _td_Config_Section_Options__Option;
+extern RT0__StructDesc _td_Config_Section_Options__SectionDesc;
+extern RT0__StructDesc _td_Config_Section_Options__OptionDesc;
+extern RT0__StructDesc _td_Config_Section_Options__ErrorContext;
+extern RT0__StructDesc _td_Config_Section_Options__ErrorContextDesc;
+extern RT0__StructDesc _td_Config_Section_Options__992;
+extern RT0__StructDesc _td_Config_Section_Options__8494;
+#endif /* _MODULE_Config_Section_Options_ */
+
+/* --- */

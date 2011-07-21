@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='29' line='2' column='18' ident_name='INTEGER' ident_pos='29' ident_line='2' ident_column='18'/>
+  <array_type id='2' pos='20' line='2' column='9' is_open_array='yes' element_type_id='1'/>
+  <type_decl id='3' name='A' pos='16' line='2' column='5' visible_from='36' export='no' type_id='2'/>
+</module>

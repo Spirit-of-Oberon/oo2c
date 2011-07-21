@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<configuration>
+  <options>
+    <define name='true' type='boolean'>TRUE</define>
+    <define name='false' type='boolean'>FALSE</define>
+    <define name='true-ws' type='boolean'>  TRUE  </define>
+    <define name='false-ws' type='boolean'>
+      FALSE
+    </define>
+  </options>
+</configuration>

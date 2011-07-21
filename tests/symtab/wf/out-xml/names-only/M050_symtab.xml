@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <oberon-doc>
+    <summary>Doc for module.</summary>
+    <p pad-after='yes' no-indent='yes'>Doc for module.</p>
+  </oberon-doc>
+</module>

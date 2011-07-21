@@ -1,0 +1,10 @@
+MODULE HOTLoop9;
+
+PROCEDURE Test* ();
+  BEGIN
+    WHILE TRUE DO
+      EXIT
+    END;
+  END Test;
+
+END HOTLoop9.

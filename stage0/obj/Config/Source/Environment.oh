@@ -1,0 +1,58 @@
+#ifndef _MODULE_Config_Source_Environment_
+#define _MODULE_Config_Source_Environment_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Msg.oh>
+#include <IO.oh>
+#include <Config/Source.oh>
+#include <Config/Parser.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct Config_Source_Environment__VariableTemplateDesc *Config_Source_Environment__VariableTemplate;
+typedef struct Config_Source_Environment__VariableTemplateDesc {
+  Config_Source_Environment__VariableTemplate next;
+  Object__String8 name;
+  Object__String8 pattern;
+} Config_Source_Environment__VariableTemplateDesc;
+typedef struct Config_Source_Environment__CommandDesc *Config_Source_Environment__Command;
+typedef struct Config_Source_Environment__CommandDesc {
+  Config_Source_Environment__Command nextCommand;
+  Config_Source_Environment__VariableTemplate _template;
+  Object__String8 argument;
+  OOC_CHAR8 doNotWrite;
+} Config_Source_Environment__CommandDesc;
+typedef struct Config_Source_Environment__EnvironmentDesc *Config_Source_Environment__Environment;
+typedef struct Config_Source_Environment__EnvironmentDesc {
+  Config_Source_Environment__VariableTemplate variableTemplates;
+  Config_Source_Environment__Command commandList;
+} Config_Source_Environment__EnvironmentDesc;
+extern Config_Source_Environment__Environment Config_Source_Environment__New(void);
+extern void Config_Source_Environment__CommandDesc_DoNotWrite(Config_Source_Environment__Command command);
+#define _TBN_Config_Source_Environment__CommandDesc_DoNotWrite 0
+typedef void (*_TBP_Config_Source_Environment__CommandDesc_DoNotWrite)(Config_Source_Environment__Command command);
+extern Config_Source_Environment__VariableTemplate Config_Source_Environment__EnvironmentDesc_AddVariableTemplate(Config_Source_Environment__Environment env, Object__String8 name, Object__String8 transformation);
+#define _TBN_Config_Source_Environment__EnvironmentDesc_AddVariableTemplate 1
+typedef Config_Source_Environment__VariableTemplate (*_TBP_Config_Source_Environment__EnvironmentDesc_AddVariableTemplate)(Config_Source_Environment__Environment env, Object__String8 name, Object__String8 transformation);
+extern Msg__Msg Config_Source_Environment__EnvironmentDesc_Parse(Config_Source_Environment__Environment env);
+#define _TBN_Config_Source_Environment__EnvironmentDesc_Parse 2
+typedef Msg__Msg (*_TBP_Config_Source_Environment__EnvironmentDesc_Parse)(Config_Source_Environment__Environment env);
+extern void Config_Source_Environment__EnvironmentDesc_Write(Config_Source_Environment__Environment env, IO__ByteChannel ch, const Config_Parser__String rootTag__ref, OOC_LEN rootTag_0d);
+#define _TBN_Config_Source_Environment__EnvironmentDesc_Write 0
+typedef void (*_TBP_Config_Source_Environment__EnvironmentDesc_Write)(Config_Source_Environment__Environment env, IO__ByteChannel ch, const Config_Parser__String rootTag__ref, OOC_LEN rootTag_0d);
+extern void OOC_Config_Source_Environment_init(void);
+extern void OOC_Config_Source_Environment_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Config_Source_Environment__VariableTemplate;
+extern RT0__StructDesc _td_Config_Source_Environment__VariableTemplateDesc;
+extern RT0__StructDesc _td_Config_Source_Environment__Command;
+extern RT0__StructDesc _td_Config_Source_Environment__CommandDesc;
+extern RT0__StructDesc _td_Config_Source_Environment__Environment;
+extern RT0__StructDesc _td_Config_Source_Environment__EnvironmentDesc;
+extern RT0__StructDesc _td_Config_Source_Environment__3605;
+#endif /* _MODULE_Config_Source_Environment_ */
+
+/* --- */

@@ -1,0 +1,13 @@
+Enumeration starting at 3.
+
+@enumerate 3
+@item
+Three.  Some longer paragraph, enough to fill more than a line.  Just
+to see how the line break is handled.  The lines should line up,
+shouldn't they?
+
+@item
+Four.
+@end enumerate
+
+THE END

@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M007' id=''>
+  <const-decl name='aConst' id='aConst' export='yes' value='unknown'>
+    <oberon-doc>
+      <summary>A constant.</summary>
+      <p pad-after='yes' no-indent='yes'>A constant.</p>
+    </oberon-doc>
+  </const-decl>
+  <const-decl name='bConst' id='bConst' export='yes' value='unknown'>
+    <oberon-doc>
+      <summary>Another constant.</summary>
+      <p pad-after='yes' no-indent='yes'>Another constant.</p>
+    </oberon-doc>
+  </const-decl>
+  <type-decl name='A' id='A' export='yes'>
+    <oberon-doc>
+      <summary>A type alias.</summary>
+      <p pad-after='yes' no-indent='yes'>A type alias.</p>
+    </oberon-doc>
+    <type>
+      <type-name module='#predef' name='LONGINT'/>
+    </type>
+  </type-decl>
+  <type-decl name='B' id='B' export='yes'>
+    <oberon-doc>
+      <summary>An array type constructor.</summary>
+      <p pad-after='yes' no-indent='yes'>An array type constructor.</p>
+    </oberon-doc>
+    <type>
+      <array>
+        <element-type>
+          <type-name module='#predef' name='CHAR'/>
+        </element-type>
+      </array>
+    </type>
+  </type-decl>
+  <type-decl name='C' id='C' export='yes'>
+    <oberon-doc>
+      <summary>A record definition.</summary>
+      <p pad-after='yes' no-indent='yes'>A record definition.</p>
+    </oberon-doc>
+    <type>
+      <record/>
+    </type>
+  </type-decl>
+  <var-decl name='x' id='x' export='yes'>
+    <oberon-doc>
+      <summary>A variable.</summary>
+      <p pad-after='yes' no-indent='yes'>A variable.</p>
+    </oberon-doc>
+    <type>
+      <type-name module='#predef' name='A'/>
+    </type>
+  </var-decl>
+  <var-decl name='y' id='y' export='yes'>
+    <oberon-doc>
+      <summary>And another variable.</summary>
+      <p pad-after='yes' no-indent='yes'>And another variable.</p>
+    </oberon-doc>
+    <type>
+      <type-name name='C' href='#C'/>
+    </type>
+  </var-decl>
+  <procedure name='Proc1' id='Proc1' export='yes'>
+    <oberon-doc>
+      <summary>A procedure with multiple arguments.</summary>
+      <p pad-after='yes' no-indent='yes'>A procedure with multiple arguments.</p>
+    </oberon-doc>
+    <formal-parameters>
+      <parameter-decl name='a' id='Proc1.a' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='CHAR'/>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='b' id='Proc1.b' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='CHAR'/>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='c' id='Proc1.c' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='CHAR'/>
+        </type>
+      </parameter-decl>
+    </formal-parameters>
+  </procedure>
+  <procedure name='Proc2' id='Proc2' export='yes'>
+    <oberon-doc>
+      <summary>A function procedure.</summary>
+      <p pad-after='yes' no-indent='yes'>A function procedure.</p>
+    </oberon-doc>
+    <formal-parameters>
+      <result-type>
+        <type-name module='#predef' name='CHAR'/>
+      </result-type>
+    </formal-parameters>
+  </procedure>
+</interface-description>

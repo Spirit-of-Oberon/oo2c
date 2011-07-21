@@ -1,0 +1,7 @@
+MODULE Copy3;
+
+VAR
+  y: ARRAY 128 OF SHORTINT;
+BEGIN
+  COPY("abc", y);
+END Copy3.

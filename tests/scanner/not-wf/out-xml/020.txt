@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*DEFINE a:=1; DEFINE b:="1"; IF a=b THEN END*&gt;</symbol>
+<symbol id='endOfFile' pos='47' line='0' column='47'></symbol>
+</document>

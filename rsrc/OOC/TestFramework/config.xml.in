@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!ENTITY OOC "@OOC@">
+<!ENTITY OOC_VERSION "@OOC_VERSION@">
+<!ENTITY OOEF "@OOEF@">
+<!ENTITY DIFF "@DIFF@">
+<!ENTITY PERL "@PERL@">

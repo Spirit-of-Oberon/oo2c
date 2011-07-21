@@ -1,0 +1,19 @@
+#ifndef _MODULE_OOC_SSA_IRtoSSA_
+#define _MODULE_OOC_SSA_IRtoSSA_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/IR.oh>
+#include <OOC/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern OOC_SSA__Result OOC_SSA_IRtoSSA__StatmSeq(OOC_SSA__ProcBlock pb, OOC_SSA__Result s, OOC_IR__StatementSeq statmSeq);
+extern void OOC_SSA_IRtoSSA__DiscardGets(OOC_SSA__ProcBlock pb);
+extern void OOC_OOC_SSA_IRtoSSA_init(void);
+extern void OOC_OOC_SSA_IRtoSSA_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_SSA_IRtoSSA_ */
+
+/* --- */

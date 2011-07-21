@@ -1,0 +1,4 @@
+MODULE M;
+BEGIN
+  RETURN x
+END M.

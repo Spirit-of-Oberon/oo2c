@@ -1,0 +1,4 @@
+An empty line separates two paragraphs.
+
+   Two or more empty lines serve the same purpose.
+

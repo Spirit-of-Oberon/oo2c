@@ -1,0 +1,52 @@
+#ifndef _MODULE_OOC_C_Naming_
+#define _MODULE_OOC_C_Naming_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <ADT/ArrayList.oh>
+#include <OOC/SymbolTable.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_C_Naming__QualTypeDescrDesc *OOC_C_Naming__QualTypeDescr;
+typedef struct OOC_C_Naming__QualTypeDescrDesc {
+  Object__String name;
+  OOC_SymbolTable__TypeClosure type;
+} OOC_C_Naming__QualTypeDescrDesc;
+typedef struct OOC_C_Naming__QualTypeDataDesc *OOC_C_Naming__QualTypeData;
+typedef struct OOC_C_Naming__QualTypeDataDesc {
+  ADT_ArrayList__ArrayList list;
+} OOC_C_Naming__QualTypeDataDesc;
+#define OOC_C_Naming__suffixPassPerRef "__ref"
+extern void OOC_C_Naming__QualTypeDescrDesc_INIT(OOC_C_Naming__QualTypeDescr qtd, OOC_INT32 id, OOC_SymbolTable__TypeClosure type);
+#define _TBN_OOC_C_Naming__QualTypeDescrDesc_INIT 4
+typedef void (*_TBP_OOC_C_Naming__QualTypeDescrDesc_INIT)(OOC_C_Naming__QualTypeDescr qtd, OOC_INT32 id, OOC_SymbolTable__TypeClosure type);
+extern void OOC_C_Naming__QualTypeDataDesc_INIT(OOC_C_Naming__QualTypeData qtdData);
+#define _TBN_OOC_C_Naming__QualTypeDataDesc_INIT 0
+typedef void (*_TBP_OOC_C_Naming__QualTypeDataDesc_INIT)(OOC_C_Naming__QualTypeData qtdData);
+extern Object__String OOC_C_Naming__NameOfDeclaration(OOC_SymbolTable__Declaration decl);
+extern Object__String OOC_C_Naming__NameOfModuleInit(OOC_SymbolTable__Module m, OOC_CHAR8 rtWrapper);
+extern Object__String OOC_C_Naming__NameOfLengthParam(OOC_SymbolTable__VarDecl param, OOC_INT32 dim);
+extern Object__String OOC_C_Naming__NameOfTypeTagParam(OOC_SymbolTable__VarDecl param);
+extern Object__String OOC_C_Naming__NameOfType(OOC_SymbolTable__Type type);
+extern Object__String OOC_C_Naming__NameOfTypeDescriptor(OOC_SymbolTable__Type type, OOC_C_Naming__QualTypeData qtdData);
+extern Object__String OOC_C_Naming__NameOfTypeBoundIndex(OOC_SymbolTable__ProcDecl proc);
+extern Object__String OOC_C_Naming__NameOfTypeBoundSignature(OOC_SymbolTable__ProcDecl proc);
+extern void OOC_OOC_C_Naming_init(void);
+extern void OOC_OOC_C_Naming_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_C_Naming__Buffer;
+extern RT0__StructDesc _td_OOC_C_Naming__QualTypeDescr;
+extern RT0__StructDesc _td_OOC_C_Naming__QualTypeDescrDesc;
+extern RT0__StructDesc _td_OOC_C_Naming__QualTypeData;
+extern RT0__StructDesc _td_OOC_C_Naming__QualTypeDataDesc;
+extern RT0__StructDesc _td_OOC_C_Naming__1605;
+extern RT0__StructDesc _td_OOC_C_Naming__2151;
+extern RT0__StructDesc _td_OOC_C_Naming__5494;
+extern RT0__StructDesc _td_OOC_C_Naming__6490;
+extern RT0__StructDesc _td_OOC_C_Naming__9576;
+#endif /* _MODULE_OOC_C_Naming_ */
+
+/* --- */

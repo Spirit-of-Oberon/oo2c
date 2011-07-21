@@ -1,0 +1,6 @@
+MODULE M;
+BEGIN
+  FOR x := 1 TO 9 BY 2 DO
+    y := 1
+  END
+END M.

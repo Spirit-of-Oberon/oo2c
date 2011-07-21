@@ -1,0 +1,8 @@
+MODULE M;
+
+VAR
+  a: INTEGER;
+  b-: CHAR;
+  c*: LONGREAL;
+  
+END M.

@@ -1,0 +1,5 @@
+MODULE M;
+
+TYPE
+
+END M.

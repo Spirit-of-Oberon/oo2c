@@ -1,0 +1,6 @@
+MODULE NilCompat1;
+
+VAR
+  a[NIL_COMPAT]: ARRAY 128 OF CHAR;
+  
+END NilCompat1.

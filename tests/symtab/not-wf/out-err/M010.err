@@ -1,0 +1,51 @@
+In file not-wf/src/M010.Mod: 
+Expected symbol `;'
+column=14
+line=2
+pos=25
+sym_name=;
+
+Expected symbol `;'
+column=14
+line=2
+pos=25
+sym_name=;
+
+Expected symbol `.'
+column=14
+line=2
+pos=25
+sym_name=.
+
+Expected identifier
+column=15
+line=2
+pos=26
+
+Expected keyword `END'
+column=15
+line=2
+pos=26
+sym_name=END
+
+Expected identifier
+column=15
+line=2
+pos=26
+
+Expected keyword `END'
+column=15
+line=2
+pos=26
+sym_name=END
+
+Expected identifier
+column=15
+line=2
+pos=26
+
+Junk after end of module
+column=15
+line=2
+pos=26
+

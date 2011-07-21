@@ -1,0 +1,6 @@
+MODULE M;
+BEGIN
+  LOOP
+    y := 1
+  END
+END M.

@@ -1,0 +1,54 @@
+#ifndef _MODULE_URI_Scheme_File_
+#define _MODULE_URI_Scheme_File_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <IO.oh>
+#include <URI.oh>
+#include <URI/Scheme/Hierarchical.oh>
+#include <URI/Authority/ServerBased.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct URI_Scheme_File__URIDesc *URI_Scheme_File__URI;
+typedef struct URI_Scheme_File__URIDesc {
+  Object__String schemeId;
+  URI__Authority authority;
+  URI__Query query;
+  URI_Scheme_Hierarchical__Segment pathList;
+  OOC_CHAR8 absolutePath;
+} URI_Scheme_File__URIDesc;
+extern void URI_Scheme_File__Init(URI_Scheme_File__URI file, Object__String schemeId, URI__Authority authority, URI__Query query);
+extern URI_Scheme_File__URI URI_Scheme_File__New(Object__String schemeId, URI__Authority authority, URI__Query query);
+extern URI__Authority URI_Scheme_File__URIDesc_NewAuthority(URI_Scheme_File__URI file);
+#define _TBN_URI_Scheme_File__URIDesc_NewAuthority 12
+typedef URI__Authority (*_TBP_URI_Scheme_File__URIDesc_NewAuthority)(URI_Scheme_File__URI file);
+extern OOC_CHAR8 URI_Scheme_File__URIDesc_AuthorityMandatory(URI_Scheme_File__URI file);
+#define _TBN_URI_Scheme_File__URIDesc_AuthorityMandatory 11
+typedef OOC_CHAR8 (*_TBP_URI_Scheme_File__URIDesc_AuthorityMandatory)(URI_Scheme_File__URI file);
+extern URI__Query URI_Scheme_File__URIDesc_NewQuery(URI_Scheme_File__URI file);
+#define _TBN_URI_Scheme_File__URIDesc_NewQuery 14
+typedef URI__Query (*_TBP_URI_Scheme_File__URIDesc_NewQuery)(URI_Scheme_File__URI file);
+extern URI_Scheme_File__URI URI_Scheme_File__URIDesc_Clone(URI_Scheme_File__URI file);
+#define _TBN_URI_Scheme_File__URIDesc_Clone 4
+typedef URI_Scheme_File__URI (*_TBP_URI_Scheme_File__URIDesc_Clone)(URI_Scheme_File__URI file);
+extern Object__String8 URI_Scheme_File__URIDesc_GetPath(URI_Scheme_File__URI file);
+#define _TBN_URI_Scheme_File__URIDesc_GetPath 23
+typedef Object__String8 (*_TBP_URI_Scheme_File__URIDesc_GetPath)(URI_Scheme_File__URI file);
+extern IO__ByteChannel URI_Scheme_File__URIDesc_GetChannel(URI_Scheme_File__URI file, OOC_INT8 mode);
+#define _TBN_URI_Scheme_File__URIDesc_GetChannel 10
+typedef IO__ByteChannel (*_TBP_URI_Scheme_File__URIDesc_GetChannel)(URI_Scheme_File__URI file, OOC_INT8 mode);
+extern URI_Scheme_File__URI URI_Scheme_File__NewPrototype(void);
+extern URI_Scheme_File__URI URI_Scheme_File__GetCwd(void);
+extern URI_Scheme_File__URI URI_Scheme_File__ToURI(const OOC_CHAR8 filePath__ref[], volatile OOC_LEN filePath_0d);
+extern void OOC_URI_Scheme_File_init(void);
+extern void OOC_URI_Scheme_File_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_URI_Scheme_File__URI;
+extern RT0__StructDesc _td_URI_Scheme_File__URIDesc;
+extern RT0__StructDesc _td_URI_Scheme_File__4491;
+#endif /* _MODULE_URI_Scheme_File_ */
+
+/* --- */

@@ -1,0 +1,10 @@
+Please note that it does make a difference in the ASCII version of this
+document, if there are paragraph separators in front or behind a list
+command.  Here is an @@itemize without surrounding paragraph separators:
+@itemize @minus
+@item
+Item 1.
+@item
+Item 2.
+@end itemize
+And this is the end of the list.

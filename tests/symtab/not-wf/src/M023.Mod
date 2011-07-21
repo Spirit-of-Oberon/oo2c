@@ -1,0 +1,7 @@
+MODULE M;
+
+TYPE
+  R0 = RECORD a: INTEGER END;
+  R1 = RECORD (R0) a: INTEGER END;
+  
+END M.

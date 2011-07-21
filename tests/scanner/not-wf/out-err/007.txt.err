@@ -1,0 +1,7 @@
+In file not-wf/007.txt: 
+Illegal symbol `%'
+column=32
+line=0
+pos=32
+sym_string=%
+

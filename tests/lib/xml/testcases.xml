@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<testcases profile="OOC Core Library" default-lang="O2">
+  <test id="libxml" type="run" file="LibXml.Mod">
+    Imports all modules of <code>XML:*</code>.
+  </test>
+  <test id="libxml1" type="run" file="LibXml1.Mod" output="LibXml1.Ref">
+    Parses a valid XML document and writes it in canonical format.
+  </test>
+  <test id="libxml2" type="run" file="LibXml2.Mod" output="LibXml2.Ref">
+    Parses an invalid XML document and writes an error message to
+    <code>stdout</code>.
+  </test>
+  <test id="libxml3" type="run" file="LibXml3.Mod" output="LibXml3.Ref">
+    A simplified version of the DTD of <code>libxml2</code>, with a
+    valid document.
+  </test>
+</testcases>

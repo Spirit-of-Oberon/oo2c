@@ -1,0 +1,7 @@
+MODULE Inc2;
+
+VAR
+  x: CHAR;
+BEGIN
+  INC(x,1);
+END Inc2.

@@ -1,0 +1,3 @@
+The @email command can have one or two arguments.  They are rendered
+like this: <foo@bar.org> and displayed text <foo@bar.org>.
+

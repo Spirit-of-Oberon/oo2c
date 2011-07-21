@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Enumeration starting at <left-quote/>a<right-quote/>.</summary>
+  <p pad-after='yes' no-indent='yes'>Enumeration starting at <left-quote/>a<right-quote/>.</p>
+  <enumerate pad-after='yes' mode='lowercase' start='1'>
+    <item pad-after='yes'>
+      <p pad-after='no' no-indent='yes'>One.</p>
+    </item>
+    <item pad-after='no'>
+      <p pad-after='no' no-indent='yes'>Two.</p>
+    </item>
+  </enumerate>
+  <p pad-after='yes' no-indent='no'>THE END</p>
+</oberon-doc>

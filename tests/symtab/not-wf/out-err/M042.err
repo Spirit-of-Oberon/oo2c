@@ -1,0 +1,7 @@
+In file not-wf/src/M042.Mod: 
+Cannot locate module `NoSuchModule'
+column=12
+line=1
+name=NoSuchModule
+pos=22
+

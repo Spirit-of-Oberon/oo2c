@@ -1,0 +1,281 @@
+#ifndef _MODULE_TextRider_
+#define _MODULE_TextRider_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Channel.oh>
+#include <CharClass.oh>
+#include <LRealStr.oh>
+#include <Msg.oh>
+#include <Object.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define TextRider__done  0
+#define TextRider__invalidFormat 8
+#define TextRider__valueOutOfRange 1
+#define TextRider__undefined (-1)
+#define TextRider__char 0
+#define TextRider__string 1
+#define TextRider__int 2
+#define TextRider__real 3
+#define TextRider__bool 4
+#define TextRider__set 5
+#define TextRider__tab 6
+#define TextRider__line 7
+#define TextRider__ident 8
+#define TextRider__error 9
+#define TextRider__invalid 10
+#define TextRider__noBuffering 0
+#define TextRider__returnCtrlChars 0
+#define TextRider__interpretBools 1
+#define TextRider__interpretSets 2
+#define TextRider__interpretStrings 3
+#define TextRider__useSignedNumbers 4
+#define TextRider__defReaderOptions 0
+#define TextRider__defWriterOptions 0
+#define TextRider__defScannerOptions 30
+#define TextRider__maxLengthEol 2
+typedef struct TextRider__ReaderDesc *TextRider__Reader;
+typedef struct TextRider__ReaderDesc {
+  Msg__Msg res;
+  OOC_UINT32 opt;
+  Channel__Reader byteReader;
+  Channel__Channel base;
+  OOC_CHAR8 eol[2];
+  OOC_INT16 eolLen;
+  OOC_CHAR8 deferredEol;
+  OOC_CHAR8 la[2];
+  OOC_CHAR8 __pad23;
+  Msg__Msg laRes[2];
+  OOC_INT16 laLen;
+} TextRider__ReaderDesc;
+typedef struct TextRider__WriterDesc *TextRider__Writer;
+typedef struct TextRider__WriterDesc {
+  Msg__Msg res;
+  OOC_UINT32 opt;
+  Channel__Writer byteWriter;
+  Channel__Channel base;
+  OOC_CHAR8 eol[2];
+  OOC_INT16 eolLen;
+} TextRider__WriterDesc;
+typedef OOC_CHAR8 TextRider__String[256];
+typedef struct TextRider__ScannerDesc *TextRider__Scanner;
+typedef struct TextRider__ScannerDesc {
+  Msg__Msg res;
+  TextRider__Reader r;
+  Channel__Channel base;
+  OOC_UINT32 opt;
+  OOC_INT16 type;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_INT32 pos;
+  OOC_INT32 lines;
+  OOC_INT32 _int;
+  OOC_REAL64 real;
+  OOC_CHAR8 _char;
+  TextRider__String string;
+  OOC_CHAR8 __pad297;
+  OOC_CHAR8 __pad298;
+  OOC_CHAR8 __pad299;
+  OOC_UINT32 set;
+  OOC_CHAR8 _bool;
+} TextRider__ScannerDesc;
+typedef struct TextRider__ErrorContextDesc *TextRider__ErrorContext;
+typedef struct TextRider__ErrorContextDesc {
+  Msg__StringPtr id;
+} TextRider__ErrorContextDesc;
+extern void TextRider__ErrorContextDesc_GetTemplate(TextRider__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_TextRider__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_TextRider__ErrorContextDesc_GetTemplate)(TextRider__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern OOC_INT32 TextRider__ReaderDesc_Pos(TextRider__Reader r);
+#define _TBN_TextRider__ReaderDesc_Pos 0
+typedef OOC_INT32 (*_TBP_TextRider__ReaderDesc_Pos)(TextRider__Reader r);
+extern void TextRider__ReaderDesc_ClearError(TextRider__Reader r);
+#define _TBN_TextRider__ReaderDesc_ClearError 1
+typedef void (*_TBP_TextRider__ReaderDesc_ClearError)(TextRider__Reader r);
+extern OOC_INT32 TextRider__ReaderDesc_Available(TextRider__Reader r);
+#define _TBN_TextRider__ReaderDesc_Available 2
+typedef OOC_INT32 (*_TBP_TextRider__ReaderDesc_Available)(TextRider__Reader r);
+extern void TextRider__ReaderDesc_SetPos(TextRider__Reader r, OOC_INT32 newPos);
+#define _TBN_TextRider__ReaderDesc_SetPos 3
+typedef void (*_TBP_TextRider__ReaderDesc_SetPos)(TextRider__Reader r, OOC_INT32 newPos);
+extern void TextRider__ReaderDesc_SetOpts(TextRider__Reader r, OOC_UINT32 opts);
+#define _TBN_TextRider__ReaderDesc_SetOpts 4
+typedef void (*_TBP_TextRider__ReaderDesc_SetOpts)(TextRider__Reader r, OOC_UINT32 opts);
+extern void TextRider__ReaderDesc_SetEol(TextRider__Reader r, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
+#define _TBN_TextRider__ReaderDesc_SetEol 5
+typedef void (*_TBP_TextRider__ReaderDesc_SetEol)(TextRider__Reader r, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
+extern void TextRider__ReaderDesc_ReadChar(TextRider__Reader r, OOC_CHAR8 *ch);
+#define _TBN_TextRider__ReaderDesc_ReadChar 6
+typedef void (*_TBP_TextRider__ReaderDesc_ReadChar)(TextRider__Reader r, OOC_CHAR8 *ch);
+extern OOC_CHAR8 TextRider__ReaderDesc_Eol(TextRider__Reader r);
+#define _TBN_TextRider__ReaderDesc_Eol 7
+typedef OOC_CHAR8 (*_TBP_TextRider__ReaderDesc_Eol)(TextRider__Reader r);
+extern void TextRider__ReaderDesc_ReadLn(TextRider__Reader r);
+#define _TBN_TextRider__ReaderDesc_ReadLn 8
+typedef void (*_TBP_TextRider__ReaderDesc_ReadLn)(TextRider__Reader r);
+extern void TextRider__ReaderDesc_ReadString(TextRider__Reader r, OOC_CHAR8 s[], OOC_LEN s_0d);
+#define _TBN_TextRider__ReaderDesc_ReadString 9
+typedef void (*_TBP_TextRider__ReaderDesc_ReadString)(TextRider__Reader r, OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void TextRider__ReaderDesc_ReadLine(TextRider__Reader r, OOC_CHAR8 s[], OOC_LEN s_0d);
+#define _TBN_TextRider__ReaderDesc_ReadLine 10
+typedef void (*_TBP_TextRider__ReaderDesc_ReadLine)(TextRider__Reader r, OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void TextRider__ReaderDesc_ReadIdentifier(TextRider__Reader r, OOC_CHAR8 s[], OOC_LEN s_0d);
+#define _TBN_TextRider__ReaderDesc_ReadIdentifier 11
+typedef void (*_TBP_TextRider__ReaderDesc_ReadIdentifier)(TextRider__Reader r, OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void TextRider__ReaderDesc_ReadBool(TextRider__Reader r, OOC_CHAR8 *_bool);
+#define _TBN_TextRider__ReaderDesc_ReadBool 12
+typedef void (*_TBP_TextRider__ReaderDesc_ReadBool)(TextRider__Reader r, OOC_CHAR8 *_bool);
+extern void TextRider__ReaderDesc_ReadLInt(TextRider__Reader r, OOC_INT32 *lint);
+#define _TBN_TextRider__ReaderDesc_ReadLInt 13
+typedef void (*_TBP_TextRider__ReaderDesc_ReadLInt)(TextRider__Reader r, OOC_INT32 *lint);
+extern void TextRider__ReaderDesc_ReadHex(TextRider__Reader r, OOC_INT32 *lint);
+#define _TBN_TextRider__ReaderDesc_ReadHex 14
+typedef void (*_TBP_TextRider__ReaderDesc_ReadHex)(TextRider__Reader r, OOC_INT32 *lint);
+extern void TextRider__ReaderDesc_ReadInt(TextRider__Reader r, OOC_INT16 *_int);
+#define _TBN_TextRider__ReaderDesc_ReadInt 15
+typedef void (*_TBP_TextRider__ReaderDesc_ReadInt)(TextRider__Reader r, OOC_INT16 *_int);
+extern void TextRider__ReaderDesc_ReadSInt(TextRider__Reader r, OOC_INT8 *sint);
+#define _TBN_TextRider__ReaderDesc_ReadSInt 16
+typedef void (*_TBP_TextRider__ReaderDesc_ReadSInt)(TextRider__Reader r, OOC_INT8 *sint);
+extern void TextRider__ReaderDesc_ReadLReal(TextRider__Reader r, OOC_REAL64 *lreal);
+#define _TBN_TextRider__ReaderDesc_ReadLReal 17
+typedef void (*_TBP_TextRider__ReaderDesc_ReadLReal)(TextRider__Reader r, OOC_REAL64 *lreal);
+extern void TextRider__ReaderDesc_ReadReal(TextRider__Reader r, OOC_REAL32 *real);
+#define _TBN_TextRider__ReaderDesc_ReadReal 18
+typedef void (*_TBP_TextRider__ReaderDesc_ReadReal)(TextRider__Reader r, OOC_REAL32 *real);
+extern void TextRider__ReaderDesc_ReadSet(TextRider__Reader r, OOC_UINT32 *s);
+#define _TBN_TextRider__ReaderDesc_ReadSet 19
+typedef void (*_TBP_TextRider__ReaderDesc_ReadSet)(TextRider__Reader r, OOC_UINT32 *s);
+extern OOC_INT32 TextRider__ScannerDesc_Pos(TextRider__Scanner s);
+#define _TBN_TextRider__ScannerDesc_Pos 0
+typedef OOC_INT32 (*_TBP_TextRider__ScannerDesc_Pos)(TextRider__Scanner s);
+extern void TextRider__ScannerDesc_ClearError(TextRider__Scanner s);
+#define _TBN_TextRider__ScannerDesc_ClearError 1
+typedef void (*_TBP_TextRider__ScannerDesc_ClearError)(TextRider__Scanner s);
+extern OOC_INT32 TextRider__ScannerDesc_Available(TextRider__Scanner s);
+#define _TBN_TextRider__ScannerDesc_Available 2
+typedef OOC_INT32 (*_TBP_TextRider__ScannerDesc_Available)(TextRider__Scanner s);
+extern void TextRider__ScannerDesc_SetPos(TextRider__Scanner s, OOC_INT32 pos);
+#define _TBN_TextRider__ScannerDesc_SetPos 3
+typedef void (*_TBP_TextRider__ScannerDesc_SetPos)(TextRider__Scanner s, OOC_INT32 pos);
+extern void TextRider__ScannerDesc_Scan(TextRider__Scanner s);
+#define _TBN_TextRider__ScannerDesc_Scan 4
+typedef void (*_TBP_TextRider__ScannerDesc_Scan)(TextRider__Scanner s);
+extern void TextRider__ScannerDesc_SetOpts(TextRider__Scanner s, OOC_UINT32 opts);
+#define _TBN_TextRider__ScannerDesc_SetOpts 5
+typedef void (*_TBP_TextRider__ScannerDesc_SetOpts)(TextRider__Scanner s, OOC_UINT32 opts);
+extern void TextRider__ScannerDesc_SetEol(TextRider__Scanner s, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
+#define _TBN_TextRider__ScannerDesc_SetEol 6
+typedef void (*_TBP_TextRider__ScannerDesc_SetEol)(TextRider__Scanner s, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
+extern OOC_INT32 TextRider__WriterDesc_Pos(TextRider__Writer w);
+#define _TBN_TextRider__WriterDesc_Pos 0
+typedef OOC_INT32 (*_TBP_TextRider__WriterDesc_Pos)(TextRider__Writer w);
+extern void TextRider__WriterDesc_SetPos(TextRider__Writer w, OOC_INT32 newPos);
+#define _TBN_TextRider__WriterDesc_SetPos 1
+typedef void (*_TBP_TextRider__WriterDesc_SetPos)(TextRider__Writer w, OOC_INT32 newPos);
+extern void TextRider__WriterDesc_ClearError(TextRider__Writer w);
+#define _TBN_TextRider__WriterDesc_ClearError 2
+typedef void (*_TBP_TextRider__WriterDesc_ClearError)(TextRider__Writer w);
+extern void TextRider__WriterDesc_SetOpts(TextRider__Writer w, OOC_UINT32 opts);
+#define _TBN_TextRider__WriterDesc_SetOpts 3
+typedef void (*_TBP_TextRider__WriterDesc_SetOpts)(TextRider__Writer w, OOC_UINT32 opts);
+extern void TextRider__WriterDesc_SetEol(TextRider__Writer w, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
+#define _TBN_TextRider__WriterDesc_SetEol 4
+typedef void (*_TBP_TextRider__WriterDesc_SetEol)(TextRider__Writer w, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
+extern void TextRider__WriterDesc_WriteString(TextRider__Writer w, const OOC_CHAR8 s[], OOC_LEN s_0d);
+#define _TBN_TextRider__WriterDesc_WriteString 5
+typedef void (*_TBP_TextRider__WriterDesc_WriteString)(TextRider__Writer w, const OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void TextRider__WriterDesc_WriteObject(TextRider__Writer w, Object__Object obj);
+#define _TBN_TextRider__WriterDesc_WriteObject 6
+typedef void (*_TBP_TextRider__WriterDesc_WriteObject)(TextRider__Writer w, Object__Object obj);
+extern void TextRider__WriterDesc_WriteBool(TextRider__Writer w, OOC_CHAR8 _bool);
+#define _TBN_TextRider__WriterDesc_WriteBool 7
+typedef void (*_TBP_TextRider__WriterDesc_WriteBool)(TextRider__Writer w, OOC_CHAR8 _bool);
+extern void TextRider__WriterDesc_WriteChar(TextRider__Writer w, OOC_CHAR8 ch);
+#define _TBN_TextRider__WriterDesc_WriteChar 8
+typedef void (*_TBP_TextRider__WriterDesc_WriteChar)(TextRider__Writer w, OOC_CHAR8 ch);
+extern void TextRider__WriterDesc_WriteLInt(TextRider__Writer w, OOC_INT32 lint, OOC_INT32 n);
+#define _TBN_TextRider__WriterDesc_WriteLInt 9
+typedef void (*_TBP_TextRider__WriterDesc_WriteLInt)(TextRider__Writer w, OOC_INT32 lint, OOC_INT32 n);
+extern void TextRider__WriterDesc_WriteSInt(TextRider__Writer w, OOC_INT8 sint, OOC_INT32 n);
+#define _TBN_TextRider__WriterDesc_WriteSInt 10
+typedef void (*_TBP_TextRider__WriterDesc_WriteSInt)(TextRider__Writer w, OOC_INT8 sint, OOC_INT32 n);
+extern void TextRider__WriterDesc_WriteInt(TextRider__Writer w, OOC_INT16 _int, OOC_INT32 n);
+#define _TBN_TextRider__WriterDesc_WriteInt 11
+typedef void (*_TBP_TextRider__WriterDesc_WriteInt)(TextRider__Writer w, OOC_INT16 _int, OOC_INT32 n);
+extern void TextRider__WriterDesc_WriteHex(TextRider__Writer w, OOC_INT32 lint, OOC_INT32 d);
+#define _TBN_TextRider__WriterDesc_WriteHex 12
+typedef void (*_TBP_TextRider__WriterDesc_WriteHex)(TextRider__Writer w, OOC_INT32 lint, OOC_INT32 d);
+extern void TextRider__WriterDesc_WriteLReal(TextRider__Writer w, OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+#define _TBN_TextRider__WriterDesc_WriteLReal 13
+typedef void (*_TBP_TextRider__WriterDesc_WriteLReal)(TextRider__Writer w, OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+extern void TextRider__WriterDesc_WriteReal(TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+#define _TBN_TextRider__WriterDesc_WriteReal 14
+typedef void (*_TBP_TextRider__WriterDesc_WriteReal)(TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void TextRider__WriterDesc_WriteLRealFix(TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
+#define _TBN_TextRider__WriterDesc_WriteLRealFix 15
+typedef void (*_TBP_TextRider__WriterDesc_WriteLRealFix)(TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
+extern void TextRider__WriterDesc_WriteRealFix(TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+#define _TBN_TextRider__WriterDesc_WriteRealFix 16
+typedef void (*_TBP_TextRider__WriterDesc_WriteRealFix)(TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void TextRider__WriterDesc_WriteLRealEng(TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
+#define _TBN_TextRider__WriterDesc_WriteLRealEng 17
+typedef void (*_TBP_TextRider__WriterDesc_WriteLRealEng)(TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
+extern void TextRider__WriterDesc_WriteRealEng(TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+#define _TBN_TextRider__WriterDesc_WriteRealEng 18
+typedef void (*_TBP_TextRider__WriterDesc_WriteRealEng)(TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void TextRider__WriterDesc_WriteSet(TextRider__Writer w, OOC_UINT32 s);
+#define _TBN_TextRider__WriterDesc_WriteSet 19
+typedef void (*_TBP_TextRider__WriterDesc_WriteSet)(TextRider__Writer w, OOC_UINT32 s);
+extern void TextRider__WriterDesc_WriteLn(TextRider__Writer w);
+#define _TBN_TextRider__WriterDesc_WriteLn 20
+typedef void (*_TBP_TextRider__WriterDesc_WriteLn)(TextRider__Writer w);
+extern void TextRider__InitReader(TextRider__Reader r, Channel__Channel ch);
+extern TextRider__Reader TextRider__ConnectReader(Channel__Channel ch);
+extern void TextRider__InitWriter(TextRider__Writer w, Channel__Channel ch);
+extern TextRider__Writer TextRider__ConnectWriter(Channel__Channel ch);
+extern void TextRider__InitScanner(TextRider__Scanner s, Channel__Channel ch);
+extern TextRider__Scanner TextRider__ConnectScanner(Channel__Channel ch);
+extern void OOC_TextRider_init(void);
+extern void OOC_TextRider_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_TextRider__Reader;
+extern RT0__StructDesc _td_TextRider__ReaderDesc;
+extern RT0__StructDesc _td_TextRider__3522;
+extern RT0__StructDesc _td_TextRider__4478;
+extern RT0__StructDesc _td_TextRider__4517;
+extern RT0__StructDesc _td_TextRider__Writer;
+extern RT0__StructDesc _td_TextRider__WriterDesc;
+extern RT0__StructDesc _td_TextRider__4980;
+extern RT0__StructDesc _td_TextRider__String;
+extern RT0__StructDesc _td_TextRider__Scanner;
+extern RT0__StructDesc _td_TextRider__ScannerDesc;
+extern RT0__StructDesc _td_TextRider__ErrorContext;
+extern RT0__StructDesc _td_TextRider__ErrorContextDesc;
+extern RT0__StructDesc _td_TextRider__7810;
+extern RT0__StructDesc _td_TextRider__12119;
+extern RT0__StructDesc _td_TextRider__16581;
+extern RT0__StructDesc _td_TextRider__17774;
+extern RT0__StructDesc _td_TextRider__18723;
+extern RT0__StructDesc _td_TextRider__19932;
+extern RT0__StructDesc _td_TextRider__20367;
+extern RT0__StructDesc _td_TextRider__22560;
+extern RT0__StructDesc _td_TextRider__24900;
+extern RT0__StructDesc _td_TextRider__27208;
+extern RT0__StructDesc _td_TextRider__33072;
+extern RT0__StructDesc _td_TextRider__38078;
+extern RT0__StructDesc _td_TextRider__38942;
+extern RT0__StructDesc _td_TextRider__39784;
+extern RT0__StructDesc _td_TextRider__41984;
+extern RT0__StructDesc _td_TextRider__43462;
+extern RT0__StructDesc _td_TextRider__43835;
+extern RT0__StructDesc _td_TextRider__44278;
+extern RT0__StructDesc _td_TextRider__44663;
+extern RT0__StructDesc _td_TextRider__45111;
+extern RT0__StructDesc _td_TextRider__45494;
+#endif /* _MODULE_TextRider_ */
+
+/* --- */

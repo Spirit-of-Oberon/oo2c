@@ -1,0 +1,70 @@
+#ifndef _MODULE_Config_Section_
+#define _MODULE_Config_Section_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <Channel.oh>
+#include <XML/Error.oh>
+#include <XML/Locator.oh>
+#include <Config/Parser.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct Config_Section__SectionDesc *Config_Section__Section;
+typedef struct Config_Section__SectionDesc {
+  XML_UnicodeBuffer__CharArray name;
+} Config_Section__SectionDesc;
+typedef struct Config_Section__NodeDesc *Config_Section__Node;
+typedef struct Config_Section__NodeDesc {
+  Config_Section__Node next;
+  Config_Section__Section section;
+} Config_Section__NodeDesc;
+typedef struct Config_Section__SectionListDesc *Config_Section__SectionList;
+typedef struct Config_Section__SectionListDesc {
+  Config_Section__Node head;
+} Config_Section__SectionListDesc;
+typedef struct Config_Section__ErrorContextDesc *Config_Section__ErrorContext;
+typedef struct Config_Section__ErrorContextDesc {
+  Msg__StringPtr id;
+  XML_Error__Mapping mapping;
+} Config_Section__ErrorContextDesc;
+extern void Config_Section__ErrorContextDesc_GetTemplate(Config_Section__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_Config_Section__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_Config_Section__ErrorContextDesc_GetTemplate)(Config_Section__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void Config_Section__Init(Config_Section__Section s, const Config_Parser__String id__ref, OOC_LEN id_0d);
+extern void Config_Section__SectionDesc_ProcessElements(Config_Section__Section s, Config_Parser__Element sectionRoot, XML_Locator__ErrorListener errorListener);
+#define _TBN_Config_Section__SectionDesc_ProcessElements 0
+typedef void (*_TBP_Config_Section__SectionDesc_ProcessElements)(Config_Section__Section s, Config_Parser__Element sectionRoot, XML_Locator__ErrorListener errorListener);
+extern void Config_Section__SectionDesc_DumpContent(Config_Section__Section s, Channel__Channel ch);
+#define _TBN_Config_Section__SectionDesc_DumpContent 1
+typedef void (*_TBP_Config_Section__SectionDesc_DumpContent)(Config_Section__Section s, Channel__Channel ch);
+extern Config_Section__SectionList Config_Section__NewSectionList(void);
+extern void Config_Section__SectionListDesc_Add(Config_Section__SectionList sl, Config_Section__Section section);
+#define _TBN_Config_Section__SectionListDesc_Add 0
+typedef void (*_TBP_Config_Section__SectionListDesc_Add)(Config_Section__SectionList sl, Config_Section__Section section);
+extern Config_Section__Section Config_Section__SectionListDesc_Get(Config_Section__SectionList sl, XML_UnicodeBuffer__CharArray name);
+#define _TBN_Config_Section__SectionListDesc_Get 1
+typedef Config_Section__Section (*_TBP_Config_Section__SectionListDesc_Get)(Config_Section__SectionList sl, XML_UnicodeBuffer__CharArray name);
+extern void Config_Section__SectionListDesc_ProcessElements(Config_Section__SectionList sl, Config_Parser__Element root, const Config_Parser__String rootElementName__ref, OOC_LEN rootElementName_0d, Config_Parser__Parser p);
+#define _TBN_Config_Section__SectionListDesc_ProcessElements 2
+typedef void (*_TBP_Config_Section__SectionListDesc_ProcessElements)(Config_Section__SectionList sl, Config_Parser__Element root, const Config_Parser__String rootElementName__ref, OOC_LEN rootElementName_0d, Config_Parser__Parser p);
+extern void Config_Section__SectionListDesc_DumpContent(Config_Section__SectionList sl, Channel__Channel ch);
+#define _TBN_Config_Section__SectionListDesc_DumpContent 3
+typedef void (*_TBP_Config_Section__SectionListDesc_DumpContent)(Config_Section__SectionList sl, Channel__Channel ch);
+extern void OOC_Config_Section_init(void);
+extern void OOC_Config_Section_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Config_Section__Section;
+extern RT0__StructDesc _td_Config_Section__SectionDesc;
+extern RT0__StructDesc _td_Config_Section__Node;
+extern RT0__StructDesc _td_Config_Section__NodeDesc;
+extern RT0__StructDesc _td_Config_Section__SectionList;
+extern RT0__StructDesc _td_Config_Section__SectionListDesc;
+extern RT0__StructDesc _td_Config_Section__ErrorContext;
+extern RT0__StructDesc _td_Config_Section__ErrorContextDesc;
+extern RT0__StructDesc _td_Config_Section__794;
+#endif /* _MODULE_Config_Section_ */
+
+/* --- */

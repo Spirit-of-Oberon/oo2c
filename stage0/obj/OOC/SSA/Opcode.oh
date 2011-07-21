@@ -1,0 +1,133 @@
+#ifndef _MODULE_OOC_SSA_Opcode_
+#define _MODULE_OOC_SSA_Opcode_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/SymbolTable/Predef.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 OOC_SSA_Opcode__Class;
+typedef OOC_INT8 OOC_SSA_Opcode__Subclass;
+#define OOC_SSA_Opcode__const 0
+#define OOC_SSA_Opcode__declRef 1
+#define OOC_SSA_Opcode__typeRef 2
+#define OOC_SSA_Opcode__address 3
+#define OOC_SSA_Opcode__enter 4
+#define OOC_SSA_Opcode__select 5
+#define OOC_SSA_Opcode__collect 6
+#define OOC_SSA_Opcode__return 7
+#define OOC_SSA_Opcode__selectReturn 8
+#define OOC_SSA_Opcode__exit 9
+#define OOC_SSA_Opcode__loopStart 10
+#define OOC_SSA_Opcode__loopEnd 11
+#define OOC_SSA_Opcode__get 12
+#define OOC_SSA_Opcode__set 13
+#define OOC_SSA_Opcode__copy 14
+#define OOC_SSA_Opcode__copyString 15
+#define OOC_SSA_Opcode__cmpString 16
+#define OOC_SSA_Opcode__concat 17
+#define OOC_SSA_Opcode__moveBlock 18
+#define OOC_SSA_Opcode__add 19
+#define OOC_SSA_Opcode__subtract 20
+#define OOC_SSA_Opcode__negate 21
+#define OOC_SSA_Opcode__multiply 22
+#define OOC_SSA_Opcode__divide 23
+#define OOC_SSA_Opcode__modulo 24
+#define OOC_SSA_Opcode__eql 25
+#define OOC_SSA_Opcode__neq 26
+#define OOC_SSA_Opcode__lss 27
+#define OOC_SSA_Opcode__leq 28
+#define OOC_SSA_Opcode__gtr 29
+#define OOC_SSA_Opcode__geq 30
+#define OOC_SSA_Opcode__and 31
+#define OOC_SSA_Opcode__or 32
+#define OOC_SSA_Opcode__not 33
+#define OOC_SSA_Opcode__logicalAnd 34
+#define OOC_SSA_Opcode__logicalOr 35
+#define OOC_SSA_Opcode__logicalXor 36
+#define OOC_SSA_Opcode__logicalComplement 37
+#define OOC_SSA_Opcode__logicalSubtr 38
+#define OOC_SSA_Opcode__setBit 39
+#define OOC_SSA_Opcode__clearBit 40
+#define OOC_SSA_Opcode__typeCast 41
+#define OOC_SSA_Opcode__typeConv 42
+#define OOC_SSA_Opcode__setMember 43
+#define OOC_SSA_Opcode__setRange 44
+#define OOC_SSA_Opcode__abs 45
+#define OOC_SSA_Opcode__shiftLeft 46
+#define OOC_SSA_Opcode__shiftRight 47
+#define OOC_SSA_Opcode__ash 48
+#define OOC_SSA_Opcode__cap 49
+#define OOC_SSA_Opcode__entier 50
+#define OOC_SSA_Opcode__indexed 51
+#define OOC_SSA_Opcode__lsh 52
+#define OOC_SSA_Opcode__rot 53
+#define OOC_SSA_Opcode__odd 54
+#define OOC_SSA_Opcode__call 55
+#define OOC_SSA_Opcode__getLengthHeap 56
+#define OOC_SSA_Opcode__getLengthParam 57
+#define OOC_SSA_Opcode__copyParameter 58
+#define OOC_SSA_Opcode__newObject 59
+#define OOC_SSA_Opcode__newBlock 60
+#define OOC_SSA_Opcode__typeTag 61
+#define OOC_SSA_Opcode__typeTest 62
+#define OOC_SSA_Opcode__tbProcAddress 63
+#define OOC_SSA_Opcode__assert 64
+#define OOC_SSA_Opcode__halt 65
+#define OOC_SSA_Opcode__checkIndex 66
+#define OOC_SSA_Opcode__checkPointer 67
+#define OOC_SSA_Opcode__typeGuard 68
+#define OOC_SSA_Opcode__failedCase 69
+#define OOC_SSA_Opcode__failedWith 70
+#define OOC_SSA_Opcode__failedTypeAssert 71
+#define OOC_SSA_Opcode__tryStart 72
+#define OOC_SSA_Opcode__tryEnd 73
+#define OOC_SSA_Opcode__raiseException 74
+#define OOC_SSA_Opcode__currentException 76
+#define OOC_SSA_Opcode__clearException 77
+#define OOC_SSA_Opcode__pushExceptionContext 78
+#define OOC_SSA_Opcode__popExceptionContext 79
+#define OOC_SSA_Opcode__activateContext 80
+#define OOC_SSA_Opcode__preloadedVar 81
+#define OOC_SSA_Opcode__labels 82
+#define OOC_SSA_Opcode__dgate 83
+#define OOC_SSA_Opcode__designStandin 84
+#define OOC_SSA_Opcode__equiv 85
+#define OOC_SSA_Opcode__equivPRE 86
+#define OOC_SSA_Opcode__vtableProcAddress 87
+#define OOC_SSA_Opcode__noop 88
+#define OOC_SSA_Opcode__lastOpcode 88
+#define OOC_SSA_Opcode__scNone 0
+#define OOC_SSA_Opcode__scSigned8 1
+#define OOC_SSA_Opcode__scSigned16 2
+#define OOC_SSA_Opcode__scSigned32 3
+#define OOC_SSA_Opcode__scSigned64 4
+#define OOC_SSA_Opcode__scUnsigned8 5
+#define OOC_SSA_Opcode__scUnsigned16 6
+#define OOC_SSA_Opcode__scUnsigned32 7
+#define OOC_SSA_Opcode__scUnsigned64 8
+#define OOC_SSA_Opcode__scAddress 9
+#define OOC_SSA_Opcode__scBoolean 5
+#define OOC_SSA_Opcode__scLength 3
+#define OOC_SSA_Opcode__scReal32 10
+#define OOC_SSA_Opcode__scReal64 11
+#define OOC_SSA_Opcode__lastSubclass 11
+extern OOC_CHAR8 OOC_SSA_Opcode__IsSigned(OOC_INT8 subclass);
+extern OOC_CHAR8 OOC_SSA_Opcode__IsUnsigned(OOC_INT8 subclass);
+extern OOC_CHAR8 OOC_SSA_Opcode__ConvDiffersFromCast(OOC_INT8 from, OOC_INT8 to);
+extern void OOC_SSA_Opcode__GetSubclassName(OOC_INT8 subclass, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_SSA_Opcode__GetName(OOC_INT8 _class, OOC_INT8 subclass, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern OOC_INT8 OOC_SSA_Opcode__TypeToSubclass(OOC_SymbolTable__Type type);
+extern void OOC_OOC_SSA_Opcode_init(void);
+extern void OOC_OOC_SSA_Opcode_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Opcode__34364;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__34450;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__35036;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__35139;
+#endif /* _MODULE_OOC_SSA_Opcode_ */
+
+/* --- */

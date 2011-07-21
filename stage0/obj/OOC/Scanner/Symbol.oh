@@ -1,0 +1,104 @@
+#ifndef _MODULE_OOC_Scanner_Symbol_
+#define _MODULE_OOC_Scanner_Symbol_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 OOC_Scanner_Symbol__Id;
+#define OOC_Scanner_Symbol__times 1
+#define OOC_Scanner_Symbol__slash 2
+#define OOC_Scanner_Symbol__div 3
+#define OOC_Scanner_Symbol__mod 4
+#define OOC_Scanner_Symbol__and 5
+#define OOC_Scanner_Symbol__plus 6
+#define OOC_Scanner_Symbol__minus 7
+#define OOC_Scanner_Symbol__or 8
+#define OOC_Scanner_Symbol__eql 9
+#define OOC_Scanner_Symbol__neq 10
+#define OOC_Scanner_Symbol__lss 11
+#define OOC_Scanner_Symbol__leq 12
+#define OOC_Scanner_Symbol__gtr 13
+#define OOC_Scanner_Symbol__geq 14
+#define OOC_Scanner_Symbol__in 15
+#define OOC_Scanner_Symbol__is 16
+#define OOC_Scanner_Symbol__arrow 17
+#define OOC_Scanner_Symbol__period 18
+#define OOC_Scanner_Symbol__comma 19
+#define OOC_Scanner_Symbol__colon 20
+#define OOC_Scanner_Symbol__upto 21
+#define OOC_Scanner_Symbol__rParen 22
+#define OOC_Scanner_Symbol__rBrak 23
+#define OOC_Scanner_Symbol__rBrace 24
+#define OOC_Scanner_Symbol__of 25
+#define OOC_Scanner_Symbol__catch 26
+#define OOC_Scanner_Symbol__raises 27
+#define OOC_Scanner_Symbol__then 28
+#define OOC_Scanner_Symbol__do 29
+#define OOC_Scanner_Symbol__to 30
+#define OOC_Scanner_Symbol__by 31
+#define OOC_Scanner_Symbol__lParen 32
+#define OOC_Scanner_Symbol__lBrak 33
+#define OOC_Scanner_Symbol__lBrace 34
+#define OOC_Scanner_Symbol__not 35
+#define OOC_Scanner_Symbol__becomes 36
+#define OOC_Scanner_Symbol__number10 37
+#define OOC_Scanner_Symbol__number16 38
+#define OOC_Scanner_Symbol__number16X 39
+#define OOC_Scanner_Symbol__numberExpE 40
+#define OOC_Scanner_Symbol__numberExpD 41
+#define OOC_Scanner_Symbol__nil 42
+#define OOC_Scanner_Symbol__stringSingle 43
+#define OOC_Scanner_Symbol__stringDouble 44
+#define OOC_Scanner_Symbol__ident 45
+#define OOC_Scanner_Symbol__semicolon 46
+#define OOC_Scanner_Symbol__bar 47
+#define OOC_Scanner_Symbol__end 48
+#define OOC_Scanner_Symbol__else 49
+#define OOC_Scanner_Symbol__elsif 50
+#define OOC_Scanner_Symbol__until 51
+#define OOC_Scanner_Symbol__if 52
+#define OOC_Scanner_Symbol__case 53
+#define OOC_Scanner_Symbol__while 54
+#define OOC_Scanner_Symbol__repeat 55
+#define OOC_Scanner_Symbol__loop 56
+#define OOC_Scanner_Symbol__for 57
+#define OOC_Scanner_Symbol__with 58
+#define OOC_Scanner_Symbol__try 59
+#define OOC_Scanner_Symbol__exit 60
+#define OOC_Scanner_Symbol__return 61
+#define OOC_Scanner_Symbol__array 62
+#define OOC_Scanner_Symbol__record 63
+#define OOC_Scanner_Symbol__pointer 64
+#define OOC_Scanner_Symbol__begin 65
+#define OOC_Scanner_Symbol__const 66
+#define OOC_Scanner_Symbol__type 67
+#define OOC_Scanner_Symbol__var 68
+#define OOC_Scanner_Symbol__procedure 69
+#define OOC_Scanner_Symbol__import 70
+#define OOC_Scanner_Symbol__module 71
+#define OOC_Scanner_Symbol__endOfFile 72
+#define OOC_Scanner_Symbol__invalid 73
+#define OOC_Scanner_Symbol__pragmaStart 74
+#define OOC_Scanner_Symbol__pragmaEnd 75
+#define OOC_Scanner_Symbol__threeDots 76
+#define OOC_Scanner_Symbol__comment 77
+#define OOC_Scanner_Symbol__docComment 78
+#define OOC_Scanner_Symbol__pragma 79
+#define OOC_Scanner_Symbol__whitespace 80
+extern OOC_CHAR8 OOC_Scanner_Symbol__name[81][13];
+extern OOC_CHAR8 OOC_Scanner_Symbol__representation[81][10];
+extern OOC_CHAR8 OOC_Scanner_Symbol__IsKeyword(OOC_INT8 id);
+extern OOC_CHAR8 OOC_Scanner_Symbol__IsWhitespace(OOC_INT8 id);
+extern void OOC_OOC_Scanner_Symbol_init(void);
+extern void OOC_OOC_Scanner_Symbol_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Scanner_Symbol__2526;
+extern RT0__StructDesc _td_OOC_Scanner_Symbol__2508;
+extern RT0__StructDesc _td_OOC_Scanner_Symbol__2634;
+extern RT0__StructDesc _td_OOC_Scanner_Symbol__2616;
+#endif /* _MODULE_OOC_Scanner_Symbol_ */
+
+/* --- */

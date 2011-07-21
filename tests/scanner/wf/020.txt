@@ -1,0 +1,1 @@
+a<*DEFINE new:=FALSE; IF new THEN*>b<*ELSE*>c<*END*>d

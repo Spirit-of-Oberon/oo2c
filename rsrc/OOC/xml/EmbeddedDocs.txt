@@ -1,0 +1,77 @@
+[This is a short description of documentation string, embedded
+ Texinfo, and how to use the existing ooc2 codebase to create
+ formatted and cross-referenced HTM documentation.  -- mva 2002/12/05 ]
+
+
+1. Documentation Strings and Embedded Texinfo
+---------------------------------------------
+
+Documentation strings are a special form of command.  The starting
+delimiter is `(**'.  They refer to the nearest non-parameter
+identifier declaration in front of them.  Syntax and semantics of
+embedded tags are taken from Texinfo (please refer to the Texinfo
+documentation for details).  For examples, take a look at the
+documentation in `libxml/src/URI.Mod'.  In `ooc2/src/OOC/Doc.Mod' you
+find a checklist what to do when adding new commands.
+
+The following tables list the commands that are currently implemented:
+
+Glyphs: @@, @{, @}, @bullet, @dots, @minus, @result, ---
+
+Font and style commands:
+
+   @asis   -- as is
+   @cite   -- name of a book (with no cross reference link available)
+   @code   -- syntactic tokens
+   @dfn    -- introductory or defining use of a technical term
+   @emph   -- emphasis; produces *italics* in printout
+   @file   -- file name
+   @kbd    -- input to be typed by users
+   @samp   -- literal example or sequence of characters
+   @strong -- stronger emphasis than @emph; produces *bold* in printout
+   @var    -- metasyntactic variables (e.g., formal procedure parameters)
+
+Lists and tables:
+
+   @enumerate -- enumerated lists, using numbers or letters
+   @itemize   -- itemized lists with and without bullets
+   @table     -- two-column tables with highlighting
+
+   @item      -- used with the above lists and tables for each entry
+   @asis      -- used with @table for entries without added highlighting
+   @bullet    -- used with @itemize
+
+Paragraph formatting:
+
+   @example   -- example that is not part of the running text (fixed font)
+   @quotation -- excerpt from another (real or hypothetical) printed work
+   @noindent  -- prevents paragraph indentation
+   @table     -- two column table (sort of)
+
+Cross reference:
+
+   @email -- email address
+   @url   -- indicate a uniform resource locator (URL)
+   @uref  -- reference to a uniform resource locator (URL)
+
+Extensions for OOC
+   @omodule, @oconst, @ofield, @oparam, @oproc, @otype, @ovar --
+     inline command, reference to named Oberon-2 entity; names can be
+     relative to the current position (procedure, record) [example:
+     @oparam{p1}, @otype{Node}]; if the name cannot be resolved, it is
+     reported as an error, _unless_ the name is prefixed with an
+     asterisk `*'.  With this prefix, it is assumed to be an external
+     name, beginning with a module name [example:
+     @otype{XML:Parser.Parser}].
+
+   @precond, @postcond --
+     block command, indicates pre-condition or post-condition of 
+     a procedure
+
+
+
+2. Producing HTML Documentation
+-------------------------------
+
+Done automtically by the oo2c command `--build-package'.  HTML files
+end up in <repository>/oocdoc/html.

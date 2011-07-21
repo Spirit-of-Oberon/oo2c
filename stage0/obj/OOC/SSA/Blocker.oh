@@ -1,0 +1,172 @@
+#ifndef _MODULE_OOC_SSA_Blocker_
+#define _MODULE_OOC_SSA_Blocker_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/Dictionary.oh>
+#include <IO.oh>
+#include <OOC/SSA.oh>
+#include <OOC/SSA/Opcode.oh>
+#include <OOC/SSA/Opnd.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_SSA_Blocker__ProxyDesc *OOC_SSA_Blocker__Proxy;
+typedef struct OOC_SSA_Blocker__RegionDesc *OOC_SSA_Blocker__Region;
+typedef struct OOC_SSA_Blocker__SelectDesc *OOC_SSA_Blocker__Select;
+typedef struct OOC_SSA_Blocker__LoopDesc *OOC_SSA_Blocker__Loop;
+typedef struct OOC_SSA_Blocker__ProxyDesc {
+  OOC_SSA_Blocker__Proxy nextProxy;
+  OOC_SSA_Blocker__Proxy prevProxy;
+  OOC_SSA__Instr instr;
+  OOC_SSA_Blocker__Region region;
+  OOC_SSA_Blocker__Loop loopAssoc;
+  OOC_SSA_Blocker__Loop visitedForLoop;
+  OOC_CHAR8 visitedResult;
+  OOC_CHAR8 __pad25;
+  OOC_CHAR8 __pad26;
+  OOC_CHAR8 __pad27;
+  OOC_SSA_Blocker__Loop discoveredForLoop;
+  OOC_INT32 marker;
+  OOC_INT32 length;
+  OOC_INT32 distance;
+  OOC_INT32 degreeDiff;
+} OOC_SSA_Blocker__ProxyDesc;
+typedef struct OOC_SSA_Blocker__RegionDesc {
+  OOC_SSA_Blocker__Proxy nextProxy;
+  OOC_SSA_Blocker__Proxy prevProxy;
+  OOC_SSA__Instr instr;
+  OOC_SSA_Blocker__Region region;
+  OOC_SSA_Blocker__Loop loopAssoc;
+  OOC_SSA_Blocker__Loop visitedForLoop;
+  OOC_CHAR8 visitedResult;
+  OOC_CHAR8 __pad25;
+  OOC_CHAR8 __pad26;
+  OOC_CHAR8 __pad27;
+  OOC_SSA_Blocker__Loop discoveredForLoop;
+  OOC_INT32 marker;
+  OOC_INT32 length;
+  OOC_INT32 distance;
+  OOC_INT32 degreeDiff;
+  OOC_SSA_Blocker__Proxy first;
+  OOC_SSA_Blocker__Proxy last;
+  OOC_INT32 nestingDepth;
+} OOC_SSA_Blocker__RegionDesc;
+typedef struct OOC_SSA_Blocker__SelectDesc {
+  OOC_SSA_Blocker__Proxy nextProxy;
+  OOC_SSA_Blocker__Proxy prevProxy;
+  OOC_SSA__Instr instr;
+  OOC_SSA_Blocker__Region region;
+  OOC_SSA_Blocker__Loop loopAssoc;
+  OOC_SSA_Blocker__Loop visitedForLoop;
+  OOC_CHAR8 visitedResult;
+  OOC_CHAR8 __pad25;
+  OOC_CHAR8 __pad26;
+  OOC_CHAR8 __pad27;
+  OOC_SSA_Blocker__Loop discoveredForLoop;
+  OOC_INT32 marker;
+  OOC_INT32 length;
+  OOC_INT32 distance;
+  OOC_INT32 degreeDiff;
+  OOC_SSA_Blocker__Proxy first;
+  OOC_SSA_Blocker__Proxy last;
+  OOC_INT32 nestingDepth;
+  OOC_SSA_Blocker__Region *paths;
+} OOC_SSA_Blocker__SelectDesc;
+typedef struct OOC_SSA_Blocker__PreceedsDesc *OOC_SSA_Blocker__Preceeds;
+typedef struct OOC_SSA_Blocker__PreceedsDesc {
+  OOC_SSA_Blocker__Preceeds nextPreceeds;
+  OOC_SSA_Blocker__Loop preceedingLoop;
+} OOC_SSA_Blocker__PreceedsDesc;
+typedef struct OOC_SSA_Blocker__LoopDesc {
+  OOC_SSA_Blocker__Proxy nextProxy;
+  OOC_SSA_Blocker__Proxy prevProxy;
+  OOC_SSA__Instr instr;
+  OOC_SSA_Blocker__Region region;
+  OOC_SSA_Blocker__Loop loopAssoc;
+  OOC_SSA_Blocker__Loop visitedForLoop;
+  OOC_CHAR8 visitedResult;
+  OOC_CHAR8 __pad25;
+  OOC_CHAR8 __pad26;
+  OOC_CHAR8 __pad27;
+  OOC_SSA_Blocker__Loop discoveredForLoop;
+  OOC_INT32 marker;
+  OOC_INT32 length;
+  OOC_INT32 distance;
+  OOC_INT32 degreeDiff;
+  OOC_SSA_Blocker__Proxy first;
+  OOC_SSA_Blocker__Proxy last;
+  OOC_INT32 nestingDepth;
+  OOC_SSA_Blocker__Loop nestedLoops;
+  OOC_SSA_Blocker__Loop nextLoop;
+  OOC_SSA_Blocker__Loop parentLoop;
+  OOC_SSA_Blocker__Preceeds preceedingList;
+  OOC_CHAR8 scheduled;
+} OOC_SSA_Blocker__LoopDesc;
+typedef struct OOC_SSA_Blocker__DependenceDataDesc *OOC_SSA_Blocker__DependenceData;
+typedef struct OOC_SSA_Blocker__DependenceDataDesc {
+  OOC_SSA_Blocker__Region root;
+  ADT_Dictionary__Dictionary proxyMap;
+} OOC_SSA_Blocker__DependenceDataDesc;
+extern void OOC_SSA_Blocker__RegionDesc_Append(OOC_SSA_Blocker__Region r, OOC_SSA_Blocker__Proxy p);
+#define _TBN_OOC_SSA_Blocker__RegionDesc_Append 4
+typedef void (*_TBP_OOC_SSA_Blocker__RegionDesc_Append)(OOC_SSA_Blocker__Region r, OOC_SSA_Blocker__Proxy p);
+extern void OOC_SSA_Blocker__RegionDesc_Insert(OOC_SSA_Blocker__Region r, OOC_SSA_Blocker__Proxy p);
+#define _TBN_OOC_SSA_Blocker__RegionDesc_Insert 5
+typedef void (*_TBP_OOC_SSA_Blocker__RegionDesc_Insert)(OOC_SSA_Blocker__Region r, OOC_SSA_Blocker__Proxy p);
+extern void OOC_SSA_Blocker__RegionDesc_Remove(OOC_SSA_Blocker__Region r, OOC_SSA_Blocker__Proxy p);
+#define _TBN_OOC_SSA_Blocker__RegionDesc_Remove 6
+typedef void (*_TBP_OOC_SSA_Blocker__RegionDesc_Remove)(OOC_SSA_Blocker__Region r, OOC_SSA_Blocker__Proxy p);
+extern void OOC_SSA_Blocker__LoopDesc_AppendLoop(OOC_SSA_Blocker__Loop loop, OOC_SSA_Blocker__Loop nestedLoop);
+#define _TBN_OOC_SSA_Blocker__LoopDesc_AppendLoop 7
+typedef void (*_TBP_OOC_SSA_Blocker__LoopDesc_AppendLoop)(OOC_SSA_Blocker__Loop loop, OOC_SSA_Blocker__Loop nestedLoop);
+extern void OOC_SSA_Blocker__RemoveAntiDeps(OOC_SSA__ProcBlock pb);
+extern void OOC_SSA_Blocker__RemoveRegionDeps(OOC_SSA__ProcBlock pb);
+extern OOC_SSA_Blocker__Region OOC_SSA_Blocker__ArrangeInstructions(OOC_SSA__ProcBlock pb, OOC_CHAR8 markAntiDeps);
+extern OOC_SSA_Blocker__DependenceData OOC_SSA_Blocker__GetDependenceData(OOC_SSA__ProcBlock pb);
+extern OOC_CHAR8 OOC_SSA_Blocker__DependenceDataDesc_SameRegion(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+#define _TBN_OOC_SSA_Blocker__DependenceDataDesc_SameRegion 0
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_Blocker__DependenceDataDesc_SameRegion)(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+extern OOC_CHAR8 OOC_SSA_Blocker__DependenceDataDesc_Dominates(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+#define _TBN_OOC_SSA_Blocker__DependenceDataDesc_Dominates 1
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_Blocker__DependenceDataDesc_Dominates)(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+extern OOC_CHAR8 OOC_SSA_Blocker__DependenceDataDesc_Conflict(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+#define _TBN_OOC_SSA_Blocker__DependenceDataDesc_Conflict 2
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_Blocker__DependenceDataDesc_Conflict)(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+extern OOC_CHAR8 OOC_SSA_Blocker__DependenceDataDesc_DependsOn(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+#define _TBN_OOC_SSA_Blocker__DependenceDataDesc_DependsOn 3
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_Blocker__DependenceDataDesc_DependsOn)(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+extern OOC_CHAR8 OOC_SSA_Blocker__DependenceDataDesc_AvailableTo(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+#define _TBN_OOC_SSA_Blocker__DependenceDataDesc_AvailableTo 4
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_Blocker__DependenceDataDesc_AvailableTo)(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr x, OOC_SSA__Instr y);
+extern OOC_SSA__Instr OOC_SSA_Blocker__DependenceDataDesc_GetSameInstr(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr regionInstr, OOC_SSA__Instr instr);
+#define _TBN_OOC_SSA_Blocker__DependenceDataDesc_GetSameInstr 5
+typedef OOC_SSA__Instr (*_TBP_OOC_SSA_Blocker__DependenceDataDesc_GetSameInstr)(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr regionInstr, OOC_SSA__Instr instr);
+extern void OOC_SSA_Blocker__DependenceDataDesc_SetRegion(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr regionInstr, OOC_SSA__Instr instr);
+#define _TBN_OOC_SSA_Blocker__DependenceDataDesc_SetRegion 6
+typedef void (*_TBP_OOC_SSA_Blocker__DependenceDataDesc_SetRegion)(OOC_SSA_Blocker__DependenceData dd, OOC_SSA__Instr regionInstr, OOC_SSA__Instr instr);
+extern void OOC_SSA_Blocker__Write(IO__ByteChannel c, OOC_SSA__ProcBlock pb);
+extern void OOC_SSA_Blocker__WriteMarker(IO__ByteChannel c, OOC_SSA__ProcBlock pb, ADT_Dictionary__Dictionary marker);
+extern void OOC_SSA_Blocker__ToStderr(OOC_SSA__ProcBlock pb);
+extern void OOC_OOC_SSA_Blocker_init(void);
+extern void OOC_OOC_SSA_Blocker_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Blocker__Proxy;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__Region;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__Select;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__Loop;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__ProxyDesc;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__RegionDesc;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__SelectDesc;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__5568;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__5557;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__Preceeds;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__PreceedsDesc;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__LoopDesc;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__DependenceData;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__DependenceDataDesc;
+extern RT0__StructDesc _td_OOC_SSA_Blocker__15944;
+#endif /* _MODULE_OOC_SSA_Blocker_ */
+
+/* --- */

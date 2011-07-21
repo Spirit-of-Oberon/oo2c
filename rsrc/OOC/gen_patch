@@ -1,0 +1,115 @@
+#! /bin/sh
+# Builds a patch file to update a given oo2c distribution to another.
+# usage: gen_patch <from-archive> <to-archive>
+# where <from-archive> is the name of the old distribution, and <to-archive>
+# the name of the patch target.  Both files can either be a tar, a gzipped tar,
+# or an bzipped[2] tar file.
+
+if test $# != 2; then
+  echo "usage: $0 <from-archive> <to-archive>"
+  exit 1
+fi
+
+set -e
+
+# select diff options:
+small_diff=${small_diff:-no}
+
+# how is GNU diff called on this system?
+if test "x`which gdiff`" = "x"; then
+  diff_cmd=diff
+else
+  diff_cmd=gdiff
+fi
+
+# put together options and environment values for diff:
+if test "x$small_diff" = xno; then
+  # unified, 3 lines of context
+  diff_format="-u"
+else
+  # unified, no context, try to find smaller set of changes
+  diff_format="-U 0 -d"
+fi
+diff_options="${diff_format}rN"  # $diff_format has to end with simple option
+diff_env="env LC_ALL=C TZ=UTC0"
+
+# there is probably a better way to get the various parts from the file names:
+prefix="`basename "$1" | sed -e "s:-.*$::g"`-"
+from="$1"
+to="$2"
+from_version=`echo "$from" | sed -e "s:.*$prefix::g" -e "s:\.tar::g" -e  "s:\.[bg]z2*$::g"`
+to_version=`echo "$to" | sed -e "s:.*$prefix::g" -e "s:\.tar::g" -e  "s:\.[bg]z2*$::g"`
+from_suffix=`echo "$from" | sed -e "s:.*$prefix$from_version::g"`
+to_suffix=`echo "$to" | sed -e "s:.*$prefix$to_version::g"`
+diff_name="$prefix$from_version-$to_version.diff"
+
+
+diff_file=$HOME/$diff_name
+patch_dir=/tmp/patch-$from_version-$to_version
+
+
+# do some checks and create working directory
+if test "$from_version" = "$to_version"; then
+  echo Both files contain the same version.  Aborting.
+  exit 1
+elif test -d $patch_dir; then
+  echo Directory $patch_dir already exists.  Remove it and try again.
+  exit 1
+elif mkdir $patch_dir; then
+  echo Using directory $patch_dir 
+else
+  echo Couldn\'t create directory $patch_dir.  Aborting.
+  exit 1
+fi
+
+# unpack tar archives
+echo Unpacking archive files
+if test "$from_suffix" = ".tar"; then
+  cat $from | (cd $patch_dir; tar xf -)
+elif test "$from_suffix" = ".tar.gz"; then
+  gzip -cd $from | (cd $patch_dir; tar xf -)
+elif test "$from_suffix" = ".tar.bz"; then
+  bzip -cd $from | (cd $patch_dir; tar xf -)
+elif test "$from_suffix" = ".tar.bz2"; then
+  bzip2 -cd $from | (cd $patch_dir; tar xf -)
+fi
+if test "$to_suffix" = ".tar"; then
+  cat $to | (cd $patch_dir; tar xf -)
+elif test "$to_suffix" = ".tar.gz"; then
+  gzip -cd $to | (cd $patch_dir; tar xf -)
+elif test "$to_suffix" = ".tar.bz"; then
+  bzip -cd $to | (cd $patch_dir; tar xf -)
+elif test "$to_suffix" = ".tar.bz2"; then
+  bzip2 -cd $to | (cd $patch_dir; tar xf -)
+fi
+
+# remove links do avoid duplicates
+cd $patch_dir
+rm -f $prefix$from_version/stage0/src $prefix$from_version/stage0/lib/src
+rm -f $prefix$to_version/stage0/src $prefix$to_version/stage0/lib/src
+
+# any additional commands requested?
+cd $patch_dir
+if [ -n "$pre_diff_cmd" ]; then
+  $pre_diff_cmd
+fi
+
+
+# create diff file, create gzipped copy
+echo Creating diffs
+diff_file=$HOME/$diff_name
+rm -f $diff_file $diff_file.gz $diff_file.bz2
+if $diff_env $diff_cmd $diff_options $prefix$from_version $prefix$to_version >>$diff_file; then
+  echo "No differences, aborting"
+  exit 1
+fi
+bzip2 -9 $diff_file 
+chmod 644 $diff_file.bz2
+
+# cleanup, report success
+cd $HOME
+rm -Rf $patch_dir
+echo "cd $HOME"
+echo "ls -l $diff_name*"
+ls -l $diff_name*
+echo Done

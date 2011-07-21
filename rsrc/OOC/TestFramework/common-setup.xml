@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<testcases profile="Test Suite Setup" default-lang="O2">
+  <test id="prepare_out_module"
+        type="accept"
+        file="../../../tests/compile/src/Out0.Mod">
+    This is not a test case.  Rather, it prepares an Oakwood
+    compliant module <code>Out</code> to supersede OOC's differing
+    module of the same name.  At the same time, it makes sure that
+    the files of the run-time system are in place.
+  </test>
+</testcases>

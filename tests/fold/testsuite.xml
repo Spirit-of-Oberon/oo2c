@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
+]>
+
+<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="prepare_out_module
+  function1 function2">
+  
+  <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
+    <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
+      This is not a test case.  Rather, it prepares an Oakwood
+      compliant module <code>Out</code> to supersede OOC's differing
+      module of the same name.
+    </test>
+  </testcases>
+  
+  <testcases profile="OOC2 Development" default-lang="O1 O2 AO">
+    <test id="function1" type="run"
+      file="Fold1.Mod" output="Fold1.Ref">
+      Test simple constant folding.
+    </test>
+    <test id="function2" type="run"
+      file="Fold2.Mod" output="Fold2.Ref">
+      Test type conversions for operands.
+    </test>
+  </testcases>
+  
+  <processor-info processor-name="TestCompile">
+  </processor-info>
+</testsuite-ext>

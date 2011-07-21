@@ -1,0 +1,68 @@
+#ifndef _MODULE_OOC_SymbolTable_Uses_
+#define _MODULE_OOC_SymbolTable_Uses_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/Error.oh>
+#include <OOC/SymbolTable.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_SymbolTable_Uses__UsesDesc *OOC_SymbolTable_Uses__Uses;
+typedef OOC_SymbolTable__Name *OOC_SymbolTable_Uses__Selector;
+typedef struct {
+  OOC_SymbolTable__Name ident;
+  OOC_SymbolTable__Declaration decl;
+} *OOC_SymbolTable_Uses__StoredUses;
+typedef struct OOC_SymbolTable_Uses__UsesDesc {
+  OOC_SymbolTable_Uses__Selector selector;
+  OOC_Error__List errList;
+  OOC_SymbolTable__Declaration pattern;
+  OOC_CHAR8 storeUses;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 storedUsesCount;
+  OOC_SymbolTable_Uses__StoredUses storedUses;
+} OOC_SymbolTable_Uses__UsesDesc;
+typedef struct OOC_SymbolTable_Uses__ErrorContextDesc *OOC_SymbolTable_Uses__ErrorContext;
+typedef struct OOC_SymbolTable_Uses__ErrorContextDesc {
+  Msg__StringPtr id;
+} OOC_SymbolTable_Uses__ErrorContextDesc;
+extern void OOC_SymbolTable_Uses__ErrorContextDesc_GetTemplate(OOC_SymbolTable_Uses__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_SymbolTable_Uses__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_SymbolTable_Uses__ErrorContextDesc_GetTemplate)(OOC_SymbolTable_Uses__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern OOC_SymbolTable_Uses__Uses OOC_SymbolTable_Uses__New(Object__String extIdent, OOC_CHAR8 *syntaxError);
+extern OOC_CHAR8 OOC_SymbolTable_Uses__UsesDesc_TrackingDeclarations(OOC_SymbolTable_Uses__Uses u);
+#define _TBN_OOC_SymbolTable_Uses__UsesDesc_TrackingDeclarations 0
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable_Uses__UsesDesc_TrackingDeclarations)(OOC_SymbolTable_Uses__Uses u);
+extern void OOC_SymbolTable_Uses__UsesDesc_StartModule(OOC_SymbolTable_Uses__Uses u, OOC_SymbolTable__Module symTab, OOC_Error__List errList);
+#define _TBN_OOC_SymbolTable_Uses__UsesDesc_StartModule 1
+typedef void (*_TBP_OOC_SymbolTable_Uses__UsesDesc_StartModule)(OOC_SymbolTable_Uses__Uses u, OOC_SymbolTable__Module symTab, OOC_Error__List errList);
+extern OOC_CHAR8 OOC_SymbolTable_Uses__UsesDesc_Matches(OOC_SymbolTable_Uses__Uses u, OOC_SymbolTable__Declaration decl);
+#define _TBN_OOC_SymbolTable_Uses__UsesDesc_Matches 2
+typedef OOC_CHAR8 (*_TBP_OOC_SymbolTable_Uses__UsesDesc_Matches)(OOC_SymbolTable_Uses__Uses u, OOC_SymbolTable__Declaration decl);
+extern void OOC_SymbolTable_Uses__UsesDesc_RegisterSymTab(OOC_SymbolTable_Uses__Uses u, OOC_SymbolTable__Module symTab);
+#define _TBN_OOC_SymbolTable_Uses__UsesDesc_RegisterSymTab 3
+typedef void (*_TBP_OOC_SymbolTable_Uses__UsesDesc_RegisterSymTab)(OOC_SymbolTable_Uses__Uses u, OOC_SymbolTable__Module symTab);
+extern void OOC_SymbolTable_Uses__Mark(OOC_SymbolTable__Declaration decl, OOC_SymbolTable_Uses__Uses uses, OOC_SymbolTable__Name ident);
+extern void OOC_OOC_SymbolTable_Uses_init(void);
+extern void OOC_OOC_SymbolTable_Uses_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__Uses;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__1023;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__Selector;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__1077;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__1068;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__StoredUses;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__UsesDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__ErrorContext;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__1756;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__2691;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__2988;
+extern RT0__StructDesc _td_OOC_SymbolTable_Uses__3102;
+#endif /* _MODULE_OOC_SymbolTable_Uses_ */
+
+/* --- */

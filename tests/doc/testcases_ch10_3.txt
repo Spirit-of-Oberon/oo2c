@@ -1,0 +1,331 @@
+Still missing: General overflow tests for constant folding (arguments
+in legal range, result in legal range) -- best done in ConstFold, I
+believe.  "Evaluate just once checks" are missing for COPY, INC, DEC,
+INCL, EXCL.  Check for constant element in range for INCL, EXCL, IN.
+Check for constant negative length in NEW.
+
+
+
+10.3 Predeclared Procedures ---------------------------
+
+The test cases listed below ignore overflow at run-time.  If overflow checking
+is to be implemented, these additional cases should be handled.
+
+  1) ABS(x:T), where x = MIN(T)
+  2) ASH(x, n) > MAX(LONGINT)
+  3) CHR(x), where x<0 or x>ORD(MAX(CHAR))
+  4) ENTIER(x), where ENTIER(x)<MIN(LONGINT) or ENTIER(x)>MAX(LONGINT)
+     [Note: This check is subject to rounding.  For example, with
+      round to nearest, all floating point values in the range
+      MIN(LONGINT)-0.5 < x <MIN(LONGINT)+0.5 are mapped to MIN(LONGINT)
+      and do not cause an overflow.]
+  5) DEC(v:T), where v = MIN(T)
+  6) DEC(v:T,n), where v-n < MIN(T)
+  7) INC(v:T), where v = MAX(T)
+  8) INC(v:T,n) where v+n > MAX(T)
+  9) INCL(v:T,n) where n<MIN(T) or n>MAX(T)
+ 10) EXCL(v:T,n) where n<MIN(T) or n>MAX(T)
+
+Most of the predefined functions should be folded to constants during
+compilation, given suitable arguments.  Otherwise, they cannot appear
+in CONST definitions.  Their testcases usually do not explicitly check
+that folding happens, but they do check that _if_ constant folding is
+done, _then_ the result is correct.
+
+
+
+Function Procedures
+-------------------
+
+### ABS(x)
+
+ACCEPT:
+
+  1) x is a numeric type (eg. shortint, longreal).  [Abs1]
+  2) x is a constant (should be folded)  [Abs1]
+
+REJECT:
+
+  1) x is not numeric (eg. CHAR)  [Abs2]
+
+
+### ASH(x, n)
+
+ACCEPT:
+
+  1) x and n are integer types  [Ash1]
+  2) n >= size of x (eg. ASH(shortint, 8)). This verifies that the "shift" is
+     done using the result type, not the original type.  [Ash1]
+  3) x and n are constant (should be folded)  [Ash1]
+
+REJECT:
+
+  1) x is not an integer type
+  2) n is not an integer type
+  3) x and n are constant integers, result out of range of LONGINT
+
+WARN:
+
+  1) n is constant, ABS(n) >= width of LONGINT
+
+ 
+### CAP(x)
+### ORD(x)
+
+ACCEPT:
+
+  1) x is a CHAR variable  [Cap1 Cap2]
+  2) x is a CHAR constant (eg. CAP(40X))  [Cap1]
+  3) x is a string constant (eg. CAP('a'))  [Cap1]
+
+REJECT:
+
+  1) x is not a CHAR  [Cap3 Cap4]
+
+
+### CHR(x)
+### LONGCHR(x)
+
+ACCEPT:
+
+  1) x is an integer inside the range of CHAR  [Chr1]
+  2) x is a constant (should be folded)  [Chr1]
+
+REJECT:
+
+  1) x is not an integer type  [Chr2]
+  2) x is a constant integer outside the range of CHAR  [Chr3]
+
+
+### ENTIER(x)
+
+ACCEPT:
+
+  1) x is REAL  [Entier1]
+  2) x is LONGREAL  [Entier1]
+  3) rounding is to -inf, both for positive and negative x  [Entier1]
+     
+REJECT:
+
+  1) x is not a real type (eg. INTEGER)  [Entier2]
+  2) x is constant and ENTIER(x) is outside the range of LONGINT
+     [postponed, should be done in ConstFold]
+
+
+### LEN(v, n)
+### LEN(v)
+
+ACCEPT:
+
+  1) v is a fixed length array  [Len1]
+  2) v is an open array (POINTER TO ARRAY ... )  [Array6 Array7]
+  3) v is an open array (passed as a VAR parameter)  [Array1-7]
+
+REJECT:
+
+  1) v is not an array designator  [Len8]
+  2) n is not an integer (eg. CHAR)  [Len6]
+  3) n is not constant (eg. INTEGER variable)  [Len7]
+  4) n is outside the range 0 <= n < number of array dimensions  [Len5]
+  5) v is a string constant (on the level of IR, LEN can be applied to 
+     strings, but this is forbidden on the level of the source code)  [Len4]
+
+
+### LONG(x)
+
+ACCEPT:
+
+  1) x is SHORTINT  [Long1]
+  2) x is INTEGER  [Long1]
+  3) x is REAL  [Long1]
+  4) x is constant  [Long1]
+
+REJECT:
+
+  1) x is HUGEINT  [Long2]
+  2) x is LONGREAL  [Long3]
+  3) x is LONGCHAR  [Long4]
+  3) x is not a numeric type  [Long5 Long6]
+
+
+### SHORT(x)
+
+ACCEPT:
+
+  1) x is INTEGER  [Short1]
+  2) x is LONGINT  [Short1]
+  3) x is LONGREAL  [Short1]
+  4) x is LONGCHAR  [Short1]
+  5) is constant (eg. 0)  [Short1]
+
+REJECT:
+
+  1) x is SHORTINT  [Short2]
+  2) x is REAL  [Short3]
+  3) x is CHAR  [Short4]
+  3) x is not a numeric type  [Short5 Short6]
+
+
+### MAX(T)
+### MIN(T)
+
+ACCEPT:
+
+  1) T is an integer type (eg. SHORTINT, LONGINT)  [MinMax1]
+  2) T is a real type (eg. REAL, LONGREAL)  [MinMax2]
+  3) T is a character type (eg. CHAR)  [MinMax3]
+  4) T is a SET type  [OpSet8]
+
+REJECT:
+
+  1) T is not a type (eg. a variable identifier)  [MinMax4]
+  2) T is not a basic type (eg. POINTER, RECORD)  [MinMax5]
+  3) T is BOOLEAN  [MinMax5]
+
+
+### ODD(x)
+
+ACCEPT:
+
+  1) x is an integer type (eg. SHORTINT, LONGINT)   [Odd1]
+  2) x is constant (should be folded)  [Odd1]
+
+REJECT:
+
+  1) x is not an integer type  [Odd2]
+
+
+### SIZE(T)
+
+ACCEPT:
+
+  1) T is a basic type [compile/ConstFold10]
+  2) T is a POINTER, PROCEDURE, RECORD, or ARRAY type [compile/ConstFold11]
+
+REJECT:
+
+  1) T is not a type  [Size1]
+  2) T is a type constructor eg. SIZE(ARRAY 2 OF INTEGER)  [Size2]
+  3) T is an open array type, for example ARRAY OF CHAR  [Size3]
+
+
+
+
+Proper Procedures
+-----------------
+
+### ASSERT(x)
+### ASSERT(x, n)
+
+ACCEPT:
+
+  1) x is BOOLEAN expression  [For11 HOTLoop12]
+  2) x is TRUE  [For11]
+  3) x is FALSE  [HOTBaselineError1.Mod]
+
+REJECT:
+
+  1) x is not BOOLEAN (eg. CHAR)  [Assert1]
+  2) n is not integer (eg. CHAR)  [Assert2]
+  3) n is not constant (eg. integer variable)  [Assert3]
+  4) n is out of range (only a subset of all integers is supported by
+     the underlying OS)  [Assert4]
+
+### COPY(x, v)
+
+ACCEPT:
+
+  1) x is a string constant  [Copy1]
+  2) x is a character array containing terminating 0X  [Copy1]
+  3) x is a string longer than LEN(v)-1. Verify that result is
+     truncated with terminating 0X.  [Copy1]
+  4) verify that designator v is only evaluated once
+
+  Note: If x is a character array without terminating 0X, then the
+  result is undefined.
+
+REJECT:
+
+  1) v is not a character array  [Copy3 Copy4]
+  2) v is read-only  [Copy5]
+  3) x is not a character array or string  [Copy6]
+
+
+  DEC(v)
+  DEC(v, n)
+  INC(v)
+  INC(v, n)
+
+ACCEPT:
+
+  1) v is an integer variable  [Inc1, various Array*, HOTLoop*]
+  2) n is an integer type included by the variable  [HOTLoop12]
+  3) verify that designator is only evaluated once (eg. INC(a[P()])). This
+     causes problems with oo2c-1.5.7.
+
+REJECT:
+
+  1) v is not integer  [Inc2]
+  2) v is not variable (eg. constant, function result)  [Inc3]
+  3) v is read-only variable  [same code as Inc3]
+  4) n is outside the range of the type of v (that is, the type of v
+     does not include that of n)  [Inc4 Inc5]
+
+
+### EXCL(v, x)
+### INCL(v, x)
+
+ACCEPT:
+
+  1) v is a set variable  [Incl1]
+  2) verify that designator is only evaluated once (see above).
+
+REJECT:
+
+  1) v is not SET  [Incl2]
+  2) v is not variable (eg. constant, function result)  [Incl3]
+  3) v is read-only variable  [same code as Incl3]
+  4) x is not integer  [Incl4]
+  5) x is a constant with x<MIN(v) or x>MAX(v)
+
+
+### HALT(n)
+
+ACCEPT:
+
+  1) n is an integer constant  [omitted; the test framework tests no
+     exit code]
+
+REJECT:
+
+  1) n is not integer  [Halt1]
+  2) n is not constant  [Halt3]
+  3) n is out of range (like ASSERT)  [Halt4]
+
+
+
+### NEW(v)
+### NEW(v, x_0, ..., x_n)
+
+ACCEPT:
+
+  1) v is a pointer to record  [With*]
+  2) v is a pointer to fixed-length array  [Array6]
+  3) v is a pointer to an open array  [Array7 Array8]
+
+REJECT:
+
+  1) v is not a pointer (eg. SYSTEM.PTR)  [New1]
+  2) v is not a variable (eg. function result)  [New2]
+  3) v is read-only  [same code as New2]
+  4) x_i is not integer  [New3]
+  5) x_i is constant and negative
+  6) number of supplied lengths too large  [New5]
+  7) number of supplied lengths too small  [New4]
+  8) v is an open array VAR parameter  [New6]
+
+ERROR:
+
+  1) x_i is negative  [New7]
+
+

@@ -1,0 +1,47 @@
+#ifndef _MODULE_OOC_SSA_CSE_
+#define _MODULE_OOC_SSA_CSE_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_SSA__Result *OOC_SSA_CSE__ResultList;
+typedef struct OOC_SSA_CSE__PartitionDesc *OOC_SSA_CSE__Partition;
+typedef OOC_SSA_CSE__Partition *OOC_SSA_CSE__ChildrenList;
+typedef struct OOC_SSA_CSE__PartitionDesc {
+  OOC_SSA_CSE__Partition nextPartition;
+  OOC_SSA_CSE__Partition nextWorklist;
+  OOC_INT32 size;
+  OOC_SSA_CSE__ResultList iList;
+  OOC_CHAR8 splitted;
+  OOC_CHAR8 inWorklist;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_SSA_CSE__Partition ancestor;
+  OOC_INT32 ancestorOpnd;
+  OOC_SSA_CSE__ChildrenList splitChildren;
+  OOC_SSA_CSE__Partition nextTouched;
+  OOC_SSA_CSE__Partition nextOrigin;
+} OOC_SSA_CSE__PartitionDesc;
+extern void OOC_SSA_CSE__PartitionDesc_Add(OOC_SSA_CSE__Partition p, OOC_SSA__Instr instr);
+#define _TBN_OOC_SSA_CSE__PartitionDesc_Add 4
+typedef void (*_TBP_OOC_SSA_CSE__PartitionDesc_Add)(OOC_SSA_CSE__Partition p, OOC_SSA__Instr instr);
+extern void OOC_SSA_CSE__Transform(OOC_SSA__ProcBlock pb);
+extern void OOC_OOC_SSA_CSE_init(void);
+extern void OOC_OOC_SSA_CSE_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_CSE__997;
+extern RT0__StructDesc _td_OOC_SSA_CSE__ResultList;
+extern RT0__StructDesc _td_OOC_SSA_CSE__Partition;
+extern RT0__StructDesc _td_OOC_SSA_CSE__1086;
+extern RT0__StructDesc _td_OOC_SSA_CSE__ChildrenList;
+extern RT0__StructDesc _td_OOC_SSA_CSE__PartitionDesc;
+extern RT0__StructDesc _td_OOC_SSA_CSE__4206;
+extern RT0__StructDesc _td_OOC_SSA_CSE__4190;
+extern RT0__StructDesc _td_OOC_SSA_CSE__6330;
+#endif /* _MODULE_OOC_SSA_CSE_ */
+
+/* --- */

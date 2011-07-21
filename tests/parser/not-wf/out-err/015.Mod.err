@@ -1,0 +1,34 @@
+In file not-wf/015.Mod: 
+Expected symbol `]'
+column=24
+line=2
+pos=49
+sym_name=]
+
+Expected identifier
+column=24
+line=2
+pos=49
+
+Expected keyword `END'
+column=26
+line=2
+pos=51
+sym_name=END
+
+Expected identifier
+column=34
+line=2
+pos=59
+
+Expected symbol `.'
+column=34
+line=2
+pos=59
+sym_name=.
+
+Junk after end of module
+column=34
+line=2
+pos=59
+

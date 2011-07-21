@@ -1,0 +1,80 @@
+#ifndef _MODULE_OOC_Config_Repositories_
+#define _MODULE_OOC_Config_Repositories_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <Channel.oh>
+#include <Object.oh>
+#include <URI.oh>
+#include <XML/DTD.oh>
+#include <XML/Locator.oh>
+#include <Config/Parser.oh>
+#include <Config/Section.oh>
+#include <OOC/Repository.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_Config_Repositories__SectionDesc *OOC_Config_Repositories__Section;
+typedef OOC_Repository__Module *OOC_Config_Repositories__ModuleList;
+typedef struct OOC_Config_Repositories__SectionDesc {
+  XML_UnicodeBuffer__CharArray name;
+  OOC_Repository__Repository topLevelRep;
+  OOC_Config_Repositories__ModuleList cache;
+  OOC_INT32 lenCache;
+} OOC_Config_Repositories__SectionDesc;
+typedef struct OOC_Config_Repositories__RepositoryEntryDesc *OOC_Config_Repositories__RepositoryEntry;
+typedef struct OOC_Config_Repositories__RepositoryEntryDesc {
+  OOC_Config_Repositories__RepositoryEntry next;
+  OOC_CHAR16 name[32];
+} OOC_Config_Repositories__RepositoryEntryDesc;
+typedef struct OOC_Config_Repositories__ErrorContextDesc *OOC_Config_Repositories__ErrorContext;
+typedef struct OOC_Config_Repositories__ErrorContextDesc {
+  Msg__StringPtr id;
+  XML_Error__Mapping mapping;
+} OOC_Config_Repositories__ErrorContextDesc;
+extern void OOC_Config_Repositories__ErrorContextDesc_GetTemplate(OOC_Config_Repositories__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_Config_Repositories__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_Config_Repositories__ErrorContextDesc_GetTemplate)(OOC_Config_Repositories__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern OOC_Config_Repositories__Section OOC_Config_Repositories__New(void);
+extern void OOC_Config_Repositories__InitRepositoryEntry(OOC_Config_Repositories__RepositoryEntry re, const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
+extern OOC_Repository__Repository OOC_Config_Repositories__RepositoryEntryDesc_ProcessElement(OOC_Config_Repositories__RepositoryEntry re, Config_Parser__Element node, XML_Locator__ErrorListener errorListener, OOC_Repository__Repository baseRep);
+#define _TBN_OOC_Config_Repositories__RepositoryEntryDesc_ProcessElement 0
+typedef OOC_Repository__Repository (*_TBP_OOC_Config_Repositories__RepositoryEntryDesc_ProcessElement)(OOC_Config_Repositories__RepositoryEntry re, Config_Parser__Element node, XML_Locator__ErrorListener errorListener, OOC_Repository__Repository baseRep);
+extern void OOC_Config_Repositories__AddRepositoryEntry(OOC_Config_Repositories__RepositoryEntry re);
+extern void OOC_Config_Repositories__SectionDesc_ProcessElements(OOC_Config_Repositories__Section s, Config_Parser__Element sectionRoot, XML_Locator__ErrorListener errorListener);
+#define _TBN_OOC_Config_Repositories__SectionDesc_ProcessElements 0
+typedef void (*_TBP_OOC_Config_Repositories__SectionDesc_ProcessElements)(OOC_Config_Repositories__Section s, Config_Parser__Element sectionRoot, XML_Locator__ErrorListener errorListener);
+extern void OOC_Config_Repositories__SectionDesc_DumpContent(OOC_Config_Repositories__Section s, Channel__Channel ch);
+#define _TBN_OOC_Config_Repositories__SectionDesc_DumpContent 1
+typedef void (*_TBP_OOC_Config_Repositories__SectionDesc_DumpContent)(OOC_Config_Repositories__Section s, Channel__Channel ch);
+extern OOC_Repository__Module OOC_Config_Repositories__SectionDesc_GetModule(OOC_Config_Repositories__Section s, const OOC_CHAR8 moduleRef__ref[], OOC_LEN moduleRef_0d);
+#define _TBN_OOC_Config_Repositories__SectionDesc_GetModule 2
+typedef OOC_Repository__Module (*_TBP_OOC_Config_Repositories__SectionDesc_GetModule)(OOC_Config_Repositories__Section s, const OOC_CHAR8 moduleRef__ref[], OOC_LEN moduleRef_0d);
+extern URI__URI OOC_Config_Repositories__SectionDesc_GetResource(OOC_Config_Repositories__Section s, const OOC_CHAR8 package__ref[], OOC_LEN package_0d, const OOC_CHAR8 path__ref[], OOC_LEN path_0d);
+#define _TBN_OOC_Config_Repositories__SectionDesc_GetResource 3
+typedef URI__URI (*_TBP_OOC_Config_Repositories__SectionDesc_GetResource)(OOC_Config_Repositories__Section s, const OOC_CHAR8 package__ref[], OOC_LEN package_0d, const OOC_CHAR8 path__ref[], OOC_LEN path_0d);
+extern Object__StringArrayPtr OOC_Config_Repositories__SectionDesc_GetIncludePaths(OOC_Config_Repositories__Section s);
+#define _TBN_OOC_Config_Repositories__SectionDesc_GetIncludePaths 4
+typedef Object__StringArrayPtr (*_TBP_OOC_Config_Repositories__SectionDesc_GetIncludePaths)(OOC_Config_Repositories__Section s);
+extern void OOC_OOC_Config_Repositories_init(void);
+extern void OOC_OOC_Config_Repositories_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Config_Repositories__Section;
+extern RT0__StructDesc _td_OOC_Config_Repositories__1204;
+extern RT0__StructDesc _td_OOC_Config_Repositories__ModuleList;
+extern RT0__StructDesc _td_OOC_Config_Repositories__SectionDesc;
+extern RT0__StructDesc _td_OOC_Config_Repositories__RepositoryEntry;
+extern RT0__StructDesc _td_OOC_Config_Repositories__RepositoryEntryDesc;
+extern RT0__StructDesc _td_OOC_Config_Repositories__1511;
+extern RT0__StructDesc _td_OOC_Config_Repositories__ErrorContext;
+extern RT0__StructDesc _td_OOC_Config_Repositories__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_Config_Repositories__1927;
+extern RT0__StructDesc _td_OOC_Config_Repositories__2664;
+extern RT0__StructDesc _td_OOC_Config_Repositories__4484;
+extern RT0__StructDesc _td_OOC_Config_Repositories__5091;
+extern RT0__StructDesc _td_OOC_Config_Repositories__8863;
+#endif /* _MODULE_OOC_Config_Repositories_ */
+
+/* --- */

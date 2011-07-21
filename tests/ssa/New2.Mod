@@ -1,0 +1,14 @@
+MODULE New2;
+
+TYPE
+  R = RECORD END;
+  P = POINTER TO R;
+
+PROCEDURE F (): P;
+  BEGIN
+    RETURN NIL;
+  END F;
+
+BEGIN
+  NEW(F());
+END New2.

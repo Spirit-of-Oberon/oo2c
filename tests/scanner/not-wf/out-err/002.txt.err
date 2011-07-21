@@ -1,0 +1,12 @@
+In file not-wf/002.txt: 
+Illegal character 00X in string
+char_code=0
+column=36
+line=0
+pos=36
+
+String not ended
+column=45
+line=0
+pos=45
+

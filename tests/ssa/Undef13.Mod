@@ -1,0 +1,10 @@
+MODULE Undef13;
+
+PROCEDURE Fct*(b: BOOLEAN): BOOLEAN;
+  BEGIN
+    IF b THEN
+      RETURN FALSE;
+    END;
+  END Fct;
+
+END Undef13.

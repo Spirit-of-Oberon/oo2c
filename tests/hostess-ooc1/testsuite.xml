@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite SYSTEM "../../../hostess/hostess/testcases.dtd" [
+
+<!ENTITY baseline-testcases
+         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
+
+<!ENTITY candidate-testcases
+         SYSTEM "../../../hostess/hostess/oberon/candidate.xml">
+
+<!ENTITY hostess-testcases
+         SYSTEM "../../../hostess/hostess/oberon/testcases.xml">
+]>
+
+<testsuite profile="Test Suite for Framework Testing">
+  <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
+    <test id="prepare_out_module" type="accept" file="Out.Mod">
+      This is not a test case.  Rather, it prepares an Oakwood
+      compliant module <code>Out</code> to supersede OOC's differing
+      module of the same name.
+    </test>
+  </testcases>
+  
+  <!--&baseline-testcases;-->
+  &candidate-testcases;
+  &hostess-testcases;
+</testsuite>

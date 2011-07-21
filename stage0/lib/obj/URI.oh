@@ -1,0 +1,193 @@
+#ifndef _MODULE_URI_
+#define _MODULE_URI_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#include <IO.oh>
+#include <ADT/StringBuffer.oh>
+#include <URI/String.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT16 URI__Offset;
+typedef struct URI__URIDesc *URI__URI;
+typedef struct URI__URIDesc {
+  Object__String schemeId;
+} URI__URIDesc;
+typedef struct URI__AuthorityDesc *URI__Authority;
+typedef struct URI__AuthorityDesc {
+  char __dummy;
+} URI__AuthorityDesc;
+typedef struct URI__QueryDesc *URI__Query;
+typedef struct URI__QueryDesc {
+  char __dummy;
+} URI__QueryDesc;
+typedef struct URI__FragmentDesc *URI__Fragment;
+typedef struct URI__FragmentDesc {
+  char __dummy;
+} URI__FragmentDesc;
+typedef struct URI__HierarchicalURIDesc *URI__HierarchicalURI;
+typedef struct URI__HierarchicalURIDesc {
+  Object__String schemeId;
+  URI__Authority authority;
+  URI__Query query;
+} URI__HierarchicalURIDesc;
+typedef struct URI__OpaqueURIDesc *URI__OpaqueURI;
+typedef struct URI__OpaqueURIDesc {
+  Object__String schemeId;
+} URI__OpaqueURIDesc;
+typedef struct URI__ReferenceDesc *URI__Reference;
+typedef struct URI__ReferenceDesc {
+  URI__URI uri;
+  URI__Fragment fragment;
+} URI__ReferenceDesc;
+#define URI__channelNew 0
+#define URI__channelTmp 1
+#define URI__channelOld 2
+typedef OOC_INT8 URI__ChannelMode;
+extern void URI__InitURI(URI__URI uri, Object__String schemeId);
+extern URI__URI URI__URIDesc_Clone(URI__URI uri);
+#define _TBN_URI__URIDesc_Clone 4
+typedef URI__URI (*_TBP_URI__URIDesc_Clone)(URI__URI uri);
+extern void URI__URIDesc_Copy(URI__URI uri, URI__URI dest);
+#define _TBN_URI__URIDesc_Copy 5
+typedef void (*_TBP_URI__URIDesc_Copy)(URI__URI uri, URI__URI dest);
+extern void URI__URIDesc_SetSchemeId(URI__URI uri, Object__String schemeId);
+#define _TBN_URI__URIDesc_SetSchemeId 6
+typedef void (*_TBP_URI__URIDesc_SetSchemeId)(URI__URI uri, Object__String schemeId);
+extern void URI__URIDesc_WriteXML(URI__URI uri, TextRider__Writer w);
+#define _TBN_URI__URIDesc_WriteXML 7
+typedef void (*_TBP_URI__URIDesc_WriteXML)(URI__URI uri, TextRider__Writer w);
+extern Object__String8 URI__URIDesc_ToString(URI__URI uri);
+#define _TBN_URI__URIDesc_ToString 1
+typedef Object__String8 (*_TBP_URI__URIDesc_ToString)(URI__URI uri);
+extern void URI__URIDesc_AppendScheme(URI__URI uri, ADT_StringBuffer__StringBuffer sb);
+#define _TBN_URI__URIDesc_AppendScheme 8
+typedef void (*_TBP_URI__URIDesc_AppendScheme)(URI__URI uri, ADT_StringBuffer__StringBuffer sb);
+extern URI__URI URI__URIDesc_MakeRelative(URI__URI uri, URI__HierarchicalURI baseURI);
+#define _TBN_URI__URIDesc_MakeRelative 9
+typedef URI__URI (*_TBP_URI__URIDesc_MakeRelative)(URI__URI uri, URI__HierarchicalURI baseURI);
+extern IO__ByteChannel URI__URIDesc_GetChannel(URI__URI uri, OOC_INT8 mode);
+#define _TBN_URI__URIDesc_GetChannel 10
+typedef IO__ByteChannel (*_TBP_URI__URIDesc_GetChannel)(URI__URI uri, OOC_INT8 mode);
+extern void URI__InitOpaqueURI(URI__OpaqueURI uri, Object__String schemeId);
+extern void URI__OpaqueURIDesc_ParseOpaquePart(URI__OpaqueURI uri, Object__CharsLatin1 str, OOC_INT16 offset);
+#define _TBN_URI__OpaqueURIDesc_ParseOpaquePart 11
+typedef void (*_TBP_URI__OpaqueURIDesc_ParseOpaquePart)(URI__OpaqueURI uri, Object__CharsLatin1 str, OOC_INT16 offset);
+extern void URI__InitAuthority(URI__Authority auth);
+extern URI__Authority URI__AuthorityDesc_Clone(URI__Authority auth);
+#define _TBN_URI__AuthorityDesc_Clone 0
+typedef URI__Authority (*_TBP_URI__AuthorityDesc_Clone)(URI__Authority auth);
+extern void URI__AuthorityDesc_Copy(URI__Authority auth, URI__Authority dest);
+#define _TBN_URI__AuthorityDesc_Copy 1
+typedef void (*_TBP_URI__AuthorityDesc_Copy)(URI__Authority auth, URI__Authority dest);
+extern void URI__AuthorityDesc_ParseAuthority(URI__Authority auth, Object__CharsLatin1 str, OOC_INT16 offset);
+#define _TBN_URI__AuthorityDesc_ParseAuthority 2
+typedef void (*_TBP_URI__AuthorityDesc_ParseAuthority)(URI__Authority auth, Object__CharsLatin1 str, OOC_INT16 offset);
+extern void URI__AuthorityDesc_WriteXML(URI__Authority auth, TextRider__Writer w);
+#define _TBN_URI__AuthorityDesc_WriteXML 3
+typedef void (*_TBP_URI__AuthorityDesc_WriteXML)(URI__Authority auth, TextRider__Writer w);
+extern void URI__AuthorityDesc_Append(URI__Authority auth, ADT_StringBuffer__StringBuffer sb);
+#define _TBN_URI__AuthorityDesc_Append 4
+typedef void (*_TBP_URI__AuthorityDesc_Append)(URI__Authority auth, ADT_StringBuffer__StringBuffer sb);
+extern void URI__InitQuery(URI__Query query);
+extern URI__Query URI__QueryDesc_Clone(URI__Query query);
+#define _TBN_URI__QueryDesc_Clone 0
+typedef URI__Query (*_TBP_URI__QueryDesc_Clone)(URI__Query query);
+extern void URI__QueryDesc_Copy(URI__Query query, URI__Query dest);
+#define _TBN_URI__QueryDesc_Copy 1
+typedef void (*_TBP_URI__QueryDesc_Copy)(URI__Query query, URI__Query dest);
+extern void URI__QueryDesc_ParseQuery(URI__Query query, Object__CharsLatin1 str, OOC_INT16 offset);
+#define _TBN_URI__QueryDesc_ParseQuery 2
+typedef void (*_TBP_URI__QueryDesc_ParseQuery)(URI__Query query, Object__CharsLatin1 str, OOC_INT16 offset);
+extern void URI__QueryDesc_WriteXML(URI__Query query, TextRider__Writer w);
+#define _TBN_URI__QueryDesc_WriteXML 3
+typedef void (*_TBP_URI__QueryDesc_WriteXML)(URI__Query query, TextRider__Writer w);
+extern void URI__QueryDesc_Append(URI__Query query, ADT_StringBuffer__StringBuffer sb);
+#define _TBN_URI__QueryDesc_Append 4
+typedef void (*_TBP_URI__QueryDesc_Append)(URI__Query query, ADT_StringBuffer__StringBuffer sb);
+extern void URI__InitHierarchicalURI(URI__HierarchicalURI uri, Object__String schemeId, URI__Authority authority, URI__Query query);
+extern OOC_CHAR8 URI__HierarchicalURIDesc_AuthorityMandatory(URI__HierarchicalURI uri);
+#define _TBN_URI__HierarchicalURIDesc_AuthorityMandatory 11
+typedef OOC_CHAR8 (*_TBP_URI__HierarchicalURIDesc_AuthorityMandatory)(URI__HierarchicalURI uri);
+extern void URI__HierarchicalURIDesc_Copy(URI__HierarchicalURI uri, URI__URI dest);
+#define _TBN_URI__HierarchicalURIDesc_Copy 5
+typedef void (*_TBP_URI__HierarchicalURIDesc_Copy)(URI__HierarchicalURI uri, URI__URI dest);
+extern URI__Authority URI__HierarchicalURIDesc_NewAuthority(URI__HierarchicalURI uri);
+#define _TBN_URI__HierarchicalURIDesc_NewAuthority 12
+typedef URI__Authority (*_TBP_URI__HierarchicalURIDesc_NewAuthority)(URI__HierarchicalURI uri);
+extern void URI__HierarchicalURIDesc_SetAuthority(URI__HierarchicalURI uri, URI__Authority auth);
+#define _TBN_URI__HierarchicalURIDesc_SetAuthority 13
+typedef void (*_TBP_URI__HierarchicalURIDesc_SetAuthority)(URI__HierarchicalURI uri, URI__Authority auth);
+extern URI__Query URI__HierarchicalURIDesc_NewQuery(URI__HierarchicalURI uri);
+#define _TBN_URI__HierarchicalURIDesc_NewQuery 14
+typedef URI__Query (*_TBP_URI__HierarchicalURIDesc_NewQuery)(URI__HierarchicalURI uri);
+extern void URI__HierarchicalURIDesc_SetQuery(URI__HierarchicalURI uri, URI__Query query);
+#define _TBN_URI__HierarchicalURIDesc_SetQuery 15
+typedef void (*_TBP_URI__HierarchicalURIDesc_SetQuery)(URI__HierarchicalURI uri, URI__Query query);
+extern void URI__HierarchicalURIDesc_ResolveRelative(URI__HierarchicalURI uri, URI__HierarchicalURI baseURI);
+#define _TBN_URI__HierarchicalURIDesc_ResolveRelative 16
+typedef void (*_TBP_URI__HierarchicalURIDesc_ResolveRelative)(URI__HierarchicalURI uri, URI__HierarchicalURI baseURI);
+extern void URI__HierarchicalURIDesc_ClearPath(URI__HierarchicalURI uri);
+#define _TBN_URI__HierarchicalURIDesc_ClearPath 17
+typedef void (*_TBP_URI__HierarchicalURIDesc_ClearPath)(URI__HierarchicalURI uri);
+extern void URI__HierarchicalURIDesc_ParsePath(URI__HierarchicalURI uri, Object__CharsLatin1 str, OOC_CHAR8 absolute, OOC_INT16 offset);
+#define _TBN_URI__HierarchicalURIDesc_ParsePath 18
+typedef void (*_TBP_URI__HierarchicalURIDesc_ParsePath)(URI__HierarchicalURI uri, Object__CharsLatin1 str, OOC_CHAR8 absolute, OOC_INT16 offset);
+extern URI__URI URI__HierarchicalURIDesc_MakeRelative(URI__HierarchicalURI uri, URI__HierarchicalURI baseURI);
+#define _TBN_URI__HierarchicalURIDesc_MakeRelative 9
+typedef URI__URI (*_TBP_URI__HierarchicalURIDesc_MakeRelative)(URI__HierarchicalURI uri, URI__HierarchicalURI baseURI);
+extern void URI__HierarchicalURIDesc_AppendPath(URI__HierarchicalURI uri, ADT_StringBuffer__StringBuffer sb);
+#define _TBN_URI__HierarchicalURIDesc_AppendPath 19
+typedef void (*_TBP_URI__HierarchicalURIDesc_AppendPath)(URI__HierarchicalURI uri, ADT_StringBuffer__StringBuffer sb);
+extern void URI__InitFragment(URI__Fragment frag);
+extern URI__Fragment URI__FragmentDesc_Clone(URI__Fragment frag);
+#define _TBN_URI__FragmentDesc_Clone 0
+typedef URI__Fragment (*_TBP_URI__FragmentDesc_Clone)(URI__Fragment frag);
+extern void URI__FragmentDesc_Copy(URI__Fragment frag, URI__Fragment dest);
+#define _TBN_URI__FragmentDesc_Copy 1
+typedef void (*_TBP_URI__FragmentDesc_Copy)(URI__Fragment frag, URI__Fragment dest);
+extern void URI__FragmentDesc_ParseFragment(URI__Fragment frag, Object__CharsLatin1 str, OOC_INT16 offset);
+#define _TBN_URI__FragmentDesc_ParseFragment 2
+typedef void (*_TBP_URI__FragmentDesc_ParseFragment)(URI__Fragment frag, Object__CharsLatin1 str, OOC_INT16 offset);
+extern void URI__FragmentDesc_WriteXML(URI__Fragment frag, TextRider__Writer w);
+#define _TBN_URI__FragmentDesc_WriteXML 3
+typedef void (*_TBP_URI__FragmentDesc_WriteXML)(URI__Fragment frag, TextRider__Writer w);
+extern void URI__FragmentDesc_Append(URI__Fragment frag, ADT_StringBuffer__StringBuffer sb);
+#define _TBN_URI__FragmentDesc_Append 4
+typedef void (*_TBP_URI__FragmentDesc_Append)(URI__Fragment frag, ADT_StringBuffer__StringBuffer sb);
+extern URI__Reference URI__NewReference(URI__URI uri, URI__Fragment fragment);
+extern void URI__ReferenceDesc_WriteXML(URI__Reference ref, TextRider__Writer w);
+#define _TBN_URI__ReferenceDesc_WriteXML 0
+typedef void (*_TBP_URI__ReferenceDesc_WriteXML)(URI__Reference ref, TextRider__Writer w);
+extern Object__String8 URI__ReferenceDesc_ToString(URI__Reference ref);
+#define _TBN_URI__ReferenceDesc_ToString 1
+typedef Object__String8 (*_TBP_URI__ReferenceDesc_ToString)(URI__Reference ref);
+extern void URI__RegisterScheme(URI__URI scheme);
+extern URI__URI URI__GetScheme(Object__String name);
+extern void OOC_URI_init(void);
+extern void OOC_URI_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_URI__URI;
+extern RT0__StructDesc _td_URI__URIDesc;
+extern RT0__StructDesc _td_URI__Authority;
+extern RT0__StructDesc _td_URI__AuthorityDesc;
+extern RT0__StructDesc _td_URI__Query;
+extern RT0__StructDesc _td_URI__QueryDesc;
+extern RT0__StructDesc _td_URI__Fragment;
+extern RT0__StructDesc _td_URI__FragmentDesc;
+extern RT0__StructDesc _td_URI__HierarchicalURI;
+extern RT0__StructDesc _td_URI__HierarchicalURIDesc;
+extern RT0__StructDesc _td_URI__OpaqueURI;
+extern RT0__StructDesc _td_URI__OpaqueURIDesc;
+extern RT0__StructDesc _td_URI__Reference;
+extern RT0__StructDesc _td_URI__ReferenceDesc;
+extern RT0__StructDesc _td_URI__List;
+extern RT0__StructDesc _td_URI__ListDesc;
+#endif /* _MODULE_URI_ */
+
+/* --- */

@@ -1,0 +1,12 @@
+MODULE Assign14;
+
+VAR
+  p: PROCEDURE (x: INTEGER; VAR y: INTEGER): INTEGER;
+
+PROCEDURE P (x: INTEGER; VAR y: INTEGER; z: CHAR): INTEGER;
+  BEGIN
+  END P;
+       
+BEGIN
+  p := P;
+END Assign14.

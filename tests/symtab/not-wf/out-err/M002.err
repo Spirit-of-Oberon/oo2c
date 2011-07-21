@@ -1,0 +1,11 @@
+In file not-wf/src/M002.Mod: 
+Multiple declaration of same name
+column=11
+line=2
+pos=22
+
+Multiple declaration of same name
+column=16
+line=2
+pos=27
+

@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+
+<!ELEMENT bullet EMPTY>
+<!ELEMENT dots EMPTY>
+<!ELEMENT minus EMPTY>
+<!ELEMENT em-dash EMPTY>
+<!ELEMENT result EMPTY>
+<!ELEMENT left-quote EMPTY>
+<!ELEMENT right-quote EMPTY>
+
+<!ENTITY % glyph 'bullet|dots|minus|em-dash|result|left-quote|right-quote'>
+<!ENTITY % oberon-ref 'oberon-module|oberon-const|oberon-field|oberon-param
+                      |oberon-proc|oberon-type|oberon-var'>
+<!ENTITY % inline-element '#PCDATA|asis|cite|code|command|dfn|emph|file|kbd|samp|strong
+                           |var|email|uref|url|%glyph;|%oberon-ref;'>
+<!ENTITY % inline-elements '(%inline-element;)*'>
+
+<!ELEMENT asis %inline-elements;>
+<!ELEMENT cite %inline-elements;>
+<!ELEMENT code %inline-elements;>
+<!ELEMENT command %inline-elements;>
+<!ELEMENT dfn %inline-elements;>
+<!ELEMENT emph %inline-elements;>
+<!ELEMENT file %inline-elements;>
+<!ELEMENT kbd %inline-elements;>
+<!ELEMENT samp %inline-elements;>
+<!ELEMENT strong %inline-elements;>
+<!ELEMENT url %inline-elements;>
+<!ELEMENT var %inline-elements;>
+
+<!ELEMENT email (email-address, email-displayed-text?)>
+<!ELEMENT email-address %inline-elements;>
+<!ELEMENT email-displayed-text %inline-elements;>
+
+<!ELEMENT uref (uref-url, uref-text?, uref-replacement?)>
+<!ELEMENT uref-url %inline-elements;>
+<!ELEMENT uref-text %inline-elements;>
+<!ELEMENT uref-replacements %inline-elements;>
+
+
+<!ELEMENT oberon-module (#PCDATA)>
+<!ATTLIST oberon-module href CDATA #IMPLIED>
+
+<!ELEMENT oberon-const (#PCDATA)>
+<!ATTLIST oberon-const href CDATA #IMPLIED>
+
+<!ELEMENT oberon-field (#PCDATA)>
+<!ATTLIST oberon-field href CDATA #IMPLIED>
+
+<!ELEMENT oberon-param (#PCDATA)>
+<!ATTLIST oberon-param href CDATA #IMPLIED>
+
+<!ELEMENT oberon-proc (#PCDATA)>
+<!ATTLIST oberon-proc href CDATA #IMPLIED>
+
+<!ELEMENT oberon-type (#PCDATA)>
+<!ATTLIST oberon-type href CDATA #IMPLIED>
+
+<!ELEMENT oberon-var (#PCDATA)>
+<!ATTLIST oberon-var href CDATA #IMPLIED>
+
+
+<!ELEMENT summary %inline-elements;>
+
+<!ENTITY % block-element 'p|example|pre-cond|post-cond|itemize|enumerate|table'>
+<!ENTITY % block-elements '(%block-element;)*'>
+<!ENTITY % block-attr "pad-after (yes|no) #REQUIRED">
+
+<!ELEMENT p %inline-elements;>
+<!ATTLIST p no-indent (yes|no) #REQUIRED>
+<!ATTLIST p %block-attr;>
+
+<!ELEMENT example %inline-elements;>
+<!ATTLIST example %block-attr;>
+
+<!ELEMENT pre-cond %block-elements;>
+<!ATTLIST pre-cond %block-attr;>
+
+<!ELEMENT post-cond %block-elements;>
+<!ATTLIST post-cond %block-attr;>
+
+<!ELEMENT itemize (itemize-mark, itemize-text?, (item)*)>
+<!ATTLIST itemize %block-attr;>
+<!ELEMENT itemize-mark (#PCDATA|%glyph;)*>
+<!ELEMENT itemize-text %block-elements;>
+<!ELEMENT item %block-elements;>
+<!ATTLIST item %block-attr;>
+
+<!ELEMENT enumerate (enumerate-text?, (item)*)>
+<!ATTLIST enumerate %block-attr;
+                    mode (number|uppercase|lowercase) #REQUIRED
+                    start CDATA #REQUIRED>
+<!ELEMENT enumerate-text %block-elements;>
+
+<!ELEMENT table (table-row*)>
+<!ATTLIST table %block-attr;>
+<!ELEMENT table-row (table-first-column*, item)>
+<!ATTLIST table-row %block-attr;>
+<!ELEMENT table-first-column %inline-elements;>
+<!ATTLIST table-first-column %block-attr;>
+
+<!ELEMENT oberon-doc (summary?, %block-elements;)>
+<!-- <!ATTLIST oberon-doc version CDATA #REQUIRED> -->

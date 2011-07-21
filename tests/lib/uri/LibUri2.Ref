@@ -1,0 +1,3 @@
+Error: Host name in authority component is empty
+uri=http://user@:8080/
+uri_pos=12

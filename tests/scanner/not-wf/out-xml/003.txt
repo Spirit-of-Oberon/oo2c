@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='invalid' pos='0' line='0' column='0'>"this string has the character 8X &gt;&gt;</symbol>
+<symbol id='whitespace' pos='36' line='0' column='36'></symbol>
+<symbol id='lss' pos='37' line='0' column='37'>&lt;</symbol>
+<symbol id='lss' pos='38' line='0' column='38'>&lt;</symbol>
+<symbol id='whitespace' pos='39' line='0' column='39'> </symbol>
+<symbol id='ident' pos='40' line='0' column='40'>in</symbol>
+<symbol id='whitespace' pos='42' line='0' column='42'> </symbol>
+<symbol id='ident' pos='43' line='0' column='43'>it</symbol>
+<symbol id='invalid' pos='45' line='0' column='45'>"</symbol>
+<symbol id='whitespace' pos='46' line='0' column='46'>&#10;</symbol>
+<symbol id='endOfFile' pos='47' line='1' column='0'></symbol>
+</document>

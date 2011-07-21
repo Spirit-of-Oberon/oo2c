@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<package name="oo2c">
+  <version current="2" revision="0"/>
+  
+  <executable main-module="oo2c"/>
+  <executable main-module="oob"/>
+  <executable main-module="ooef"/>
+  <executable main-module="oowhereis"/>
+
+  <file-set source-dir=".">
+    <file name="install-sh" />
+    <file name="rsrc/OOC/oo2crc.xml" dest-name="oo2crc.xml" />
+    <file-set source-dir="rsrc/OOC/xml">
+      <file name="interface-description.dtd"/>
+      <file name="oberon-doc.dtd"/>
+      
+      <file name="interface-description.xsl"/>
+      <file name="oberon-doc-to-html.xsl"/>
+      <file name="interface-xref.xsl"/>
+      <file name="interface-types.xsl"/>
+      <file name="interface-decl.xsl"/>
+    </file-set>
+    <file-set source-dir="rsrc/OOC/emacs" dest-dir="emacs">
+      <file name="oberon2.el"/>
+      <file name="o2-default.el"/>
+    </file-set>
+  </file-set>
+</package>

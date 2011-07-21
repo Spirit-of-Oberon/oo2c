@@ -1,0 +1,12 @@
+  Whitespace at the beginning of a paragraph is stripped away.
+
+Whitespace within a paragraph is normalized like this: Control
+characters (this includes newline) are converted to spaces.    Multiple
+spaces are collapsed into a single     space character.  Two
+spaces are kept after a dot.
+A dot, followed by a newline, is converted to "dot<SPACE><SPACE>".
+
+Whitespace at the end of a paragraph is stripped.   
+
+
+

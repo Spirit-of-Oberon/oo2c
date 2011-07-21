@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!ENTITY % HostessTestcases SYSTEM "testcases.dtd">
+%HostessTestcases;
+
+<!ENTITY TestSetupWithOut SYSTEM "common-setup.xml">
+<!ENTITY SetupTestCasesWithOut "prepare_out_module">
+
+<!-- The root element of the whole collection is "testsuite-ext".
+     It differs from "testsuite" in two points: it has an optional
+     additional attribute "select", and it can have "processor-info"
+     child elements.
+
+     If the element "testsuite" has an attribute "select", then only
+     the testcases listed there are tried.  All other cases are
+     skipped.  -->
+
+<!ELEMENT testsuite-ext (testcases+, processor-info*)>
+<!ATTLIST testsuite-ext 
+          profile	CDATA		#IMPLIED
+	  select	IDREFS		#IMPLIED>
+
+<!-- A "processor-info" element may provide additional information
+     that makes test cases more restrictive.  For example, it may define
+     error positions and messages that must appear in the compiler
+     output for a test case to succeed.  The "processor-element" only
+     applies if its "processor-name" attribute matches that of the
+     test setup.  -->
+<!ELEMENT processor-info (reject-info|warning-info)*>
+<!ATTLIST processor-info
+          processor-name CDATA #REQUIRED>
+
+<!-- For a test case of type `reject', the error list emitted by the
+     compiler must contain an error indicated by the pattern "pos",
+     with the error message "msg".
+
+     The position is described by a string that specifies the textual 
+     context of the error.  The error location is marked by a `%'
+     character.  For example, `pos="MODULE %Test"' means that the
+     error must refer to a position in the source code that is
+     preceeded by the literal string "MODULE ", and followed by the
+     literal string "Test".
+     
+     Position pattern meta characters:
+
+     %   indicates the character position
+     \A  beginning of file
+     \Z  end of file
+     ^   beginning of line
+     $   end of line
+     \n  newline
+     \%  the character `%'
+     \\	 the character `\'
+-->
+<!ELEMENT reject-info EMPTY>
+<!ATTLIST reject-info
+          id        IDREF       #REQUIRED
+	  pos	    CDATA	#REQUIRED
+	  msg	    CDATA	#REQUIRED>
+
+<!-- For a test case of type `accept' or `run', the error list emitted by the
+     compiler must contain a warning indicated by the pattern "pos",
+     with the error message "msg".  -->
+<!ELEMENT warning-info EMPTY>
+<!ATTLIST warning-info
+          id        IDREF       #REQUIRED
+	  pos	    CDATA	#REQUIRED
+	  msg	    CDATA	#REQUIRED>

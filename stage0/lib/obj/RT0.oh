@@ -1,0 +1,106 @@
+#ifndef _MODULE_RT0_
+#define _MODULE_RT0_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#define RT0__strBoolean 0
+#define RT0__strChar 1
+#define RT0__strLongchar 2
+#define RT0__strUCS4Char 3
+#define RT0__strShortint 4
+#define RT0__strInteger 5
+#define RT0__strLongint 6
+#define RT0__strReal 7
+#define RT0__strLongreal 8
+#define RT0__strSet32 9
+#define RT0__strByte 10
+#define RT0__strPtr 11
+#define RT0__strArray (-1)
+#define RT0__strOpenArray (-2)
+#define RT0__strRecord (-3)
+#define RT0__strPointer (-4)
+#define RT0__strQualType (-5)
+#define RT0__flagAtomic 0
+#define RT0__flagVTable 1
+#define RT0__flagFinalize 2
+typedef struct RT0__ObjectDesc *RT0__Object;
+typedef struct RT0__ObjectDesc {
+  char __dummy;
+} RT0__ObjectDesc;
+typedef OOC_CHAR8 *RT0__Name;
+typedef struct RT0__ModuleDesc *RT0__Module;
+typedef struct RT0__StructDesc *RT0__Struct;
+typedef struct RT0__StructDesc {
+  RT0__Struct *baseTypes;
+  OOC_PTR *tbProcs;
+  RT0__Struct *typeArgs;
+  RT0__Module module;
+  RT0__Name name;
+  OOC_INT32 size;
+  OOC_INT32 len;
+  OOC_UINT32 flags;
+  OOC_INT8 form;
+} RT0__StructDesc;
+typedef struct RT0__ModuleDesc {
+  RT0__Name name;
+  RT0__Struct *typeDescriptors;
+} RT0__ModuleDesc;
+extern struct RT0__StructDesc RT0__boolean;
+extern struct RT0__StructDesc RT0__char;
+extern struct RT0__StructDesc RT0__longchar;
+extern struct RT0__StructDesc RT0__ucs4char;
+extern struct RT0__StructDesc RT0__shortint;
+extern struct RT0__StructDesc RT0__integer;
+extern struct RT0__StructDesc RT0__longint;
+extern struct RT0__StructDesc RT0__real;
+extern struct RT0__StructDesc RT0__longreal;
+extern struct RT0__StructDesc RT0__set32;
+extern struct RT0__StructDesc RT0__byte;
+extern struct RT0__StructDesc RT0__ptr;
+extern OOC_INT32 RT0__argc;
+extern OOC_CHAR8 **RT0__argv;
+extern OOC_INT32 RT0__poisonHeap;
+extern void RT0__ObjectDesc_Finalize(RT0__Object o);
+#define _TBN_RT0__ObjectDesc_Finalize 0
+typedef void (*_TBP_RT0__ObjectDesc_Finalize)(RT0__Object o);
+extern OOC_PTR RT0__NewObject(RT0__Struct td, ...);
+extern RT0__Struct RT0__TypeOf(OOC_PTR ptr);
+extern OOC_CHAR8 RT0__TypeTest(RT0__Struct tag, RT0__Struct td);
+extern OOC_PTR RT0__NewBlock(OOC_INT32 bytes);
+extern void RT0__FreeBlock(OOC_PTR ptr);
+extern void RT0__CollectGarbage(void);
+extern void RT0__RegisterDisappearingLink(OOC_PTR *ptr);
+extern void RT0__UnregisterDisappearingLink(OOC_PTR *ptr);
+extern void NORETURN RT0__ErrorIndexOutOfRange(RT0__Module mid, OOC_INT32 pos, OOC_INT32 index, OOC_INT32 length) NORETURN2;
+extern void NORETURN RT0__ErrorDerefOfNil(RT0__Module mid, OOC_INT32 pos) NORETURN2;
+extern void NORETURN RT0__ErrorFailedTypeGuard(RT0__Module mid, OOC_INT32 pos, RT0__Struct typeTag) NORETURN2;
+extern void NORETURN RT0__ErrorFailedCase(RT0__Module mid, OOC_INT32 pos, OOC_INT32 select) NORETURN2;
+extern void NORETURN RT0__ErrorFailedWith(RT0__Module mid, OOC_INT32 pos, RT0__Struct typeTag) NORETURN2;
+extern void NORETURN RT0__ErrorFailedTypeAssert(RT0__Module mid, OOC_INT32 pos) NORETURN2;
+extern void NORETURN RT0__ErrorFailedFunction(RT0__Module mid, OOC_INT32 pos) NORETURN2;
+extern void NORETURN RT0__ErrorAssertionFailed(RT0__Module mid, OOC_INT32 pos, OOC_INT32 code) NORETURN2;
+extern void NORETURN RT0__Halt(OOC_INT32 code) NORETURN2;
+extern void RT0__RegisterModule(RT0__Module mid);
+extern RT0__Module RT0__ThisModule(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
+extern RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
+extern void OOC_RT0_init(void);
+extern void OOC_RT0_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_RT0__Object;
+extern RT0__StructDesc _td_RT0__ObjectDesc;
+extern RT0__StructDesc _td_RT0__Name;
+extern RT0__StructDesc _td_RT0__Module;
+extern RT0__StructDesc _td_RT0__Struct;
+extern RT0__StructDesc _td_RT0__6481;
+extern RT0__StructDesc _td_RT0__6701;
+extern RT0__StructDesc _td_RT0__6895;
+extern RT0__StructDesc _td_RT0__ModuleDesc;
+extern RT0__StructDesc _td_RT0__8672;
+extern RT0__StructDesc _td_RT0__9352;
+extern RT0__StructDesc _td_RT0__9278;
+extern RT0__StructDesc _td_RT0__13723;
+extern RT0__StructDesc _td_RT0__13929;
+#endif /* _MODULE_RT0_ */
+
+/* --- */

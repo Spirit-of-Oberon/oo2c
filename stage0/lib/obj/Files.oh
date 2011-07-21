@@ -1,0 +1,146 @@
+#ifndef _MODULE_Files_
+#define _MODULE_Files_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Channel.oh>
+#include <PosixFileDescr.oh>
+#include <Time.oh>
+#include <Termination.oh>
+#include <CharClass.oh>
+#include <LongStrings.oh>
+#include <Msg.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef Msg__Msg Files__Result;
+#define Files__noLength (-1)
+#define Files__noPosition (-2)
+#define Files__done  0
+#define Files__invalidChannel 1
+#define Files__writeError 2
+#define Files__noRoom 3
+#define Files__outOfRange 4
+#define Files__readAfterEnd 5
+#define Files__channelClosed 6
+#define Files__readError 7
+#define Files__invalidFormat 8
+#define Files__noReadAccess 9
+#define Files__noWriteAccess 10
+#define Files__closeError 11
+#define Files__noModTime 12
+#define Files__noTmpName 13
+#define Files__accessDenied 14
+#define Files__isDirectory 15
+#define Files__tooManyFiles 16
+#define Files__noSuchFile 17
+#define Files__directoryFull 18
+#define Files__readOnlyFileSystem 19
+#define Files__invalidTime 20
+#define Files__notOwner 21
+#define Files__anonymousFile 22
+#define Files__dirWriteDenied 23
+#define Files__fileError 24
+#define Files__nameTooLong 25
+#define Files__notDirectory 26
+#define Files__linkLoop 27
+#define Files__read 0
+#define Files__write 1
+#define Files__tryRead 2
+#define Files__tryWrite 3
+typedef struct Files__FileDesc *Files__File;
+typedef struct Files__FileDesc {
+  Msg__Msg res;
+  OOC_CHAR8 readable;
+  OOC_CHAR8 writable;
+  OOC_CHAR8 open;
+  OOC_CHAR8 __pad7;
+  OOC_INT32 fd;
+  OOC_INT32 pos;
+  OOC_CHAR8 positionable;
+  OOC_CHAR8 append;
+  OOC_CHAR8 dirty;
+  OOC_INT8 buffering;
+  OOC_CHAR8 *buf;
+  OOC_INT32 sizeBuffer;
+  OOC_INT32 bufStart;
+  OOC_INT32 bufEnd;
+  PosixFileDescr__Reader reader;
+  PosixFileDescr__Writer writer;
+  Files__File next;
+  OOC_CHAR8 *tmpName;
+  OOC_CHAR8 *name;
+  OOC_CHAR8 anonymous;
+} Files__FileDesc;
+typedef struct Files__ReaderDesc *Files__Reader;
+typedef struct Files__ReaderDesc {
+  Channel__Channel base;
+  Msg__Msg res;
+  OOC_INT32 bytesRead;
+  OOC_CHAR8 positionable;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 pos;
+} Files__ReaderDesc;
+typedef struct Files__WriterDesc *Files__Writer;
+typedef struct Files__WriterDesc {
+  Channel__Channel base;
+  Msg__Msg res;
+  OOC_INT32 bytesWritten;
+  OOC_CHAR8 positionable;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 pos;
+} Files__WriterDesc;
+typedef struct Files__ErrorContextDesc *Files__ErrorContext;
+typedef struct Files__ErrorContextDesc {
+  Msg__StringPtr id;
+} Files__ErrorContextDesc;
+extern void Files__ErrorContextDesc_GetTemplate(Files__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_Files__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_Files__ErrorContextDesc_GetTemplate)(Files__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void Files__FileDesc_Register(Files__File f);
+#define _TBN_Files__FileDesc_Register 7
+typedef void (*_TBP_Files__FileDesc_Register)(Files__File f);
+extern Files__Reader Files__FileDesc_NewReader(Files__File f);
+#define _TBN_Files__FileDesc_NewReader 2
+typedef Files__Reader (*_TBP_Files__FileDesc_NewReader)(Files__File f);
+extern Files__Writer Files__FileDesc_NewWriter(Files__File f);
+#define _TBN_Files__FileDesc_NewWriter 3
+typedef Files__Writer (*_TBP_Files__FileDesc_NewWriter)(Files__File f);
+extern void Files__FileDesc_Close(Files__File f);
+#define _TBN_Files__FileDesc_Close 5
+typedef void (*_TBP_Files__FileDesc_Close)(Files__File f);
+extern void Files__WriterDesc_Truncate(Files__Writer w, OOC_INT32 newLength);
+#define _TBN_Files__WriterDesc_Truncate 5
+typedef void (*_TBP_Files__WriterDesc_Truncate)(Files__Writer w, OOC_INT32 newLength);
+extern Files__File Files__New(const OOC_CHAR8 file__ref[], OOC_LEN file_0d, OOC_UINT32 flags, Msg__Msg *res);
+extern Files__File Files__Old(const OOC_CHAR8 file__ref[], OOC_LEN file_0d, OOC_UINT32 flags, Msg__Msg *res);
+extern Files__File Files__Tmp(const OOC_CHAR8 file__ref[], OOC_LEN file_0d, OOC_UINT32 flags, Msg__Msg *res);
+extern void Files__SetModTime(const OOC_CHAR8 file__ref[], OOC_LEN file_0d, const struct Time__TimeStamp *mtime__ref, Msg__Msg *res);
+extern void Files__GetModTime(const OOC_CHAR8 file__ref[], OOC_LEN file_0d, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag, Msg__Msg *res);
+extern OOC_CHAR8 Files__Exists(const OOC_CHAR8 file__ref[], OOC_LEN file_0d);
+extern void OOC_Files_init(void);
+extern void OOC_Files_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Files__File;
+extern RT0__StructDesc _td_Files__FileDesc;
+extern RT0__StructDesc _td_Files__6498;
+extern RT0__StructDesc _td_Files__Reader;
+extern RT0__StructDesc _td_Files__ReaderDesc;
+extern RT0__StructDesc _td_Files__Writer;
+extern RT0__StructDesc _td_Files__WriterDesc;
+extern RT0__StructDesc _td_Files__ErrorContext;
+extern RT0__StructDesc _td_Files__ErrorContextDesc;
+extern RT0__StructDesc _td_Files__10472;
+extern RT0__StructDesc _td_Files__10886;
+extern RT0__StructDesc _td_Files__11161;
+extern RT0__StructDesc _td_Files__12585;
+extern RT0__StructDesc _td_Files__12958;
+extern RT0__StructDesc _td_Files__13222;
+#endif /* _MODULE_Files_ */
+
+/* --- */

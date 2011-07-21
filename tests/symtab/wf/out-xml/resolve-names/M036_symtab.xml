@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <record_type id='1' pos='21' line='2' column='10' base_type='#none' tb_proc_count='0'/>
+  <type_decl id='2' name='R0' pos='16' line='2' column='5' visible_from='31' export='no' type_id='1'/>
+  <record_type id='3' pos='43' line='3' column='10' base_type='#none' tb_proc_count='0'/>
+  <type_decl id='4' name='R1' pos='38' line='3' column='5' visible_from='53' export='no' type_id='3'/>
+  <procedure_decl id='5' name='ProcA' pos='66' line='5' column='10' visible_from='83' export='no' is_type_bound='no' is_forward_decl='no'>
+    <procedure_type id='6' pos='56' line='5' column='0' resultType='#none'>
+      <type_name id='7' pos='80' line='5' column='24' ident_name='R0' ident_pos='80' ident_line='5' ident_column='24'/>
+      <var_decl id='8' name='r' pos='77' line='5' column='21' visible_from='82' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='1'/>
+    </procedure_type>
+  </procedure_decl>
+  <procedure_decl id='9' name='ProcB' pos='109' line='8' column='10' visible_from='126' export='no' is_type_bound='no' is_forward_decl='no'>
+    <procedure_type id='10' pos='99' line='8' column='0' resultType='#none'>
+      <type_name id='11' pos='123' line='8' column='24' ident_name='R0' ident_pos='123' ident_line='8' ident_column='24'/>
+      <var_decl id='12' name='r' pos='120' line='8' column='21' visible_from='125' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='1'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

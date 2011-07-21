@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Now lets check out some tables.</summary>
+  <p pad-after='yes' no-indent='yes'>Now lets check out some tables.</p>
+  <table pad-after='yes'>
+    <table-row pad-after='yes'>
+      <table-first-column pad-after='no'><asis>Item No. 1</asis></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='no' no-indent='yes'>This is the first item of the table.  The first column should be set in the default face.</p>
+      </item>
+    </table-row>
+    <table-row pad-after='yes'>
+      <table-first-column pad-after='no'><asis><code>Item No. 2</code></asis></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='no' no-indent='yes'>This time, the first column is set as code.</p>
+      </item>
+    </table-row>
+    <table-row pad-after='yes'>
+      <table-first-column pad-after='no'><asis>I0</asis></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='no' no-indent='yes'>An item with a very short title.</p>
+      </item>
+    </table-row>
+    <table-row pad-after='no'>
+      <table-first-column pad-after='no'><asis>And finally a slightly longer first column</asis></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='no' no-indent='yes'>Foo!</p>
+      </item>
+    </table-row>
+  </table>
+</oberon-doc>

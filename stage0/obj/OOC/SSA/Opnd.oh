@@ -1,0 +1,38 @@
+#ifndef _MODULE_OOC_SSA_Opnd_
+#define _MODULE_OOC_SSA_Opnd_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 OOC_SSA_Opnd__Class;
+#define OOC_SSA_Opnd__arg 1
+#define OOC_SSA_Opnd__store 2
+#define OOC_SSA_Opnd__procAdr 3
+#define OOC_SSA_Opnd__readAdr 4
+#define OOC_SSA_Opnd__readDesign 5
+#define OOC_SSA_Opnd__writeAdr 6
+#define OOC_SSA_Opnd__writeDesign 7
+#define OOC_SSA_Opnd__sourceValue 8
+#define OOC_SSA_Opnd__functionResult 9
+#define OOC_SSA_Opnd__storeEnter 10
+#define OOC_SSA_Opnd__storeExit 11
+#define OOC_SSA_Opnd__type 12
+#define OOC_SSA_Opnd__backwardFeed 13
+#define OOC_SSA_Opnd__dimension 15
+#define OOC_SSA_Opnd__labels 16
+#define OOC_SSA_Opnd__loopExternalDef 17
+#define OOC_SSA_Opnd__antiDependency 18
+#define OOC_SSA_Opnd__regionDependency 20
+#define OOC_SSA_Opnd__dgateBase 21
+#define OOC_SSA_Opnd__dgateRef 22
+extern void OOC_SSA_Opnd__GetName(OOC_INT8 _class, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_OOC_SSA_Opnd_init(void);
+extern void OOC_OOC_SSA_Opnd_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Opnd__5839;
+#endif /* _MODULE_OOC_SSA_Opnd_ */
+
+/* --- */

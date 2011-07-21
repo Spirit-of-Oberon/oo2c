@@ -1,0 +1,39 @@
+#ifndef _MODULE_Real0_
+#define _MODULE_Real0_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ConvTypes.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 Real0__ConvResults;
+typedef OOC_INT8 Real0__ScanClass;
+typedef ConvTypes__ScanState Real0__ScanState;
+#define Real0__expChar (OOC_CHAR8)'E'
+extern ConvTypes__ScanState Real0__RS;
+extern ConvTypes__ScanState Real0__P;
+extern ConvTypes__ScanState Real0__F;
+extern ConvTypes__ScanState Real0__E;
+extern ConvTypes__ScanState Real0__SE;
+extern ConvTypes__ScanState Real0__WE;
+extern ConvTypes__ScanState Real0__SR;
+extern void Real0__ScanReal(OOC_CHAR8 inputCh, OOC_INT8 *chClass, ConvTypes__ScanState *nextState);
+extern OOC_INT8 Real0__FormatReal(const OOC_CHAR8 str__ref[], OOC_LEN str_0d, OOC_INT32 maxExp, const OOC_CHAR8 maxValue__ref[], OOC_LEN maxValue_0d);
+extern void Real0__NormalizeFloat(OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void Real0__FormatForEng(OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void Real0__FormatForFixed(OOC_CHAR8 s[], OOC_LEN s_0d, OOC_INT16 place);
+extern void OOC_Real0_init(void);
+extern void OOC_Real0_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Real0__3861;
+extern RT0__StructDesc _td_Real0__3926;
+extern RT0__StructDesc _td_Real0__4546;
+extern RT0__StructDesc _td_Real0__8322;
+extern RT0__StructDesc _td_Real0__9168;
+extern RT0__StructDesc _td_Real0__10611;
+extern RT0__StructDesc _td_Real0__10722;
+#endif /* _MODULE_Real0_ */
+
+/* --- */

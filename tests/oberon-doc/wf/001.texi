@@ -1,0 +1,17 @@
+Here is a longish paragraph.  During the execution of a program, it is
+possible for an operation to be performed that is either illegal or
+that leaves the program in an undefined state.  This sort of operation
+is usually not intended by the programmer, and should therefore be
+brought to his attention.  For this reason, a typical Oberon-2
+run-time system provides mechanisms to detect illegal or undefined
+operations and report them to the user.
+
+Followed by another paragraph.  For OOC, an invalid operation is
+signaled by the facilities defined in module `Exception' (*note
+Exception Handling::.).  If detected, such an operation will raise an
+exception of source `Exception.runtime' with an exception number from
+the list defined in `Exception'.  If the raised exception is not
+handled by the program, it will cause the run-time system to emit an
+appropriate error message and terminate the program.
+
+And a very short paragraph.

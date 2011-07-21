@@ -1,0 +1,8 @@
+MODULE Cap4;
+
+PROCEDURE F(): INTEGER;
+  BEGIN
+    RETURN ORD(97);
+  END F;
+
+END Cap4.

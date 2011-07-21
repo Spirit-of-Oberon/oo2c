@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<package name="liboo2c">
+  <version current="0" revision="0" age="0"/>
+  
+  <pragmas>
+    <define name="HAVE_LIB_DL" type="boolean">@ooc_have_lib_dl@</define>
+    <define name="HAVE_LIB_GC" type="boolean">@ooc_have_lib_gc@</define>
+    <define name="HAVE_LIB_XNET" type="boolean">@ooc_have_lib_xnet@</define>
+    <define name="HAVE_LIB_RT" type="boolean">@ooc_have_lib_rt@</define>
+    <define name="HAVE_LIB_POSIX4" type="boolean">@ooc_have_lib_posix4@</define>
+    <define name="HAVE_LIB_M" type="boolean">@ooc_have_lib_m@</define>
+    <define name="HAVE_LIB_PTHREAD" type="boolean">@ooc_have_lib_pthread@</define>
+    <define name="HAVE_LIB_MINGWEX" type="boolean">@ooc_have_lib_mingwex@</define>
+    <define name="HAVE_LIB_WSOCK32" type="boolean">@ooc_have_lib_wsock32@</define>
+  </pragmas>
+  
+  <library name="oo2c" main-module="liboo2c">
+    <version current="0" revision="0" age="0"/>
+  </library>
+
+  <file-set source-dir="src">
+    <file name="__config.h" />
+    <file name="__typemap.h" />
+    <file name="__dynvar.h" />
+    <file name="__libc.h" />
+    <file name="__oo2c.h" />
+  </file-set>
+</package>
+

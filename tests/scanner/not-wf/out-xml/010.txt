@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='invalid' pos='0' line='0' column='0'>"this string has the character 1FX &gt;&gt;</symbol>
+<symbol id='whitespace' pos='37' line='0' column='37'></symbol>
+<symbol id='lss' pos='38' line='0' column='38'>&lt;</symbol>
+<symbol id='lss' pos='39' line='0' column='39'>&lt;</symbol>
+<symbol id='whitespace' pos='40' line='0' column='40'> </symbol>
+<symbol id='ident' pos='41' line='0' column='41'>in</symbol>
+<symbol id='whitespace' pos='43' line='0' column='43'> </symbol>
+<symbol id='ident' pos='44' line='0' column='44'>it</symbol>
+<symbol id='invalid' pos='46' line='0' column='46'>"</symbol>
+<symbol id='whitespace' pos='47' line='0' column='47'>&#10;</symbol>
+<symbol id='endOfFile' pos='48' line='1' column='0'></symbol>
+</document>

@@ -1,0 +1,6 @@
+MODULE M;
+BEGIN
+  WHILE a DO
+    x := 1
+  END
+END M.

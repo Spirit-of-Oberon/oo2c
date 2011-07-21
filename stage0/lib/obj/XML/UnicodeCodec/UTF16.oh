@@ -1,0 +1,91 @@
+#ifndef _MODULE_XML_UnicodeCodec_UTF16_
+#define _MODULE_XML_UnicodeCodec_UTF16_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <XML/UnicodeCodec.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct XML_UnicodeCodec_UTF16__CodecDesc *XML_UnicodeCodec_UTF16__Codec;
+typedef struct XML_UnicodeCodec_UTF16__CodecDesc {
+  OOC_INT32 invalidChars;
+  OOC_INT8 bom;
+  OOC_CHAR8 __pad5;
+  OOC_CHAR8 __pad6;
+  OOC_CHAR8 __pad7;
+  OOC_CHAR8 bigEndian;
+} XML_UnicodeCodec_UTF16__CodecDesc;
+typedef struct XML_UnicodeCodec_UTF16__FactoryDesc *XML_UnicodeCodec_UTF16__Factory;
+typedef struct XML_UnicodeCodec_UTF16__FactoryDesc {
+  OOC_INT8 bom;
+} XML_UnicodeCodec_UTF16__FactoryDesc;
+typedef struct XML_UnicodeCodec_UTF16__FactoryLEDesc *XML_UnicodeCodec_UTF16__FactoryLE;
+typedef struct XML_UnicodeCodec_UTF16__FactoryLEDesc {
+  OOC_INT8 bom;
+} XML_UnicodeCodec_UTF16__FactoryLEDesc;
+typedef struct XML_UnicodeCodec_UTF16__FactoryBEDesc *XML_UnicodeCodec_UTF16__FactoryBE;
+typedef struct XML_UnicodeCodec_UTF16__FactoryBEDesc {
+  OOC_INT8 bom;
+} XML_UnicodeCodec_UTF16__FactoryBEDesc;
+extern XML_UnicodeCodec_UTF16__Factory XML_UnicodeCodec_UTF16__factory;
+extern XML_UnicodeCodec_UTF16__FactoryLE XML_UnicodeCodec_UTF16__factoryLE;
+extern XML_UnicodeCodec_UTF16__FactoryBE XML_UnicodeCodec_UTF16__factoryBE;
+extern void XML_UnicodeCodec_UTF16__CodecDesc_Decode(XML_UnicodeCodec_UTF16__Codec codec, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR16 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+#define _TBN_XML_UnicodeCodec_UTF16__CodecDesc_Decode 0
+typedef void (*_TBP_XML_UnicodeCodec_UTF16__CodecDesc_Decode)(XML_UnicodeCodec_UTF16__Codec codec, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR16 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+extern void XML_UnicodeCodec_UTF16__CodecDesc_Encode(XML_UnicodeCodec_UTF16__Codec codec, OOC_CHAR16 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR8 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+#define _TBN_XML_UnicodeCodec_UTF16__CodecDesc_Encode 1
+typedef void (*_TBP_XML_UnicodeCodec_UTF16__CodecDesc_Encode)(XML_UnicodeCodec_UTF16__Codec codec, OOC_CHAR16 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR8 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+extern XML_UnicodeCodec__Codec XML_UnicodeCodec_UTF16__FactoryDesc_NewCodec(XML_UnicodeCodec_UTF16__Factory f);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryDesc_NewCodec 0
+typedef XML_UnicodeCodec__Codec (*_TBP_XML_UnicodeCodec_UTF16__FactoryDesc_NewCodec)(XML_UnicodeCodec_UTF16__Factory f);
+extern XML_UnicodeCodec__Codec XML_UnicodeCodec_UTF16__FactoryDesc_NewCodecBOM(XML_UnicodeCodec_UTF16__Factory f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryDesc_NewCodecBOM 1
+typedef XML_UnicodeCodec__Codec (*_TBP_XML_UnicodeCodec_UTF16__FactoryDesc_NewCodecBOM)(XML_UnicodeCodec_UTF16__Factory f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+extern void XML_UnicodeCodec_UTF16__FactoryDesc_GetEncodingName(XML_UnicodeCodec_UTF16__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryDesc_GetEncodingName 2
+typedef void (*_TBP_XML_UnicodeCodec_UTF16__FactoryDesc_GetEncodingName)(XML_UnicodeCodec_UTF16__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern XML_UnicodeCodec__Codec XML_UnicodeCodec_UTF16__FactoryLEDesc_NewCodec(XML_UnicodeCodec_UTF16__FactoryLE f);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryLEDesc_NewCodec 0
+typedef XML_UnicodeCodec__Codec (*_TBP_XML_UnicodeCodec_UTF16__FactoryLEDesc_NewCodec)(XML_UnicodeCodec_UTF16__FactoryLE f);
+extern XML_UnicodeCodec__Codec XML_UnicodeCodec_UTF16__FactoryLEDesc_NewCodecBOM(XML_UnicodeCodec_UTF16__FactoryLE f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryLEDesc_NewCodecBOM 1
+typedef XML_UnicodeCodec__Codec (*_TBP_XML_UnicodeCodec_UTF16__FactoryLEDesc_NewCodecBOM)(XML_UnicodeCodec_UTF16__FactoryLE f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+extern void XML_UnicodeCodec_UTF16__FactoryLEDesc_GetEncodingName(XML_UnicodeCodec_UTF16__FactoryLE f, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryLEDesc_GetEncodingName 2
+typedef void (*_TBP_XML_UnicodeCodec_UTF16__FactoryLEDesc_GetEncodingName)(XML_UnicodeCodec_UTF16__FactoryLE f, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern XML_UnicodeCodec__Codec XML_UnicodeCodec_UTF16__FactoryBEDesc_NewCodec(XML_UnicodeCodec_UTF16__FactoryBE f);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryBEDesc_NewCodec 0
+typedef XML_UnicodeCodec__Codec (*_TBP_XML_UnicodeCodec_UTF16__FactoryBEDesc_NewCodec)(XML_UnicodeCodec_UTF16__FactoryBE f);
+extern XML_UnicodeCodec__Codec XML_UnicodeCodec_UTF16__FactoryBEDesc_NewCodecBOM(XML_UnicodeCodec_UTF16__FactoryBE f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryBEDesc_NewCodecBOM 1
+typedef XML_UnicodeCodec__Codec (*_TBP_XML_UnicodeCodec_UTF16__FactoryBEDesc_NewCodecBOM)(XML_UnicodeCodec_UTF16__FactoryBE f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+extern void XML_UnicodeCodec_UTF16__FactoryBEDesc_GetEncodingName(XML_UnicodeCodec_UTF16__FactoryBE f, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_XML_UnicodeCodec_UTF16__FactoryBEDesc_GetEncodingName 2
+typedef void (*_TBP_XML_UnicodeCodec_UTF16__FactoryBEDesc_GetEncodingName)(XML_UnicodeCodec_UTF16__FactoryBE f, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_XML_UnicodeCodec_UTF16_init(void);
+extern void OOC_XML_UnicodeCodec_UTF16_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__Codec;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__CodecDesc;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__Factory;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__FactoryDesc;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__FactoryLE;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__FactoryLEDesc;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__FactoryBE;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__FactoryBEDesc;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__1469;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__1595;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__4633;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__4767;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__7952;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__8672;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__9012;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__9675;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__10017;
+extern RT0__StructDesc _td_XML_UnicodeCodec_UTF16__10680;
+#endif /* _MODULE_XML_UnicodeCodec_UTF16_ */
+
+/* --- */

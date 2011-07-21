@@ -1,0 +1,128 @@
+#ifndef _MODULE_Channel_
+#define _MODULE_Channel_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Time.oh>
+#include <Msg.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef Msg__Msg Channel__Result;
+#define Channel__noLength (-1)
+#define Channel__noPosition (-2)
+#define Channel__done  0
+#define Channel__invalidChannel 1
+#define Channel__writeError 2
+#define Channel__noRoom 3
+#define Channel__outOfRange 4
+#define Channel__readAfterEnd 5
+#define Channel__channelClosed 6
+#define Channel__readError 7
+#define Channel__invalidFormat 8
+#define Channel__noReadAccess 9
+#define Channel__noWriteAccess 10
+#define Channel__closeError 11
+#define Channel__noModTime 12
+#define Channel__noTmpName 13
+#define Channel__freeErrorCode 14
+typedef struct Channel__ChannelDesc *Channel__Channel;
+typedef struct Channel__ChannelDesc {
+  Msg__Msg res;
+  OOC_CHAR8 readable;
+  OOC_CHAR8 writable;
+  OOC_CHAR8 open;
+} Channel__ChannelDesc;
+typedef struct Channel__ReaderDesc *Channel__Reader;
+typedef struct Channel__ReaderDesc {
+  Channel__Channel base;
+  Msg__Msg res;
+  OOC_INT32 bytesRead;
+  OOC_CHAR8 positionable;
+} Channel__ReaderDesc;
+typedef struct Channel__WriterDesc *Channel__Writer;
+typedef struct Channel__WriterDesc {
+  Channel__Channel base;
+  Msg__Msg res;
+  OOC_INT32 bytesWritten;
+  OOC_CHAR8 positionable;
+} Channel__WriterDesc;
+typedef struct Channel__ErrorContextDesc *Channel__ErrorContext;
+typedef struct Channel__ErrorContextDesc {
+  Msg__StringPtr id;
+} Channel__ErrorContextDesc;
+extern void Channel__ErrorContextDesc_GetTemplate(Channel__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_Channel__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_Channel__ErrorContextDesc_GetTemplate)(Channel__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern OOC_INT32 Channel__ReaderDesc_Pos(Channel__Reader r);
+#define _TBN_Channel__ReaderDesc_Pos 0
+typedef OOC_INT32 (*_TBP_Channel__ReaderDesc_Pos)(Channel__Reader r);
+extern OOC_INT32 Channel__ReaderDesc_Available(Channel__Reader r);
+#define _TBN_Channel__ReaderDesc_Available 1
+typedef OOC_INT32 (*_TBP_Channel__ReaderDesc_Available)(Channel__Reader r);
+extern void Channel__ReaderDesc_SetPos(Channel__Reader r, OOC_INT32 newPos);
+#define _TBN_Channel__ReaderDesc_SetPos 2
+typedef void (*_TBP_Channel__ReaderDesc_SetPos)(Channel__Reader r, OOC_INT32 newPos);
+extern void Channel__ReaderDesc_ReadByte(Channel__Reader r, OOC_CHAR8 *x);
+#define _TBN_Channel__ReaderDesc_ReadByte 3
+typedef void (*_TBP_Channel__ReaderDesc_ReadByte)(Channel__Reader r, OOC_CHAR8 *x);
+extern void Channel__ReaderDesc_ReadBytes(Channel__Reader r, OOC_CHAR8 x[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+#define _TBN_Channel__ReaderDesc_ReadBytes 4
+typedef void (*_TBP_Channel__ReaderDesc_ReadBytes)(Channel__Reader r, OOC_CHAR8 x[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+extern void Channel__ReaderDesc_ClearError(Channel__Reader r);
+#define _TBN_Channel__ReaderDesc_ClearError 5
+typedef void (*_TBP_Channel__ReaderDesc_ClearError)(Channel__Reader r);
+extern OOC_INT32 Channel__WriterDesc_Pos(Channel__Writer w);
+#define _TBN_Channel__WriterDesc_Pos 0
+typedef OOC_INT32 (*_TBP_Channel__WriterDesc_Pos)(Channel__Writer w);
+extern void Channel__WriterDesc_SetPos(Channel__Writer w, OOC_INT32 newPos);
+#define _TBN_Channel__WriterDesc_SetPos 1
+typedef void (*_TBP_Channel__WriterDesc_SetPos)(Channel__Writer w, OOC_INT32 newPos);
+extern void Channel__WriterDesc_WriteByte(Channel__Writer w, OOC_CHAR8 x);
+#define _TBN_Channel__WriterDesc_WriteByte 2
+typedef void (*_TBP_Channel__WriterDesc_WriteByte)(Channel__Writer w, OOC_CHAR8 x);
+extern void Channel__WriterDesc_WriteBytes(Channel__Writer w, const OOC_CHAR8 x__ref[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+#define _TBN_Channel__WriterDesc_WriteBytes 3
+typedef void (*_TBP_Channel__WriterDesc_WriteBytes)(Channel__Writer w, const OOC_CHAR8 x__ref[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+extern void Channel__WriterDesc_ClearError(Channel__Writer w);
+#define _TBN_Channel__WriterDesc_ClearError 4
+typedef void (*_TBP_Channel__WriterDesc_ClearError)(Channel__Writer w);
+extern OOC_INT32 Channel__ChannelDesc_Length(Channel__Channel ch);
+#define _TBN_Channel__ChannelDesc_Length 0
+typedef OOC_INT32 (*_TBP_Channel__ChannelDesc_Length)(Channel__Channel ch);
+extern void Channel__ChannelDesc_GetModTime(Channel__Channel ch, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag);
+#define _TBN_Channel__ChannelDesc_GetModTime 1
+typedef void (*_TBP_Channel__ChannelDesc_GetModTime)(Channel__Channel ch, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag);
+extern Channel__Reader Channel__ChannelDesc_NewReader(Channel__Channel ch);
+#define _TBN_Channel__ChannelDesc_NewReader 2
+typedef Channel__Reader (*_TBP_Channel__ChannelDesc_NewReader)(Channel__Channel ch);
+extern Channel__Writer Channel__ChannelDesc_NewWriter(Channel__Channel ch);
+#define _TBN_Channel__ChannelDesc_NewWriter 3
+typedef Channel__Writer (*_TBP_Channel__ChannelDesc_NewWriter)(Channel__Channel ch);
+extern void Channel__ChannelDesc_Flush(Channel__Channel ch);
+#define _TBN_Channel__ChannelDesc_Flush 4
+typedef void (*_TBP_Channel__ChannelDesc_Flush)(Channel__Channel ch);
+extern void Channel__ChannelDesc_Close(Channel__Channel ch);
+#define _TBN_Channel__ChannelDesc_Close 5
+typedef void (*_TBP_Channel__ChannelDesc_Close)(Channel__Channel ch);
+extern void Channel__ChannelDesc_ClearError(Channel__Channel ch);
+#define _TBN_Channel__ChannelDesc_ClearError 6
+typedef void (*_TBP_Channel__ChannelDesc_ClearError)(Channel__Channel ch);
+extern void OOC_Channel_init(void);
+extern void OOC_Channel_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Channel__Channel;
+extern RT0__StructDesc _td_Channel__ChannelDesc;
+extern RT0__StructDesc _td_Channel__Reader;
+extern RT0__StructDesc _td_Channel__ReaderDesc;
+extern RT0__StructDesc _td_Channel__Writer;
+extern RT0__StructDesc _td_Channel__WriterDesc;
+extern RT0__StructDesc _td_Channel__ErrorContext;
+extern RT0__StructDesc _td_Channel__ErrorContextDesc;
+extern RT0__StructDesc _td_Channel__12140;
+extern RT0__StructDesc _td_Channel__16681;
+extern RT0__StructDesc _td_Channel__20326;
+#endif /* _MODULE_Channel_ */
+
+/* --- */

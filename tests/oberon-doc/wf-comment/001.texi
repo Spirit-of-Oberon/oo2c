@@ -1,0 +1,5 @@
+(**...is set to the position after the mark.
+
+   @precond
+   foobar
+   @end precond  *)

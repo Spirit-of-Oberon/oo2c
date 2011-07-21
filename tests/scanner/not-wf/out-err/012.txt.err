@@ -1,0 +1,11 @@
+In file not-wf/012.txt: 
+Pragma not closed
+column=0
+line=0
+pos=0
+
+Pragma start delimiter within pragma
+column=2
+line=0
+pos=2
+

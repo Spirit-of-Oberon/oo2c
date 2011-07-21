@@ -1,0 +1,60 @@
+#ifndef _MODULE_OOC_Scanner_SymList_
+#define _MODULE_OOC_Scanner_SymList_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/Scanner/InputBuffer.oh>
+#include <OOC/Scanner/Symbol.oh>
+#include <OOC/Config/Pragmas.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT32 OOC_Scanner_SymList__Pos;
+typedef OOC_INT32 OOC_Scanner_SymList__Line;
+typedef OOC_INT32 OOC_Scanner_SymList__Column;
+typedef struct OOC_Scanner_SymList__SymbolDesc *OOC_Scanner_SymList__Symbol;
+typedef struct OOC_Scanner_SymList__SymbolDesc {
+  OOC_Scanner_SymList__Symbol next;
+  OOC_INT8 id;
+  OOC_CHAR8 __pad5;
+  OOC_CHAR8 __pad6;
+  OOC_CHAR8 __pad7;
+  OOC_Scanner_InputBuffer__CharArray str;
+  OOC_INT32 len;
+  OOC_INT32 pos;
+  OOC_INT32 line;
+  OOC_INT32 column;
+} OOC_Scanner_SymList__SymbolDesc;
+typedef struct OOC_Scanner_SymList__BuilderDesc *OOC_Scanner_SymList__Builder;
+typedef struct OOC_Scanner_SymList__BuilderDesc {
+  OOC_Scanner_InputBuffer__Buffer inputBuffer;
+  OOC_Config_Pragmas__History pragmaHistory;
+  OOC_Scanner_SymList__Symbol head;
+  OOC_Scanner_SymList__Symbol tail;
+  OOC_CHAR8 includeDocComments;
+} OOC_Scanner_SymList__BuilderDesc;
+extern void OOC_Scanner_SymList__Init(OOC_Scanner_SymList__Builder b, OOC_Scanner_InputBuffer__Buffer buffer, OOC_CHAR8 includeDocComments);
+extern OOC_Scanner_SymList__Builder OOC_Scanner_SymList__New(OOC_Scanner_InputBuffer__Buffer buffer, OOC_CHAR8 includeDocComments);
+extern OOC_Scanner_SymList__Symbol OOC_Scanner_SymList__NewSymbol(OOC_Scanner_InputBuffer__CharArray str, OOC_INT32 len);
+extern OOC_Scanner_SymList__Symbol OOC_Scanner_SymList__CloneSymbol(OOC_Scanner_SymList__Symbol old, const OOC_CHAR8 str__ref[], OOC_LEN str_0d);
+extern void OOC_Scanner_SymList__BuilderDesc_Clear(OOC_Scanner_SymList__Builder b);
+#define _TBN_OOC_Scanner_SymList__BuilderDesc_Clear 0
+typedef void (*_TBP_OOC_Scanner_SymList__BuilderDesc_Clear)(OOC_Scanner_SymList__Builder b);
+extern void OOC_Scanner_SymList__BuilderDesc_AddSymbol(OOC_Scanner_SymList__Builder b, OOC_INT8 id, OOC_INT32 cstart, OOC_INT32 cend, OOC_INT32 line, OOC_INT32 column);
+#define _TBN_OOC_Scanner_SymList__BuilderDesc_AddSymbol 1
+typedef void (*_TBP_OOC_Scanner_SymList__BuilderDesc_AddSymbol)(OOC_Scanner_SymList__Builder b, OOC_INT8 id, OOC_INT32 cstart, OOC_INT32 cend, OOC_INT32 line, OOC_INT32 column);
+extern void OOC_Scanner_SymList__BuilderDesc_SetPragmaHistory(OOC_Scanner_SymList__Builder b, OOC_Config_Pragmas__History pragmaHistory);
+#define _TBN_OOC_Scanner_SymList__BuilderDesc_SetPragmaHistory 2
+typedef void (*_TBP_OOC_Scanner_SymList__BuilderDesc_SetPragmaHistory)(OOC_Scanner_SymList__Builder b, OOC_Config_Pragmas__History pragmaHistory);
+extern void OOC_OOC_Scanner_SymList_init(void);
+extern void OOC_OOC_Scanner_SymList_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Scanner_SymList__Symbol;
+extern RT0__StructDesc _td_OOC_Scanner_SymList__SymbolDesc;
+extern RT0__StructDesc _td_OOC_Scanner_SymList__Builder;
+extern RT0__StructDesc _td_OOC_Scanner_SymList__BuilderDesc;
+extern RT0__StructDesc _td_OOC_Scanner_SymList__3802;
+#endif /* _MODULE_OOC_Scanner_SymList_ */
+
+/* --- */

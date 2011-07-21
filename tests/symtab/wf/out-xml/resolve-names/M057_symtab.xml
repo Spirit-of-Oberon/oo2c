@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M057' pos='7' line='0' column='7' visible_from='0' export='yes' class='foreign' call_conv='C'>
+  <import id='1' name='Time' pos='71' line='3' column='2' visible_from='83' export='no' imported_module_name='M055' imported_module_pos='79' imported_module_line='3' imported_module_column='10'/>
+  <import id='2' name='Ch' pos='85' line='3' column='16' visible_from='95' export='no' imported_module_name='M056' imported_module_pos='91' imported_module_line='3' imported_module_column='22'/>
+  <type_name id='3' pos='127' line='6' column='24' ident_name='ChannelDesc' ident_pos='127' ident_line='6' ident_column='24'/>
+  <pointer_type id='4' pos='116' line='6' column='13' class='Channel' base_type_id='7'/>
+  <type_decl id='5' name='Channel' pos='105' line='6' column='2' class='Channel' visible_from='138' export='yes' type_id='4'/>
+  <type_name id='6' pos='169' line='8' column='5' module_name='Ch' module_pos='169' module_line='8' module_column='5' ident_name='ChannelDesc' ident_pos='172' ident_line='8' ident_column='8'/>
+  <record_type id='7' pos='157' line='7' column='17' class='Channel' base_type_id='M056.ChannelDesc' tb_proc_count='1'/>
+  <type_decl id='8' name='ChannelDesc' pos='142' line='7' column='2' class='Channel' visible_from='190' export='yes' type_id='7'/>
+  <procedure_decl id='9' name='GetModTime' pos='219' line='11' column='24' class='Channel' visible_from='258' export='yes' is_type_bound='yes' is_forward_decl='no' tb_proc_index='0'>
+    <procedure_type id='10' pos='195' line='11' column='0' receiver_id='12' resultType='#none'>
+      <type_name id='11' pos='210' line='11' column='15' ident_name='Channel' ident_pos='210' ident_line='11' ident_column='15'/>
+      <var_decl id='12' name='ch' pos='206' line='11' column='11' visible_from='217' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='no' type_id='4'/>
+      <type_name id='13' pos='243' line='11' column='48' module_name='Time' module_pos='243' module_line='11' module_column='48' ident_name='TimeStamp' ident_pos='248' ident_line='11' ident_column='53'/>
+      <var_decl id='14' name='mtime' pos='236' line='11' column='41' visible_from='257' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='M055.TimeStamp'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

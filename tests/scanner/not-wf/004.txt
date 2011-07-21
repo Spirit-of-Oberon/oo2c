@@ -1,0 +1,2 @@
+"this string is not ended on the same
+line"

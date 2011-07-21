@@ -1,0 +1,45 @@
+#ifndef _MODULE_OOC_Scanner_
+#define _MODULE_OOC_Scanner_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <OOC/Error.oh>
+#include <OOC/Scanner/Symbol.oh>
+#include <OOC/Scanner/SymList.oh>
+#include <OOC/Config/Pragmas.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define OOC_Scanner__enableIdentUnderscore 0
+#define OOC_Scanner__enableThreeDots 1
+#define OOC_Scanner__enablePragmaSymbols 2
+#define OOC_Scanner__enablePragmaProcessing 3
+#define OOC_Scanner__enableCharPosAdjust 4
+#define OOC_Scanner__abortAtDeclarations 5
+#define OOC_Scanner__enableAll 31
+#define OOC_Scanner__tabWidth 8
+typedef struct OOC_Scanner__ErrorContextDesc *OOC_Scanner__ErrorContext;
+typedef struct OOC_Scanner__ErrorContextDesc {
+  Msg__StringPtr id;
+} OOC_Scanner__ErrorContextDesc;
+extern void OOC_Scanner__ErrorContextDesc_GetTemplate(OOC_Scanner__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_Scanner__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_Scanner__ErrorContextDesc_GetTemplate)(OOC_Scanner__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void OOC_Scanner__ScanInput(OOC_Scanner_SymList__Builder builder, OOC_Config_Pragmas__Section defaultPragmas, OOC_UINT32 scanOptions);
+extern void OOC_OOC_Scanner_init(void);
+extern void OOC_OOC_Scanner_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Scanner__2940;
+extern RT0__StructDesc _td_OOC_Scanner__2923;
+extern RT0__StructDesc _td_OOC_Scanner__3046;
+extern RT0__StructDesc _td_OOC_Scanner__3029;
+extern RT0__StructDesc _td_OOC_Scanner__ErrorContext;
+extern RT0__StructDesc _td_OOC_Scanner__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_Scanner__3718;
+extern RT0__StructDesc _td_OOC_Scanner__7823;
+extern RT0__StructDesc _td_OOC_Scanner__22013;
+#endif /* _MODULE_OOC_Scanner_ */
+
+/* --- */

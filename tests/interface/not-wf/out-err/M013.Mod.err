@@ -1,0 +1,13 @@
+In file not-wf/src/M013.Mod: 
+Could not resolve identifier `c'
+column=9
+ident=c
+line=2
+pos=32
+
+Could not resolve identifier `c'
+column=9
+ident=c
+line=2
+pos=32
+

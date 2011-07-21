@@ -1,0 +1,37 @@
+#ifndef _MODULE_OOC_SSA_Destore_
+#define _MODULE_OOC_SSA_Destore_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/Dictionary.oh>
+#include <OOC/SSA.oh>
+#include <OOC/SSA/Opcode.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_SSA_Destore__StateDesc *OOC_SSA_Destore__State;
+typedef struct OOC_SSA_Destore__StateDesc {
+  OOC_SSA__ProcBlock pb;
+  ADT_Dictionary__Dictionary localVarWithAdr;
+} OOC_SSA_Destore__StateDesc;
+extern OOC_SSA_Destore__State OOC_SSA_Destore__New(OOC_SSA__ProcBlock pb);
+extern OOC_CHAR8 OOC_SSA_Destore__StateDesc_ClobberedBy(OOC_SSA_Destore__State s, OOC_SSA__Opnd readDesign, OOC_SSA__Instr instr);
+#define _TBN_OOC_SSA_Destore__StateDesc_ClobberedBy 0
+typedef OOC_CHAR8 (*_TBP_OOC_SSA_Destore__StateDesc_ClobberedBy)(OOC_SSA_Destore__State s, OOC_SSA__Opnd readDesign, OOC_SSA__Instr instr);
+extern void OOC_SSA_Destore__StateDesc_Transform(OOC_SSA_Destore__State s);
+#define _TBN_OOC_SSA_Destore__StateDesc_Transform 1
+typedef void (*_TBP_OOC_SSA_Destore__StateDesc_Transform)(OOC_SSA_Destore__State s);
+extern void OOC_OOC_SSA_Destore_init(void);
+extern void OOC_OOC_SSA_Destore_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Destore__State;
+extern RT0__StructDesc _td_OOC_SSA_Destore__StateDesc;
+extern RT0__StructDesc _td_OOC_SSA_Destore__CacheEntry;
+extern RT0__StructDesc _td_OOC_SSA_Destore__CacheEntryDesc;
+extern RT0__StructDesc _td_OOC_SSA_Destore__Worklist;
+extern RT0__StructDesc _td_OOC_SSA_Destore__WorklistDesc;
+extern RT0__StructDesc _td_OOC_SSA_Destore__8825;
+#endif /* _MODULE_OOC_SSA_Destore_ */
+
+/* --- */

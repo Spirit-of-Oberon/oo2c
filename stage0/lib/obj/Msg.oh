@@ -1,0 +1,157 @@
+#ifndef _MODULE_Msg_
+#define _MODULE_Msg_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <CharClass.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define Msg__sizeAttrName 127
+#define Msg__sizeAttrReplacement 16383
+typedef OOC_CHAR8 Msg__Char;
+typedef OOC_CHAR8 Msg__String[];
+typedef OOC_CHAR8 *Msg__StringPtr;
+typedef OOC_CHAR16 Msg__LChar;
+typedef OOC_CHAR16 Msg__LString[];
+typedef OOC_CHAR16 *Msg__LStringPtr;
+typedef OOC_INT32 Msg__Code;
+typedef struct Msg__AttributeDesc *Msg__Attribute;
+typedef struct Msg__AttributeDesc {
+  Msg__Attribute nextAttrib;
+  Msg__StringPtr name;
+} Msg__AttributeDesc;
+typedef struct Msg__ContextDesc *Msg__Context;
+typedef struct Msg__ContextDesc {
+  Msg__StringPtr id;
+} Msg__ContextDesc;
+typedef struct Msg__MsgDesc *Msg__Msg;
+typedef struct Msg__MsgDesc {
+  Msg__Msg nextMsg;
+  Msg__Msg prevMsg;
+  OOC_INT32 code;
+  Msg__Context context;
+  Msg__Attribute attribList;
+} Msg__MsgDesc;
+typedef struct Msg__MsgListDesc *Msg__MsgList;
+typedef struct Msg__MsgListDesc {
+  OOC_INT32 msgCount;
+  Msg__Msg msgList;
+  Msg__Msg lastMsg;
+} Msg__MsgListDesc;
+typedef struct Msg__IntAttributeDesc *Msg__IntAttribute;
+typedef struct Msg__IntAttributeDesc {
+  Msg__Attribute nextAttrib;
+  Msg__StringPtr name;
+  OOC_INT32 _int;
+} Msg__IntAttributeDesc;
+typedef struct Msg__StringAttributeDesc *Msg__StringAttribute;
+typedef struct Msg__StringAttributeDesc {
+  Msg__Attribute nextAttrib;
+  Msg__StringPtr name;
+  Msg__StringPtr string;
+} Msg__StringAttributeDesc;
+typedef struct Msg__LStringAttributeDesc *Msg__LStringAttribute;
+typedef struct Msg__LStringAttributeDesc {
+  Msg__Attribute nextAttrib;
+  Msg__StringPtr name;
+  Msg__LStringPtr string;
+} Msg__LStringAttributeDesc;
+typedef struct Msg__MsgAttributeDesc *Msg__MsgAttribute;
+typedef struct Msg__MsgAttributeDesc {
+  Msg__Attribute nextAttrib;
+  Msg__StringPtr name;
+  Msg__Msg msg;
+} Msg__MsgAttributeDesc;
+extern void Msg__InitContext(Msg__Context context, const Msg__String id__ref, OOC_LEN id_0d);
+extern void Msg__ContextDesc_GetTemplate(Msg__Context context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_Msg__ContextDesc_GetTemplate 0
+typedef void (*_TBP_Msg__ContextDesc_GetTemplate)(Msg__Context context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void Msg__InitAttribute(Msg__Attribute attr, const Msg__String name__ref, OOC_LEN name_0d);
+extern void Msg__AttributeDesc_ReplacementText(Msg__Attribute attr, Msg__LString text, OOC_LEN text_0d);
+#define _TBN_Msg__AttributeDesc_ReplacementText 0
+typedef void (*_TBP_Msg__AttributeDesc_ReplacementText)(Msg__Attribute attr, Msg__LString text, OOC_LEN text_0d);
+extern Msg__Msg Msg__New(Msg__Context context, OOC_INT32 code);
+extern void Msg__MsgDesc_SetAttribute(Msg__Msg msg, Msg__Attribute attr);
+#define _TBN_Msg__MsgDesc_SetAttribute 0
+typedef void (*_TBP_Msg__MsgDesc_SetAttribute)(Msg__Msg msg, Msg__Attribute attr);
+extern Msg__Attribute Msg__MsgDesc_GetAttribute(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d);
+#define _TBN_Msg__MsgDesc_GetAttribute 1
+typedef Msg__Attribute (*_TBP_Msg__MsgDesc_GetAttribute)(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d);
+extern void Msg__MsgDesc_GetLText(Msg__Msg msg, Msg__LString text, OOC_LEN text_0d);
+#define _TBN_Msg__MsgDesc_GetLText 2
+typedef void (*_TBP_Msg__MsgDesc_GetLText)(Msg__Msg msg, Msg__LString text, OOC_LEN text_0d);
+extern void Msg__MsgDesc_GetText(Msg__Msg msg, Msg__String text, OOC_LEN text_0d);
+#define _TBN_Msg__MsgDesc_GetText 3
+typedef void (*_TBP_Msg__MsgDesc_GetText)(Msg__Msg msg, Msg__String text, OOC_LEN text_0d);
+extern void Msg__InitMsgList(Msg__MsgList l);
+extern Msg__MsgList Msg__NewMsgList(void);
+extern void Msg__MsgListDesc_Append(Msg__MsgList l, Msg__Msg msg);
+#define _TBN_Msg__MsgListDesc_Append 0
+typedef void (*_TBP_Msg__MsgListDesc_Append)(Msg__MsgList l, Msg__Msg msg);
+extern void Msg__MsgListDesc_AppendList(Msg__MsgList l, Msg__MsgList source);
+#define _TBN_Msg__MsgListDesc_AppendList 1
+typedef void (*_TBP_Msg__MsgListDesc_AppendList)(Msg__MsgList l, Msg__MsgList source);
+extern Msg__IntAttribute Msg__NewIntAttrib(const Msg__String name__ref, OOC_LEN name_0d, OOC_INT32 value);
+extern void Msg__MsgDesc_SetIntAttrib(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, OOC_INT32 value);
+#define _TBN_Msg__MsgDesc_SetIntAttrib 4
+typedef void (*_TBP_Msg__MsgDesc_SetIntAttrib)(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, OOC_INT32 value);
+extern void Msg__IntAttributeDesc_ReplacementText(Msg__IntAttribute attr, Msg__LString text, OOC_LEN text_0d);
+#define _TBN_Msg__IntAttributeDesc_ReplacementText 0
+typedef void (*_TBP_Msg__IntAttributeDesc_ReplacementText)(Msg__IntAttribute attr, Msg__LString text, OOC_LEN text_0d);
+extern Msg__StringAttribute Msg__NewStringAttrib(const Msg__String name__ref, OOC_LEN name_0d, Msg__StringPtr value);
+extern void Msg__MsgDesc_SetStringAttrib(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, Msg__StringPtr value);
+#define _TBN_Msg__MsgDesc_SetStringAttrib 5
+typedef void (*_TBP_Msg__MsgDesc_SetStringAttrib)(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, Msg__StringPtr value);
+extern void Msg__StringAttributeDesc_ReplacementText(Msg__StringAttribute attr, Msg__LString text, OOC_LEN text_0d);
+#define _TBN_Msg__StringAttributeDesc_ReplacementText 0
+typedef void (*_TBP_Msg__StringAttributeDesc_ReplacementText)(Msg__StringAttribute attr, Msg__LString text, OOC_LEN text_0d);
+extern Msg__LStringAttribute Msg__NewLStringAttrib(const Msg__String name__ref, OOC_LEN name_0d, Msg__LStringPtr value);
+extern void Msg__MsgDesc_SetLStringAttrib(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, Msg__LStringPtr value);
+#define _TBN_Msg__MsgDesc_SetLStringAttrib 6
+typedef void (*_TBP_Msg__MsgDesc_SetLStringAttrib)(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, Msg__LStringPtr value);
+extern void Msg__LStringAttributeDesc_ReplacementText(Msg__LStringAttribute attr, Msg__LString text, OOC_LEN text_0d);
+#define _TBN_Msg__LStringAttributeDesc_ReplacementText 0
+typedef void (*_TBP_Msg__LStringAttributeDesc_ReplacementText)(Msg__LStringAttribute attr, Msg__LString text, OOC_LEN text_0d);
+extern Msg__MsgAttribute Msg__NewMsgAttrib(const Msg__String name__ref, OOC_LEN name_0d, Msg__Msg value);
+extern void Msg__MsgDesc_SetMsgAttrib(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, Msg__Msg value);
+#define _TBN_Msg__MsgDesc_SetMsgAttrib 7
+typedef void (*_TBP_Msg__MsgDesc_SetMsgAttrib)(Msg__Msg msg, const Msg__String name__ref, OOC_LEN name_0d, Msg__Msg value);
+extern void Msg__MsgAttributeDesc_ReplacementText(Msg__MsgAttribute attr, Msg__LString text, OOC_LEN text_0d);
+#define _TBN_Msg__MsgAttributeDesc_ReplacementText 0
+typedef void (*_TBP_Msg__MsgAttributeDesc_ReplacementText)(Msg__MsgAttribute attr, Msg__LString text, OOC_LEN text_0d);
+extern Msg__StringPtr Msg__GetStringPtr(const Msg__String str__ref, OOC_LEN str_0d);
+extern Msg__LStringPtr Msg__GetLStringPtr(const Msg__LString str__ref, OOC_LEN str_0d);
+extern void OOC_Msg_init(void);
+extern void OOC_Msg_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Msg__String;
+extern RT0__StructDesc _td_Msg__StringPtr;
+extern RT0__StructDesc _td_Msg__LString;
+extern RT0__StructDesc _td_Msg__LStringPtr;
+extern RT0__StructDesc _td_Msg__Attribute;
+extern RT0__StructDesc _td_Msg__AttributeDesc;
+extern RT0__StructDesc _td_Msg__Context;
+extern RT0__StructDesc _td_Msg__ContextDesc;
+extern RT0__StructDesc _td_Msg__Msg;
+extern RT0__StructDesc _td_Msg__MsgDesc;
+extern RT0__StructDesc _td_Msg__MsgList;
+extern RT0__StructDesc _td_Msg__MsgListDesc;
+extern RT0__StructDesc _td_Msg__IntAttribute;
+extern RT0__StructDesc _td_Msg__IntAttributeDesc;
+extern RT0__StructDesc _td_Msg__StringAttribute;
+extern RT0__StructDesc _td_Msg__StringAttributeDesc;
+extern RT0__StructDesc _td_Msg__LStringAttribute;
+extern RT0__StructDesc _td_Msg__LStringAttributeDesc;
+extern RT0__StructDesc _td_Msg__MsgAttribute;
+extern RT0__StructDesc _td_Msg__MsgAttributeDesc;
+extern RT0__StructDesc _td_Msg__7793;
+extern RT0__StructDesc _td_Msg__11704;
+extern RT0__StructDesc _td_Msg__11750;
+extern RT0__StructDesc _td_Msg__11843;
+extern RT0__StructDesc _td_Msg__13285;
+extern RT0__StructDesc _td_Msg__15658;
+#endif /* _MODULE_Msg_ */
+
+/* --- */

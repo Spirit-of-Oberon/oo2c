@@ -1,0 +1,77 @@
+#ifndef _MODULE_StringSearch_
+#define _MODULE_StringSearch_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_UINT32 StringSearch__Flags;
+#define StringSearch__ignoreCase 0
+#define StringSearch__copyString 1
+typedef struct StringSearch__FactoryDesc *StringSearch__Factory;
+typedef struct StringSearch__FactoryDesc {
+  char __dummy;
+} StringSearch__FactoryDesc;
+typedef struct StringSearch__MatcherDesc *StringSearch__Matcher;
+typedef struct StringSearch__MatcherDesc {
+  Object__String8 pattern;
+  OOC_UINT32 flags;
+  OOC_INT32 groups;
+} StringSearch__MatcherDesc;
+typedef struct StringSearch__MatchObjectDesc *StringSearch__MatchObject;
+typedef struct StringSearch__MatchObjectDesc {
+  OOC_INT32 pos;
+  OOC_INT32 endpos;
+  StringSearch__Matcher matcher;
+  Object__String8 string;
+} StringSearch__MatchObjectDesc;
+extern void StringSearch__InitMatchObject(StringSearch__MatchObject m, OOC_INT32 pos, OOC_INT32 endpos, StringSearch__Matcher matcher, Object__String8 string);
+extern void StringSearch__MatchObjectDesc_Destroy(StringSearch__MatchObject m);
+#define _TBN_StringSearch__MatchObjectDesc_Destroy 4
+typedef void (*_TBP_StringSearch__MatchObjectDesc_Destroy)(StringSearch__MatchObject m);
+extern OOC_INT32 StringSearch__MatchObjectDesc_Start(StringSearch__MatchObject m, OOC_INT32 group);
+#define _TBN_StringSearch__MatchObjectDesc_Start 5
+typedef OOC_INT32 (*_TBP_StringSearch__MatchObjectDesc_Start)(StringSearch__MatchObject m, OOC_INT32 group);
+extern OOC_INT32 StringSearch__MatchObjectDesc_End(StringSearch__MatchObject m, OOC_INT32 group);
+#define _TBN_StringSearch__MatchObjectDesc_End 6
+typedef OOC_INT32 (*_TBP_StringSearch__MatchObjectDesc_End)(StringSearch__MatchObject m, OOC_INT32 group);
+extern void StringSearch__InitMatcher(StringSearch__Matcher matcher, Object__String8 pattern, OOC_UINT32 flags, OOC_INT32 groups);
+extern void StringSearch__MatcherDesc_Destroy(StringSearch__Matcher matcher);
+#define _TBN_StringSearch__MatcherDesc_Destroy 4
+typedef void (*_TBP_StringSearch__MatcherDesc_Destroy)(StringSearch__Matcher matcher);
+extern StringSearch__MatchObject StringSearch__MatcherDesc_MatchChars(StringSearch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch__MatcherDesc_MatchChars 5
+typedef StringSearch__MatchObject (*_TBP_StringSearch__MatcherDesc_MatchChars)(StringSearch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+extern StringSearch__MatchObject StringSearch__MatcherDesc_Match(StringSearch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch__MatcherDesc_Match 6
+typedef StringSearch__MatchObject (*_TBP_StringSearch__MatcherDesc_Match)(StringSearch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+extern StringSearch__MatchObject StringSearch__MatcherDesc_SearchChars(StringSearch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch__MatcherDesc_SearchChars 7
+typedef StringSearch__MatchObject (*_TBP_StringSearch__MatcherDesc_SearchChars)(StringSearch__Matcher matcher, const OOC_CHAR8 string[], OOC_LEN string_0d, OOC_INT32 pos, OOC_INT32 endpos);
+extern StringSearch__MatchObject StringSearch__MatcherDesc_Search(StringSearch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+#define _TBN_StringSearch__MatcherDesc_Search 8
+typedef StringSearch__MatchObject (*_TBP_StringSearch__MatcherDesc_Search)(StringSearch__Matcher matcher, Object__String8 string, OOC_INT32 pos, OOC_INT32 endpos);
+extern void StringSearch__InitFactory(StringSearch__Factory f);
+extern void StringSearch__FactoryDesc_Destroy(StringSearch__Factory f);
+#define _TBN_StringSearch__FactoryDesc_Destroy 4
+typedef void (*_TBP_StringSearch__FactoryDesc_Destroy)(StringSearch__Factory f);
+extern StringSearch__Matcher StringSearch__FactoryDesc_Compile(StringSearch__Factory f, Object__String8 pattern, OOC_UINT32 flags);
+#define _TBN_StringSearch__FactoryDesc_Compile 5
+typedef StringSearch__Matcher (*_TBP_StringSearch__FactoryDesc_Compile)(StringSearch__Factory f, Object__String8 pattern, OOC_UINT32 flags);
+extern void OOC_StringSearch_init(void);
+extern void OOC_StringSearch_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_StringSearch__Factory;
+extern RT0__StructDesc _td_StringSearch__FactoryDesc;
+extern RT0__StructDesc _td_StringSearch__Matcher;
+extern RT0__StructDesc _td_StringSearch__MatcherDesc;
+extern RT0__StructDesc _td_StringSearch__MatchObject;
+extern RT0__StructDesc _td_StringSearch__MatchObjectDesc;
+extern RT0__StructDesc _td_StringSearch__5550;
+extern RT0__StructDesc _td_StringSearch__7054;
+#endif /* _MODULE_StringSearch_ */
+
+/* --- */

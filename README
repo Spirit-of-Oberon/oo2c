@@ -1,0 +1,147 @@
+See file INSTALL for the list of software requirements and
+installation instructions.  See file PROBLEMS if installation turns
+out to be difficult.
+
+oo2c translates Oberon-2 source code into a variant of C supported by
+the gcc family of compilers.  It uses a variant of SSA for its
+intermediate representation, and performs common optimizations like
+common subexpression elimination, invariant code motion, constant
+propagation, algebraic transformations, and dead code removal.  The
+compiler relies on Boehm's gc for garbage collection.  A summary of
+the user visible changes from oo2c-1.5.9 to oo2c-2.0.x can be found in
+directory doc/from-v1-to-v2/.
+
+Operating system, architecture, and gcc combinations that are known to
+work:
+
+  Linux 2.4.19/i386/gcc 2.95.4 & 3.2.1
+  SunOS 5.6/sparc/gcc 2.95.2 (32 bit)
+  SunOS 5.8/sparcv9/gcc 3.2.1 (64 bit)
+  Mac OS X/G3/gcc 2.95.2
+  Windows 2000/i386/cygwin gcc 2.95.3-5
+
+Starting with oo2c-2.0.11, there is an interface for POSIX threads.
+For this to work, both the garbage collector and oo2c must be build
+with `--enable-threads=pthreads'.  You can check that threading works
+by running the program src/TestThread.Mod.  If it completes without
+crashing or failed assertions you can be fairly sure that
+synchronization, exceptions, and heap management work as expected.
+See lib/src/liboo2c.Mod for some caveats regarding threading and other
+library modules.  Threads have been tested with Debian 3.0 (Linux 2.4,
+glibc 2.3.1, gc6.0+ and gc6.2) and Solaris 2.6 (gc6.2).
+
+
+
+Typical installation is quite simple:
+
+  tar xfvj oo2c_32-2.0.0.tar.bz2
+  cd oo2c_32-2.0.0
+  ./configure --prefix ~/mydir
+  make install
+
+For a fast and small installation, you can do
+
+  env OFLAGS="--no-rtc" CFLAGS="-O2 -pipe" ./configure  --prefix ~/mydir
+  make install-strip
+
+More information is available in INSTALL.
+
+
+Building programs is simple as well:
+
+  mkdir /tmp/test
+  cd /tmp/test
+  mkdir src
+  cat >src/T.Mod
+    MODULE T;
+    IMPORT Out;
+    BEGIN
+    Out.String("Hello");Out.Ln;
+    END T.
+  ~/mydir/bin/oo2c --make T
+  
+And then `bin/T' should say `Hello'.  For more information, please
+refer to the man page of oo2c.
+
+I'm mostly interested to hear about installation problems, compiler
+bugs (hangs, crashes, wrong error messages or warnings, or missing
+error messages), and usability issues.  Please use Sourceforge
+
+  https://sourceforge.net/tracker/?atid=103539&group_id=3539
+
+to report bugs and include the version you are using in the summary
+line.  This ensures that bug reports are not lost, and provides a
+convenient central location to collect information about bugs.  Bug
+reports accompanied by patches fixing the problem at hand are very
+welcome.
+
+For miscompiled code, that is, correct input code that produces a
+broken binary, please try to create a small program that will
+reproduce the error.  Ideally this program is a single module with
+just enough lines of code to trigger the bug.  Send me this module,
+together with the information on how the bug manifests itself, how to
+trigger the bug, and the version of oo2c you are using.
+
+For input modules that hang or crash the compiler, please send me the
+module or modules that trigger the problem.  This does not need to be
+small.  Don't send me module fragments!
+
+Reporting about bugs can be a surprisingly difficult excercise in
+communication.  There is a very nice essay "How to Report Bugs
+Effectively" at http://www.chiark.greenend.org.uk/~sgtatham/bugs.html
+It should recommended reading for everyone who will ever write -- or
+read -- a bug report.
+
+
+Build and Install Using a CVS Working Copy
+==========================================
+
+To install a compiler from the bleeding edge CVS sources, you need to
+have the latest file release compiler installed.  Then, using this
+baseline compiler, create a bootstrap compiler from the CVS sources.
+Finally, run "make install" with the bootstrap compiler. 
+
+Here are the recommended steps in detail.  First, the usual setup:
+
+  ~/sf-ooc/ooc2$ make cvsclean
+  ~/sf-ooc/ooc2$ cvs update -d 
+  ~/sf-ooc/ooc2$ ./configure --prefix /tmp/test
+
+Then create a compiler binary bin/oo2c from the current sources
+(~/local-ooc2/bin/oo2c is the local installation of the latest file
+release):
+
+  ~/sf-ooc/ooc2$ . ENV
+  ~/sf-ooc/ooc2$ make $OOC_DEV_ROOT/oo2crc-install.xml
+  ~/sf-ooc/ooc2$ ~/local-ooc2/bin/oo2c -M --config oo2crc-install.xml oo2c
+
+Use bin/oo2c to do "make install":
+
+  ~/sf-ooc/ooc2$ make install BOOTSTRAP_COMPILER=bin/oo2c
+
+This installs the compiler's data under the configured prefix,
+`/tmp/test' in this example,
+
+
+How to Create a Patch
+=====================
+
+To create a patch file relative to the current state of the CVS, first
+eliminate all derived files in the local working copy:
+
+  make cvsclean
+
+Update the working copy to the current head of the CVS:
+
+  cvs update -dP
+
+Resolve conflicts caused by the update (if any) and run the diff
+command:
+
+  cvs diff -u >../mypatch
+
+If "diff -u" does not work use "diff -c" as fallback.  The resulting
+file can be applied with "patch -p0 <file".
+
+
+-- Michael van Acken <mva@users.sf.net>

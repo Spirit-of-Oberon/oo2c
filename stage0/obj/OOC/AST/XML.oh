@@ -1,0 +1,18 @@
+#ifndef _MODULE_OOC_AST_XML_
+#define _MODULE_OOC_AST_XML_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <OOC/AST.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern void OOC_AST_XML__Write(IO__ByteChannel cw, OOC_AST__Module m);
+extern void OOC_OOC_AST_XML_init(void);
+extern void OOC_OOC_AST_XML_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_AST_XML_ */
+
+/* --- */

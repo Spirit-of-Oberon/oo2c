@@ -1,0 +1,35 @@
+#ifndef _MODULE_OOC_SymbolTable_CreateNamespace_
+#define _MODULE_OOC_SymbolTable_CreateNamespace_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <OOC/Error.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/SymbolTable/Uses.oh>
+#include <OOC/SymbolTable/TypeRules.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_SymbolTable_CreateNamespace__ErrorContextDesc *OOC_SymbolTable_CreateNamespace__ErrorContext;
+typedef struct OOC_SymbolTable_CreateNamespace__ErrorContextDesc {
+  Msg__StringPtr id;
+} OOC_SymbolTable_CreateNamespace__ErrorContextDesc;
+extern OOC_SymbolTable__VarDecl OOC_SymbolTable_CreateNamespace__exception;
+extern OOC_SymbolTable__Module OOC_SymbolTable_CreateNamespace__systemModule;
+extern void OOC_SymbolTable_CreateNamespace__ErrorContextDesc_GetTemplate(OOC_SymbolTable_CreateNamespace__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_SymbolTable_CreateNamespace__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_SymbolTable_CreateNamespace__ErrorContextDesc_GetTemplate)(OOC_SymbolTable_CreateNamespace__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern OOC_SymbolTable__Declaration OOC_SymbolTable_CreateNamespace__ResolveQualident(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item contextOfUse, OOC_SymbolTable_Uses__Uses uses, OOC_SymbolTable__Name module, OOC_SymbolTable__Name ident);
+extern void OOC_SymbolTable_CreateNamespace__CreateNamespace(OOC_SymbolTable__Module root, OOC_SymbolTable_Uses__Uses uses, OOC_Error__List errList);
+extern void OOC_SymbolTable_CreateNamespace__Init(void);
+extern void OOC_OOC_SymbolTable_CreateNamespace_init(void);
+extern void OOC_OOC_SymbolTable_CreateNamespace_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__ErrorContext;
+extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__2715;
+#endif /* _MODULE_OOC_SymbolTable_CreateNamespace_ */
+
+/* --- */

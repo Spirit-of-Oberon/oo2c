@@ -1,0 +1,56 @@
+#ifndef _MODULE_Config_Section_Arguments_
+#define _MODULE_Config_Section_Arguments_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <Channel.oh>
+#include <XML/Locator.oh>
+#include <Config/Parser.oh>
+#include <Config/Section.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct Config_Section_Arguments__SectionDesc *Config_Section_Arguments__Section;
+typedef Object__String *Config_Section_Arguments__ArgumentArray;
+typedef struct Config_Section_Arguments__SectionDesc {
+  XML_UnicodeBuffer__CharArray name;
+  Config_Section_Arguments__ArgumentArray args;
+  OOC_INT32 argNumber;
+} Config_Section_Arguments__SectionDesc;
+typedef struct Config_Section_Arguments__ErrorContextDesc *Config_Section_Arguments__ErrorContext;
+typedef struct Config_Section_Arguments__ErrorContextDesc {
+  Msg__StringPtr id;
+  XML_Error__Mapping mapping;
+} Config_Section_Arguments__ErrorContextDesc;
+extern void Config_Section_Arguments__ErrorContextDesc_GetTemplate(Config_Section_Arguments__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_Config_Section_Arguments__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_Config_Section_Arguments__ErrorContextDesc_GetTemplate)(Config_Section_Arguments__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern Config_Section_Arguments__Section Config_Section_Arguments__New(const Config_Parser__String sectionName__ref, OOC_LEN sectionName_0d);
+extern OOC_INT32 Config_Section_Arguments__SectionDesc_ArgNumber(Config_Section_Arguments__Section s);
+#define _TBN_Config_Section_Arguments__SectionDesc_ArgNumber 2
+typedef OOC_INT32 (*_TBP_Config_Section_Arguments__SectionDesc_ArgNumber)(Config_Section_Arguments__Section s);
+extern Object__String Config_Section_Arguments__SectionDesc_Get(Config_Section_Arguments__Section s, OOC_INT32 position);
+#define _TBN_Config_Section_Arguments__SectionDesc_Get 3
+typedef Object__String (*_TBP_Config_Section_Arguments__SectionDesc_Get)(Config_Section_Arguments__Section s, OOC_INT32 position);
+extern void Config_Section_Arguments__SectionDesc_ProcessElements(Config_Section_Arguments__Section s, Config_Parser__Element sectionRoot, XML_Locator__ErrorListener errorListener);
+#define _TBN_Config_Section_Arguments__SectionDesc_ProcessElements 0
+typedef void (*_TBP_Config_Section_Arguments__SectionDesc_ProcessElements)(Config_Section_Arguments__Section s, Config_Parser__Element sectionRoot, XML_Locator__ErrorListener errorListener);
+extern void Config_Section_Arguments__SectionDesc_DumpContent(Config_Section_Arguments__Section s, Channel__Channel ch);
+#define _TBN_Config_Section_Arguments__SectionDesc_DumpContent 1
+typedef void (*_TBP_Config_Section_Arguments__SectionDesc_DumpContent)(Config_Section_Arguments__Section s, Channel__Channel ch);
+extern void OOC_Config_Section_Arguments_init(void);
+extern void OOC_Config_Section_Arguments_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Config_Section_Arguments__Section;
+extern RT0__StructDesc _td_Config_Section_Arguments__243;
+extern RT0__StructDesc _td_Config_Section_Arguments__ArgumentArray;
+extern RT0__StructDesc _td_Config_Section_Arguments__SectionDesc;
+extern RT0__StructDesc _td_Config_Section_Arguments__ErrorContext;
+extern RT0__StructDesc _td_Config_Section_Arguments__ErrorContextDesc;
+extern RT0__StructDesc _td_Config_Section_Arguments__720;
+extern RT0__StructDesc _td_Config_Section_Arguments__3559;
+#endif /* _MODULE_Config_Section_Arguments_ */
+
+/* --- */

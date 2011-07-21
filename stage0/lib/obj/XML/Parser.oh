@@ -1,0 +1,109 @@
+#ifndef _MODULE_XML_Parser_
+#define _MODULE_XML_Parser_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <IO.oh>
+#include <URI.oh>
+#include <XML/UnicodeCodec.oh>
+#include <XML/Locator.oh>
+#include <XML/EntityResolver.oh>
+#include <XML/UnicodeCodec/UTF8.oh>
+#include <XML/UnicodeBuffer.oh>
+#include <XML/Error.oh>
+#include <XML/DTD.oh>
+#include <XML/Builder.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct XML_Parser__PEInfo {
+  XML_UnicodeBuffer__CharArray oldChars;
+  OOC_INT32 oldCPos;
+  OOC_INT32 oldCurrLine;
+  OOC_INT32 oldCurrLinePos;
+  OOC_INT32 oldCurrLineTab;
+  XML_DTD__Entity entity;
+  XML_UnicodeBuffer__Input in;
+} XML_Parser__PEInfo;
+typedef XML_UnicodeBuffer__CharArray *XML_Parser__NameList;
+typedef struct XML_Parser__PEInfo *XML_Parser__PEInfoList;
+typedef struct XML_Parser__ErrorListenerDesc *XML_Parser__ErrorListener;
+typedef struct XML_Parser__ParserDesc *XML_Parser__Parser;
+typedef struct XML_Parser__ParserDesc {
+  XML_Error__List errList;
+  XML_Locator__Locator l;
+  XML_Parser__ErrorListener errorListener;
+  struct XML_Locator__Position errorPos;
+  XML_EntityResolver__Resolver er;
+  XML_UnicodeBuffer__Input in;
+  XML_Builder__Builder initialBuilder;
+  XML_Builder__Builder builder;
+  XML_DTD__Builder dtd;
+  XML_DTD__ExternalEntity documentEntity;
+  XML_DTD__ExternalEntity fileEntity;
+  OOC_CHAR8 followExternalRef;
+  OOC_CHAR8 enforceQNames;
+  OOC_CHAR8 validating;
+  OOC_CHAR8 processDeclarations;
+  OOC_CHAR8 readCompleteDTD;
+  OOC_CHAR8 inDocumentElement;
+  OOC_CHAR8 inDTD;
+  OOC_CHAR8 inExternalSubset;
+  OOC_CHAR8 inExternalEntity;
+  OOC_CHAR8 __pad69;
+  OOC_CHAR8 __pad70;
+  OOC_CHAR8 __pad71;
+  XML_DTD__AttValue currEntityValue;
+  XML_Parser__NameList nameList;
+  OOC_INT32 lenNameList;
+  XML_Parser__PEInfoList peStack;
+  OOC_INT32 lenPEStack;
+  OOC_INT32 currLine;
+  OOC_INT32 currLinePos;
+  OOC_INT32 currLineTab;
+  Msg__Msg lastError;
+} XML_Parser__ParserDesc;
+typedef struct XML_Parser__ErrorListenerDesc {
+  XML_Parser__Parser p;
+} XML_Parser__ErrorListenerDesc;
+extern OOC_CHAR8 XML_Parser__IsNameChar(OOC_CHAR16 ch);
+extern OOC_CHAR8 XML_Parser__IsNameChar0(OOC_CHAR16 ch);
+extern Msg__Msg XML_Parser__ErrorListenerDesc_Error(XML_Parser__ErrorListener el, XML_Error__Context context, OOC_INT32 code, OOC_CHAR8 fatalError, const struct XML_Locator__Position *pos__ref);
+#define _TBN_XML_Parser__ErrorListenerDesc_Error 0
+typedef Msg__Msg (*_TBP_XML_Parser__ErrorListenerDesc_Error)(XML_Parser__ErrorListener el, XML_Error__Context context, OOC_INT32 code, OOC_CHAR8 fatalError, const struct XML_Locator__Position *pos__ref);
+extern void XML_Parser__ParserDesc_ParseDocument(XML_Parser__Parser p);
+#define _TBN_XML_Parser__ParserDesc_ParseDocument 0
+typedef void (*_TBP_XML_Parser__ParserDesc_ParseDocument)(XML_Parser__Parser p);
+extern XML_Parser__Parser XML_Parser__NewChannel(IO__ByteChannel ch, URI__URI baseURI, XML_UnicodeCodec__Factory codecFactory, XML_EntityResolver__Resolver entityResolver, XML_Builder__Builder builder);
+extern XML_Parser__Parser XML_Parser__NewURI(URI__URI uri, URI__URI baseURI, XML_UnicodeCodec__Factory codecFactory, XML_EntityResolver__Resolver entityResolver, XML_Builder__Builder builder);
+extern XML_Parser__Parser XML_Parser__NewFile(const OOC_CHAR8 filePath__ref[], OOC_LEN filePath_0d, URI__URI baseURI, XML_UnicodeCodec__Factory codecFactory, XML_EntityResolver__Resolver entityResolver, XML_Builder__Builder builder);
+extern XML_Parser__Parser XML_Parser__NewExternalID(const OOC_CHAR16 _public__ref[], OOC_LEN _public_0d, const OOC_CHAR16 system__ref[], OOC_LEN system_0d, URI__URI systemBaseURI, XML_UnicodeCodec__Factory codecFactory, XML_EntityResolver__Resolver entityResolver, XML_Builder__Builder builder, Msg__Msg *res);
+extern void OOC_XML_Parser_init(void);
+extern void OOC_XML_Parser_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_Parser__PEInfo;
+extern RT0__StructDesc _td_XML_Parser__1571;
+extern RT0__StructDesc _td_XML_Parser__NameList;
+extern RT0__StructDesc _td_XML_Parser__1618;
+extern RT0__StructDesc _td_XML_Parser__PEInfoList;
+extern RT0__StructDesc _td_XML_Parser__ErrorListener;
+extern RT0__StructDesc _td_XML_Parser__Parser;
+extern RT0__StructDesc _td_XML_Parser__ParserDesc;
+extern RT0__StructDesc _td_XML_Parser__7045;
+extern RT0__StructDesc _td_XML_Parser__ErrorListenerDesc;
+extern RT0__StructDesc _td_XML_Parser__17958;
+extern RT0__StructDesc _td_XML_Parser__23844;
+extern RT0__StructDesc _td_XML_Parser__35276;
+extern RT0__StructDesc _td_XML_Parser__38816;
+extern RT0__StructDesc _td_XML_Parser__49172;
+extern RT0__StructDesc _td_XML_Parser__49161;
+extern RT0__StructDesc _td_XML_Parser__52142;
+extern RT0__StructDesc _td_XML_Parser__107406;
+extern RT0__StructDesc _td_XML_Parser__107858;
+extern RT0__StructDesc _td_XML_Parser__108369;
+extern RT0__StructDesc _td_XML_Parser__108950;
+#endif /* _MODULE_XML_Parser_ */
+
+/* --- */

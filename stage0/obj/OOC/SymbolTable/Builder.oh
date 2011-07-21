@@ -1,0 +1,152 @@
+#ifndef _MODULE_OOC_SymbolTable_Builder_
+#define _MODULE_OOC_SymbolTable_Builder_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Object/Boxed.oh>
+#include <ADT/Dictionary.oh>
+#include <IO.oh>
+#include <OOC/Doc.oh>
+#include <OOC/AST.oh>
+#include <OOC/SymbolTable.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_SymbolTable_Builder__BuilderDesc *OOC_SymbolTable_Builder__Builder;
+typedef struct OOC_SymbolTable_Builder__BuilderDesc {
+  OOC_INT8 _class;
+} OOC_SymbolTable_Builder__BuilderDesc;
+typedef struct OOC_SymbolTable_Builder__WriterDesc *OOC_SymbolTable_Builder__Writer;
+typedef struct OOC_SymbolTable_Builder__WriterDesc {
+  OOC_INT8 byteOrder;
+  OOC_CHAR8 __pad1;
+  OOC_CHAR8 __pad2;
+  OOC_CHAR8 __pad3;
+  IO__ByteChannel channel;
+  OOC_INT32 objCounter;
+  ADT_Object_Storage__TypeRefMap typeRefMap;
+  OOC_INT32 typeRefSize;
+  ADT_Dictionary_AddressKey_IntValue__Dictionary objHash;
+  ADT_Object_Storage__CharBuffer charBuffer;
+  ADT_Object_Storage__Writer docWriter;
+  ADT_Dictionary__Dictionary names;
+} OOC_SymbolTable_Builder__WriterDesc;
+typedef struct OOC_SymbolTable_Builder__AutoImportDesc *OOC_SymbolTable_Builder__AutoImport;
+typedef OOC_CHAR8 *OOC_SymbolTable_Builder__Name;
+typedef struct OOC_SymbolTable_Builder__AutoImportDesc {
+  OOC_SymbolTable_Builder__Name module;
+  OOC_SymbolTable_Builder__Name *exclude;
+} OOC_SymbolTable_Builder__AutoImportDesc;
+#define OOC_SymbolTable_Builder__prefixAutoImport (OOC_CHAR8)'-'
+#define OOC_SymbolTable_Builder__stringModule "Object"
+#define OOC_SymbolTable_Builder__stringModuleC "Object"
+#define OOC_SymbolTable_Builder__noAutoImport 0
+#define OOC_SymbolTable_Builder__autoImportRT0 1
+#define OOC_SymbolTable_Builder__fullAutoImport 2
+extern OOC_SymbolTable_Builder__AutoImport *OOC_SymbolTable_Builder__autoImport;
+extern OOC_INT8 OOC_SymbolTable_Builder__doAutoImport;
+#define OOC_SymbolTable_Builder__magicNumberSize 4
+extern OOC_CHAR8 OOC_SymbolTable_Builder__magicNumber[5];
+extern void OOC_SymbolTable_Builder__Init(OOC_SymbolTable_Builder__Builder b);
+extern OOC_SymbolTable_Builder__Builder OOC_SymbolTable_Builder__New(void);
+extern void OOC_SymbolTable_Builder__BuilderDesc_SetClass(OOC_SymbolTable_Builder__Builder b, OOC_INT8 _class);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_SetClass 0
+typedef void (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_SetClass)(OOC_SymbolTable_Builder__Builder b, OOC_INT8 _class);
+extern OOC_SymbolTable__Import OOC_SymbolTable_Builder__BuilderDesc_NewImport(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_Doc__Document docString, OOC_SymbolTable__Name moduleName);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewImport 1
+typedef OOC_SymbolTable__Import (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewImport)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_Doc__Document docString, OOC_SymbolTable__Name moduleName);
+extern OOC_SymbolTable__ConstDecl OOC_SymbolTable_Builder__BuilderDesc_NewConstDecl(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, Object_Boxed__Object value, OOC_SymbolTable__PredefType type, OOC_AST__Node constExpr);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewConstDecl 2
+typedef OOC_SymbolTable__ConstDecl (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewConstDecl)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, Object_Boxed__Object value, OOC_SymbolTable__PredefType type, OOC_AST__Node constExpr);
+extern OOC_SymbolTable__TypeDecl OOC_SymbolTable_Builder__BuilderDesc_NewTypeDecl(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_SymbolTable__Type type, OOC_CHAR8 isTypeParameter);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewTypeDecl 3
+typedef OOC_SymbolTable__TypeDecl (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewTypeDecl)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_SymbolTable__Type type, OOC_CHAR8 isTypeParameter);
+extern OOC_SymbolTable__Redirect OOC_SymbolTable_Builder__BuilderDesc_NewRedirect(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_SymbolTable__Name module, OOC_SymbolTable__Name ident);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewRedirect 4
+typedef OOC_SymbolTable__Redirect (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewRedirect)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_SymbolTable__Name module, OOC_SymbolTable__Name ident);
+extern OOC_SymbolTable__VarDecl OOC_SymbolTable_Builder__BuilderDesc_NewVarDecl(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_CHAR8 isParameter, OOC_CHAR8 isReceiver, OOC_CHAR8 isVarParam, OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewVarDecl 5
+typedef OOC_SymbolTable__VarDecl (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewVarDecl)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_CHAR8 isParameter, OOC_CHAR8 isReceiver, OOC_CHAR8 isVarParam, OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__FieldDecl OOC_SymbolTable_Builder__BuilderDesc_NewFieldDecl(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewFieldDecl 6
+typedef OOC_SymbolTable__FieldDecl (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewFieldDecl)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__PredefProc OOC_SymbolTable_Builder__BuilderDesc_NewPredefProc(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT16 id, OOC_INT16 minArgs, OOC_INT16 maxArgs);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewPredefProc 7
+typedef OOC_SymbolTable__PredefProc (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewPredefProc)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT16 id, OOC_INT16 minArgs, OOC_INT16 maxArgs);
+extern OOC_SymbolTable__ProcDecl OOC_SymbolTable_Builder__BuilderDesc_NewProcDecl(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_INT8 procClass, OOC_CHAR8 isForwardDecl, OOC_AST__Node procAST);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewProcDecl 8
+typedef OOC_SymbolTable__ProcDecl (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewProcDecl)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Name name, OOC_INT32 visibleFrom, OOC_INT8 exportMark, OOC_Doc__Document docString, OOC_INT8 procClass, OOC_CHAR8 isForwardDecl, OOC_AST__Node procAST);
+extern OOC_SymbolTable__PredefType OOC_SymbolTable_Builder__BuilderDesc_NewPredefType(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_INT16 id);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewPredefType 9
+typedef OOC_SymbolTable__PredefType (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewPredefType)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_INT16 id);
+extern OOC_SymbolTable__TypeName OOC_SymbolTable_Builder__BuilderDesc_NewTypeName(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Name module, OOC_SymbolTable__Name ident);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewTypeName 10
+typedef OOC_SymbolTable__TypeName (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewTypeName)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Name module, OOC_SymbolTable__Name ident);
+extern OOC_SymbolTable__Record OOC_SymbolTable_Builder__BuilderDesc_NewRecord(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewRecord 11
+typedef OOC_SymbolTable__Record (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewRecord)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType);
+extern OOC_SymbolTable__Array OOC_SymbolTable_Builder__BuilderDesc_NewArray(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_CHAR8 isOpenArray, OOC_AST__Node lengthExpr, OOC_SymbolTable__Type elementType);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewArray 12
+typedef OOC_SymbolTable__Array (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewArray)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_CHAR8 isOpenArray, OOC_AST__Node lengthExpr, OOC_SymbolTable__Type elementType);
+extern OOC_SymbolTable__Pointer OOC_SymbolTable_Builder__BuilderDesc_NewPointer(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewPointer 13
+typedef OOC_SymbolTable__Pointer (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewPointer)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType);
+extern OOC_SymbolTable__TypePars OOC_SymbolTable_Builder__BuilderDesc_NewTypePars(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewTypePars 14
+typedef OOC_SymbolTable__TypePars (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewTypePars)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent);
+extern OOC_SymbolTable__QualType OOC_SymbolTable_Builder__BuilderDesc_NewQualType(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType, OOC_SymbolTable__TypeRefArray arguments);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewQualType 15
+typedef OOC_SymbolTable__QualType (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewQualType)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position, OOC_SymbolTable__Type baseType, OOC_SymbolTable__TypeRefArray arguments);
+extern OOC_SymbolTable__ExceptionName OOC_SymbolTable_Builder__BuilderDesc_NewExceptionName(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Type type);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewExceptionName 16
+typedef OOC_SymbolTable__ExceptionName (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewExceptionName)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Type type);
+extern OOC_SymbolTable__FormalPars OOC_SymbolTable_Builder__BuilderDesc_NewFormalPars(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewFormalPars 17
+typedef OOC_SymbolTable__FormalPars (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewFormalPars)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Item parent, OOC_SymbolTable__Position position);
+extern OOC_SymbolTable__Module OOC_SymbolTable_Builder__BuilderDesc_NewModule(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Name name, OOC_Doc__Document docString, OOC_INT8 _class, OOC_INT8 callConv, OOC_AST__Node moduleAST);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_NewModule 18
+typedef OOC_SymbolTable__Module (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_NewModule)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Name name, OOC_Doc__Document docString, OOC_INT8 _class, OOC_INT8 callConv, OOC_AST__Node moduleAST);
+extern void OOC_SymbolTable_Builder__BuilderDesc_Finalize(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Module module);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_Finalize 19
+typedef void (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_Finalize)(OOC_SymbolTable_Builder__Builder b, OOC_SymbolTable__Module module);
+extern void OOC_SymbolTable_Builder__WriterDesc_INIT(OOC_SymbolTable_Builder__Writer w, IO__ByteChannel ch, IO__ByteChannel chDoc);
+#define _TBN_OOC_SymbolTable_Builder__WriterDesc_INIT 19
+typedef void (*_TBP_OOC_SymbolTable_Builder__WriterDesc_INIT)(OOC_SymbolTable_Builder__Writer w, IO__ByteChannel ch, IO__ByteChannel chDoc);
+extern void OOC_SymbolTable_Builder__WriterDesc_WriteObject(OOC_SymbolTable_Builder__Writer w, Object__Object obj);
+#define _TBN_OOC_SymbolTable_Builder__WriterDesc_WriteObject 17
+typedef void (*_TBP_OOC_SymbolTable_Builder__WriterDesc_WriteObject)(OOC_SymbolTable_Builder__Writer w, Object__Object obj);
+extern void OOC_SymbolTable_Builder__WriterDesc_Disconnect(OOC_SymbolTable_Builder__Writer w);
+#define _TBN_OOC_SymbolTable_Builder__WriterDesc_Disconnect 18
+typedef void (*_TBP_OOC_SymbolTable_Builder__WriterDesc_Disconnect)(OOC_SymbolTable_Builder__Writer w);
+extern void OOC_SymbolTable_Builder__BuilderDesc_WriteSymbolTable(OOC_SymbolTable_Builder__Builder b, IO__ByteChannel ch, IO__ByteChannel chDoc, OOC_SymbolTable__Module symTab);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_WriteSymbolTable 20
+typedef void (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_WriteSymbolTable)(OOC_SymbolTable_Builder__Builder b, IO__ByteChannel ch, IO__ByteChannel chDoc, OOC_SymbolTable__Module symTab);
+extern OOC_SymbolTable__Module OOC_SymbolTable_Builder__BuilderDesc_ReadSymbolTable(OOC_SymbolTable_Builder__Builder b, IO__ByteChannel ch, IO__ByteChannel chDoc);
+#define _TBN_OOC_SymbolTable_Builder__BuilderDesc_ReadSymbolTable 21
+typedef OOC_SymbolTable__Module (*_TBP_OOC_SymbolTable_Builder__BuilderDesc_ReadSymbolTable)(OOC_SymbolTable_Builder__Builder b, IO__ByteChannel ch, IO__ByteChannel chDoc);
+extern void OOC_OOC_SymbolTable_Builder_init(void);
+extern void OOC_OOC_SymbolTable_Builder_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__Builder;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__BuilderDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__Writer;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__WriterDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__Reader;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__ReaderDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__AutoImport;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__2345;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__Name;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__AutoImportDesc;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__2544;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__2533;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__3219;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__3208;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__3396;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__20828;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__23793;
+extern RT0__StructDesc _td_OOC_SymbolTable_Builder__24861;
+#endif /* _MODULE_OOC_SymbolTable_Builder_ */
+
+/* --- */

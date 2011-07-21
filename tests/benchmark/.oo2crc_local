@@ -1,0 +1,20 @@
+PATHS
+GET *.Mod [RCS] FROM
+  src;
+GET *.Sym, *.Lib FROM
+  wd1/sym; 
+GET *.h, *.d, *.c, *.o FROM
+  wd1/obj;
+GET *.c FROM
+  src;
+END
+
+NEWFILES
+  PUT *.Sym INTO wd1/sym;
+  PUT *.h, *.d, *.c, *.o INTO wd1/obj;
+  PUT * INTO wd1/bin
+END
+
+PRAGMAS
+  PoisonHeap := 85
+END

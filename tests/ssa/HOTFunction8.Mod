@@ -1,0 +1,12 @@
+MODULE HOTFunction8;
+
+VAR
+  x: INTEGER;
+  
+PROCEDURE P (x: INTEGER);
+  BEGIN
+  END P;
+
+BEGIN
+  x := P(123);
+END HOTFunction8.

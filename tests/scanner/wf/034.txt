@@ -1,0 +1,4 @@
+<*WITH predef_true:=FALSE; predef_false:=FALSE DO*>
+<*IF predef_true THEN*>a<*END*>
+<*END*>
+<*IF predef_true THEN*>b<*END*>

@@ -1,0 +1,95 @@
+#ifndef _MODULE_Config_
+#define _MODULE_Config_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Exception.oh>
+#include <Object.oh>
+#include <ADT/Dictionary.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct Config__ConfigDesc *Config__Config;
+typedef struct Config__ConfigDesc {
+  char __dummy;
+} Config__ConfigDesc;
+typedef struct Config__VariableDesc *Config__Variable;
+typedef struct Config__VariableDesc {
+  char __dummy;
+} Config__VariableDesc;
+typedef struct Config__BooleanVarDesc *Config__BooleanVar;
+typedef struct Config__BooleanVarDesc {
+  OOC_CHAR8 boolean;
+} Config__BooleanVarDesc;
+typedef struct Config__IntegerVarDesc *Config__IntegerVar;
+typedef struct Config__IntegerVarDesc {
+  OOC_INT32 integer;
+} Config__IntegerVarDesc;
+typedef struct Config__StringVarDesc *Config__StringVar;
+typedef struct Config__StringVarDesc {
+  Object__String string;
+} Config__StringVarDesc;
+typedef ADT_Dictionary__Dictionary Config__PrototypeMap;
+#define Config__outOfRange "Value out of range"
+#define Config__wrongFormat "Invalid format"
+#define Config__empty "Value is empty"
+extern void Config__InitConfig(Config__Config config);
+extern void Config__VariableDesc_StringToValue(Config__Variable v, Object__String str);
+#define _TBN_Config__VariableDesc_StringToValue 4
+typedef void (*_TBP_Config__VariableDesc_StringToValue)(Config__Variable v, Object__String str);
+extern Object__String Config__VariableDesc_ToString(Config__Variable v);
+#define _TBN_Config__VariableDesc_ToString 1
+typedef Object__String (*_TBP_Config__VariableDesc_ToString)(Config__Variable v);
+extern Config__Variable Config__VariableDesc_Clone(Config__Variable v);
+#define _TBN_Config__VariableDesc_Clone 5
+typedef Config__Variable (*_TBP_Config__VariableDesc_Clone)(Config__Variable v);
+extern Config__BooleanVar Config__NewBooleanVar(OOC_CHAR8 boolean);
+extern void Config__BooleanVarDesc_StringToValue(Config__BooleanVar v, Object__String str);
+#define _TBN_Config__BooleanVarDesc_StringToValue 4
+typedef void (*_TBP_Config__BooleanVarDesc_StringToValue)(Config__BooleanVar v, Object__String str);
+extern Object__String Config__BooleanVarDesc_ToString(Config__BooleanVar v);
+#define _TBN_Config__BooleanVarDesc_ToString 1
+typedef Object__String (*_TBP_Config__BooleanVarDesc_ToString)(Config__BooleanVar v);
+extern Config__BooleanVar Config__BooleanVarDesc_Clone(Config__BooleanVar v);
+#define _TBN_Config__BooleanVarDesc_Clone 5
+typedef Config__BooleanVar (*_TBP_Config__BooleanVarDesc_Clone)(Config__BooleanVar v);
+extern Config__IntegerVar Config__NewIntegerVar(OOC_INT32 _int);
+extern void Config__IntegerVarDesc_StringToValue(Config__IntegerVar v, Object__String str);
+#define _TBN_Config__IntegerVarDesc_StringToValue 4
+typedef void (*_TBP_Config__IntegerVarDesc_StringToValue)(Config__IntegerVar v, Object__String str);
+extern Object__String Config__IntegerVarDesc_ToString(Config__IntegerVar v);
+#define _TBN_Config__IntegerVarDesc_ToString 1
+typedef Object__String (*_TBP_Config__IntegerVarDesc_ToString)(Config__IntegerVar v);
+extern Config__IntegerVar Config__IntegerVarDesc_Clone(Config__IntegerVar v);
+#define _TBN_Config__IntegerVarDesc_Clone 5
+typedef Config__IntegerVar (*_TBP_Config__IntegerVarDesc_Clone)(Config__IntegerVar v);
+extern Config__StringVar Config__NewStringVar(Object__String8 str);
+extern void Config__StringVarDesc_StringToValue(Config__StringVar v, Object__String str);
+#define _TBN_Config__StringVarDesc_StringToValue 4
+typedef void (*_TBP_Config__StringVarDesc_StringToValue)(Config__StringVar v, Object__String str);
+extern Object__String Config__StringVarDesc_ToString(Config__StringVar v);
+#define _TBN_Config__StringVarDesc_ToString 1
+typedef Object__String (*_TBP_Config__StringVarDesc_ToString)(Config__StringVar v);
+extern Config__StringVar Config__StringVarDesc_Clone(Config__StringVar v);
+#define _TBN_Config__StringVarDesc_Clone 5
+typedef Config__StringVar (*_TBP_Config__StringVarDesc_Clone)(Config__StringVar v);
+extern void Config__SetPrototype(ADT_Dictionary__Dictionary map, Object__String name, Config__Variable prototype);
+extern Config__Variable Config__GetClone(ADT_Dictionary__Dictionary map, Object__String prototypeName);
+extern void OOC_Config_init(void);
+extern void OOC_Config_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Config__Config;
+extern RT0__StructDesc _td_Config__ConfigDesc;
+extern RT0__StructDesc _td_Config__Variable;
+extern RT0__StructDesc _td_Config__VariableDesc;
+extern RT0__StructDesc _td_Config__BooleanVar;
+extern RT0__StructDesc _td_Config__BooleanVarDesc;
+extern RT0__StructDesc _td_Config__IntegerVar;
+extern RT0__StructDesc _td_Config__IntegerVarDesc;
+extern RT0__StructDesc _td_Config__StringVar;
+extern RT0__StructDesc _td_Config__StringVarDesc;
+extern RT0__StructDesc _td_Config__3580;
+#endif /* _MODULE_Config_ */
+
+/* --- */

@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
+
+<testsuite-ext profile="Tests code emitted by SSA/C back-end">
+<!--<testsuite-ext
+  profile="Tests code emitted by SSA/C back-end"
+  select ="&SetupTestCasesWithOut; codeMotion1 codeMotion2 codeMotion3">-->
+  
+  &TestSetupWithOut;
+    
+  <testcases profile="OOC/SSA: Quality Check C Code" default-lang="O2">
+    <test id="var1" type="run" file="Var1.Mod" output="Var1.Ref">
+      Reading a variable with a known value: instead of accessing
+      memory, the known value should be used, and the local variable
+      <code>F.y</code> should not be read.
+    </test>
+    
+    <test id="var2" type="run" file="Var2.Mod" output="Var2.Ref">
+      Assignment masked by subsequent assignment to the same var.
+      The first assignment should be discarded, but the second must survive.
+    </test>
+    
+    <test id="var3" type="run" file="Var3.Mod" output="Var3.Ref">
+      Return value is taken from a local variable that is set in an 
+      <code>IF</code> statement.  The assignments should be converted
+      from memory writes to register values.
+    </test>
+    
+    <test id="var3b" type="run" file="Var3b.Mod" output="Var3b.Ref">
+      Similar to the preceding test case, with the added complication
+      of a nested <code>IF</code> statement.
+    </test>
+    
+    <test id="var3c" type="run" file="Var3c.Mod" output="Var3c.Ref">
+      Like <code>var3</code>, with the added complication that the
+      life time of a local variable extends across an <code>IF</code>
+      statement.  The variable's value should not be passed through
+      the select.
+    </test>
+    
+    <test id="var4" type="run" file="Var4.Mod" output="Var4.Ref">
+      Return value is taken from a global variable that is set in an 
+      <code>IF</code> statement.  The assignments should remain,
+      because the changed variable is visible outside the procedure.
+    </test>
+    
+    <test id="var4b" type="run" file="Var4b.Mod" output="Var4b.Ref">
+      Similar to the preceding test case, with the added complication
+      of a nested <code>IF</code> statement.
+    </test>
+    
+    <test id="var5" type="run" file="Var5.Mod" output="Var5.Ref">
+      Like test case <code>var4</code>, but the global variable is
+      set as a side-effect of a procedure call.  Here, the return
+      value must be read from memory.
+    </test>
+
+    <test id="var5b" type="run" file="Var5b.Mod" output="Var5b.Ref">
+      Like test case <code>var5</code>, but with a twist that should
+      trigger a different code path in <code>OOC:SSA:Destore</code>.
+    </test>
+
+    <test id="var6" type="run" file="Var6.Mod" output="Var6.Ref">
+      A combination of test cases <code>var4</code> and
+      <code>var5</code>: one branch of the <code>IF</code> sets the
+      global variable through an assignment, the other by means of a
+      side-effect of a procedure call.  There should be one read of
+      the global variable <code>x</code>, right after the
+      <code>IF</code> statement.
+    </test>
+
+    <test id="var6b" type="run" file="Var6b.Mod" output="Var6b.Ref">
+      Like <code>var6</code>, except that the branches of the
+      <code>IF</code> statement have been swapped.
+    </test>
+
+    <test id="var7" type="run" file="Var7.Mod" output="Var7.Ref">
+      Incrementing a local variable within a loop.  The variable
+      should be kept in a register.
+    </test>
+    <test id="var7b" type="run" file="Var7b.Mod" output="Var7b.Ref">
+      Incrementing a <em>global</em> variable within a loop.  The
+      variable should not be read, although its value must be written
+      with each iteration.  (Or, if the compiler is clever enough,
+      once after the final iteration.)
+    </test>
+    <test id="var7c" type="run" file="Var7c.Mod" output="Var7c.Ref">
+      Like <code>var7</code>, with the added complication that the
+      life time of a local variable extends across an <code>IF</code>
+      statement.  The variable's value should not be passed through
+      the loop.
+    </test>
+    <test id="var7d" type="run" file="Var7d.Mod" output="Var7d.Ref">
+      Equivalent to <code>var7</code>, but the loop uses a
+      <code>LOOP</code> statement.
+    </test>
+    
+    <test id="var8" type="run" file="Var8.Mod">
+      Zeroing a character array using a <code>FOR</code> loop.  The
+      loop variable should be kept in a register from beginning to end.
+    </test>
+    
+    <test id="var9" type="run" file="Var9.Mod">
+      Zeroing a character array using a <code>LOOP</code> loop.  The
+      loop variable should be kept in a register from beginning to end.
+    </test>
+    
+    <test id="var10" type="run" file="Var10.Mod">
+      A somewhat convoluted exit out of a <code>LOOP</code> loop.  The
+      return statement can only see the value <code>x=1</code> ever,
+      and an argument <code>FALSE</code> triggers and endless loop.
+    </test>
+    
+    <test id="var11" type="accept" file="Var11.Mod">
+      The parameter is read from four times, and written to once, but
+      the target code should contain only one load from memory and no
+      store at all.
+    </test>
+    
+
+    <test id="swap1" type="run" file="Swap1.Mod" output="Swap1.Ref">
+      Swapping to values.  The swap is done in memory.  Register
+      variables are used as temporary stores.
+    </test>
+    <test id="swap2" type="run" file="Swap2.Mod" output="Swap2.Ref">
+      Swapping to values.  The swap is done in the register file.  A
+      temporary variable must be created to avoid clobbering a swapped
+      value.
+    </test>
+
+
+    <test id="varpar1" type="run" file="VarPar1.Mod" output="VarPar1.Ref">
+      Assignment to <code>VAR</code> parameter does not alias with
+      local variable.  This means there is no need to retrieve either
+      the local variable nor the variable parameter from memory.
+    </test>
+    
+    <test id="varpar1b" type="run" file="VarPar1b.Mod" output="VarPar1b.Ref">
+      Assignment to <code>VAR</code> parameter may alias with a global
+      variable.  This means that the global variable needs to be
+      retrieved from memory after an assignment to the
+      <code>VAR</code> parameter.
+    </test>
+    
+    <test id="varpar1c" type="run" file="VarPar1c.Mod" output="VarPar1c.Ref">
+      Assignment to <code>VAR</code> parameter that cannot alias with
+      a global variable because of its different type.  This means
+      there is no need to retrieve either the global variable nor the
+      variable parameter from memory.
+    </test>
+
+
+    <test id="quicksort1" type="run"
+          file="Quicksort1.Mod" output="Quicksort1.Ref">
+      A compact quicksort implementation.
+    </test>
+
+
+    <test id="cse1" type="run" file="Cse1.Mod">
+      Common subexpression elimination must not merge the two calls to
+      <code>NEW</code>.
+    </test>
+    <test id="cse2" type="run" file="Cse2.Mod">
+      Common subexpression elimination must not merge move the memory
+      access <code>p.x</code> over the guard <code>x#NIL</code>.
+    </test>
+    <test id="cse3" type="run" file="Cse3.Mod" output="Cse3.Ref">
+      Check that common expressions are detected properly if a value
+      contributes multiple times to an instruction.
+    </test>
+
+    <test id="const1" type="run" file="Const1.Mod" output="Const1.Ref">
+      Unreachable code should be eliminated.
+    </test>
+    <test id="const2" type="run" file="Const2.Mod" output="Const2.Ref">
+      Unreachable code containing a <code>RETURN</code> should be eliminated.
+    </test>
+    <test id="const3" type="run" file="Const3.Mod" output="Const3.Ref">
+      Unreachable code containing an <code>EXIT</code> should be
+      eliminated.  After the <code>EXIT</code> is removed, one other
+      <code>EXIT</code> is left.
+    </test>
+    <test id="const4" type="accept" file="Const4.Mod">
+      Unreachable code containing an <code>EXIT</code> should be
+      eliminated.  After the <code>EXIT</code> is removed, <em>no</em>
+      other <code>EXIT</code> remains, making the loop an infinite
+      one.
+    </test>
+    <test id="const5" type="run" file="Const5.Mod" output="Const5.Ref">
+      Like <code>const2</code>, but using a <code>CASE</code>
+      statement with a constant selector.
+    </test>
+    <test id="const6" type="run" file="Const6.Mod" output="Const6.Ref">
+      Like <code>const3</code>, but using a <code>CASE</code>
+      statement with a constant selector.
+    </test>
+    <test id="const7" type="accept" file="Const7.Mod">
+      Like <code>const4</code>, but using a <code>CASE</code>
+      statement with a constant selector.
+    </test>
+    <test id="const8" type="run" file="Const8.Mod" output="Const8.Ref">
+      Tests conditional operators <code>&amp;</code> and <code>OR</code>
+      with a constant left hand side.
+    </test>
+
+    <test id="alloc1" type="run" file="Alloc1.Mod" output="Alloc1.Ref">
+      There should only be one conflict in the life ranges of the
+      expressions, between the <code>get</code> on the parameter and
+      the <code>IF</code> statement's guard.  In particular, the
+      expressions within the guarded commands conflict with no other
+      live ranges.
+    </test>
+    
+    <test id="dead1" type="accept" file="Dead1.Mod">
+      An otherwise unused variable is incremented within a
+      <code>LOOP</code>.  Dead code elimination should get rid of the
+      initialization and the increment of the variable.
+    </test>
+
+    <test id="rewrite1" type="accept" file="LoopRewrite1.Mod">
+      Simple loops iterating over an array index.  The index can be
+      replaced completely with a pointer that is incremeted by 1 (or
+      2) bytes with each iteration.
+    </test>
+    <test id="rewrite2" type="accept" file="LoopRewrite2.Mod">
+      Loops iterating over all elements of an array and terminating
+      when the index reaches the length of the array.
+    </test>
+    <test id="rewrite3" type="accept" file="LoopRewrite3.Mod">
+      Calculating the length of a character array.  The final value of
+      the induction variable should be recovered from the last pointer
+      value after the loop.
+    </test>
+    <test id="rewrite4" type="accept" file="LoopRewrite4.Mod">
+      A variantion of <code>rewrite2</code>, iterating over a 2
+      dimenional array.
+    </test>
+    <test id="rewrite5" type="accept" file="LoopRewrite5.Mod">
+      Eliminate all characters <code>&lt;= 20X</code> from string.
+      This loop has two induction variables, one incremented with each
+      iteration and the other within a guarded command.  Both should
+      be rewritten.
+    </test>
+    <test id="rewrite6" type="accept" file="LoopRewrite6.Mod">
+      Zeroing an array on the heap.  CSE should have merged the two
+      pointer deref operations, so that only one induction cycle needs
+      to be maintained.
+    </test>
+    <test id="rewrite7" type="accept" file="LoopRewrite7.Mod">
+      The scheduler should be smart enough to have just one jump
+      within the loop, the one going backwards to its beginning.
+    </test>
+    <test id="rewrite8" type="accept" file="LoopRewrite8.Mod">
+      A slightly simplified version of <code>Strings.FindNext</code>.
+    </test>
+    
+    <test id="pre1" type="accept" file="PRE1.Mod">
+      The array index computed in the <code>RETURN</code> is partially
+      redundant with regard to the <code>FALSE</code> path of the
+      <code>IF</code> statement.  Its computation should be pulled
+      into the <code>IF</code>, leaving only the memory access between
+      the <code>IF</code> and the return from the function.
+    </test>
+    <test id="pre2" type="accept" file="PRE2.Mod">
+      The array index is computed in both branches of the
+      <code>IF</code>.  It can be reused after the <code>IF</code>.
+    </test>
+    <test id="pre3" type="accept" file="PRE3.Mod">
+      The value of <code>flags.n</code> must only be accessed
+      <em>after</em> <code>flags</code> has been tested for
+      non-<code>NIL</code>.  In other words, it is an error to move an
+      instruction out of a region if only the region's guard allows
+      it to succeed.
+    </test>
+    
+    <test id="noCopy7" type="accept" file="NoCopy7.Mod">
+      The callee should not create a local copy of the
+      <code>NO_COPY</code> open array parameter.
+    </test>    
+    <test id="noCopy8" type="accept" file="NoCopy8.Mod">
+      The callee should not create a local copy of the
+      <code>NO_COPY</code> record parameter.
+    </test>
+    
+    <test id="noLengthInfo1" type="accept" file="NoLengthInfo1.Mod">
+      Declares a pointer variable whose array lacks length information
+      and writes to the pointer element.  Even with index checks
+      enabled, this particular index access must not be checked.
+    </test>
+
+    <test id="noDescriptor1" type="accept" file="NoDescriptor1.Mod">
+      A <code>NO_TYPE_TAG</code> record as a formal variable
+      parameter is not accompanied by a type tag value.
+    </test>
+
+    <test id="generic51" type="run" file="Generic51.Mod">
+      Qualified pointer types may alias as well.
+    </test>
+
+<!-- this test fails with the current code scheduler:
+    <test id="codeMotion1" type="accept" file="CodeMotion1.Mod">
+      The value <code>x^.value</code> must not be moved outside the
+      <code>IF</code> statement, because otherwise its evaluation may
+      terminate the program with a segmentation violation.
+    </test>
+-->
+    <test id="codeMotion2" type="accept" file="CodeMotion2.Mod">
+      The value <code>x^.value</code> is computed at the top-most
+      level of the loop and is at the same time loop-invariant.  It
+      should be moved outside the loop.
+    </test>
+    <test id="codeMotion3" type="accept" file="CodeMotion3.Mod">
+      The value <code>x^.value</code> is computed outside the loop,
+      and for performance reasons its computation should stay outside
+      the loop.
+    </test>
+  </testcases>
+</testsuite-ext>

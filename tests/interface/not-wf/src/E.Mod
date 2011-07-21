@@ -1,0 +1,6 @@
+MODULE E;
+VAR
+  a*: INTEGER;
+  b-: INTEGER;
+  c: INTEGER;
+END E.

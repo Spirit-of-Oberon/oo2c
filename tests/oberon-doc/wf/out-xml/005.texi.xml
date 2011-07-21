@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Lots of empty lines at the beginning or at the end of a document are ignored.</summary>
+  <p pad-after='yes' no-indent='yes'>Lots of empty lines at the beginning or at the end of a document are ignored.</p>
+</oberon-doc>

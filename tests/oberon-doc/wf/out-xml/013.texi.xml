@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>The @email command can have one or two arguments.</summary>
+  <p pad-after='yes' no-indent='yes'>The @email command can have one or two arguments.  They are rendered like this: <email><email-address>foo@bar.org</email-address></email> and <email><email-address>foo@bar.org</email-address><email-displayed-text>displayed text</email-displayed-text></email>.</p>
+</oberon-doc>

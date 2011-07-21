@@ -1,0 +1,1 @@
+env DISABLE_START_WITH_DASH="yes" $TEST_PROG --noop

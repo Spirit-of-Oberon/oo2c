@@ -1,0 +1,87 @@
+#ifndef _MODULE_OOC_Repository_FileSystem_
+#define _MODULE_OOC_Repository_FileSystem_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <TextRider.oh>
+#include <Time.oh>
+#include <Object.oh>
+#include <IO.oh>
+#include <URI.oh>
+#include <OOC/Scanner/InputBuffer.oh>
+#include <OOC/Repository.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_Repository_FileSystem__RepositoryDesc *OOC_Repository_FileSystem__Repository;
+typedef struct OOC_Repository_FileSystem__RepositoryDesc {
+  OOC_Repository__Repository baseRep;
+  URI__HierarchicalURI baseURI;
+  OOC_Repository__PkgInfo packageInfo;
+  URI__HierarchicalURI relativeBaseURI;
+} OOC_Repository_FileSystem__RepositoryDesc;
+typedef struct OOC_Repository_FileSystem__ModuleDesc *OOC_Repository_FileSystem__Module;
+typedef struct OOC_Repository_FileSystem__ModuleDesc {
+  OOC_Repository__Repository origin;
+  Msg__StringPtr name;
+  URI__HierarchicalURI srcFileOverride;
+  OOC_SymbolTable__Module ifData;
+  OOC_INT8 ifQuality;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  struct OOC_Repository__ModuleRef *ifImportList;
+  OOC_UINT32 visitedByMake;
+  OOC_CHAR8 haveFingerprint;
+  OOC_CHAR8 __pad29;
+  OOC_CHAR8 __pad30;
+  OOC_CHAR8 __pad31;
+  OOC_INT32 fingerprint;
+} OOC_Repository_FileSystem__ModuleDesc;
+extern URI__HierarchicalURI OOC_Repository_FileSystem__baseURI;
+extern OOC_Repository_FileSystem__Repository OOC_Repository_FileSystem__New(OOC_Repository__Repository baseRep, URI__HierarchicalURI baseDir);
+extern Object__String8 OOC_Repository_FileSystem__ModuleToFileName(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);
+extern OOC_Repository_FileSystem__Module OOC_Repository_FileSystem__RepositoryDesc_GetModule(volatile OOC_Repository_FileSystem__Repository rep, const OOC_CHAR8 moduleName__ref[], volatile OOC_LEN moduleName_0d, volatile URI__HierarchicalURI srcFileOverride);
+#define _TBN_OOC_Repository_FileSystem__RepositoryDesc_GetModule 1
+typedef OOC_Repository_FileSystem__Module (*_TBP_OOC_Repository_FileSystem__RepositoryDesc_GetModule)(OOC_Repository_FileSystem__Repository rep, const OOC_CHAR8 moduleName__ref[], OOC_LEN moduleName_0d, URI__HierarchicalURI srcFileOverride);
+extern URI__URI OOC_Repository_FileSystem__RepositoryDesc_GetResource(volatile OOC_Repository_FileSystem__Repository rep, const OOC_CHAR8 package__ref[], volatile OOC_LEN package_0d, const OOC_CHAR8 path__ref[], volatile OOC_LEN path_0d);
+#define _TBN_OOC_Repository_FileSystem__RepositoryDesc_GetResource 2
+typedef URI__URI (*_TBP_OOC_Repository_FileSystem__RepositoryDesc_GetResource)(OOC_Repository_FileSystem__Repository rep, const OOC_CHAR8 package__ref[], OOC_LEN package_0d, const OOC_CHAR8 path__ref[], OOC_LEN path_0d);
+extern void OOC_Repository_FileSystem__RepositoryDesc_DumpContent(OOC_Repository_FileSystem__Repository rep, TextRider__Writer w);
+#define _TBN_OOC_Repository_FileSystem__RepositoryDesc_DumpContent 3
+typedef void (*_TBP_OOC_Repository_FileSystem__RepositoryDesc_DumpContent)(OOC_Repository_FileSystem__Repository rep, TextRider__Writer w);
+extern Object__String8 OOC_Repository_FileSystem__RepositoryDesc_GetLocalPath(OOC_Repository_FileSystem__Repository rep, OOC_Repository__Module m, OOC_INT8 fileId);
+#define _TBN_OOC_Repository_FileSystem__RepositoryDesc_GetLocalPath 4
+typedef Object__String8 (*_TBP_OOC_Repository_FileSystem__RepositoryDesc_GetLocalPath)(OOC_Repository_FileSystem__Repository rep, OOC_Repository__Module m, OOC_INT8 fileId);
+extern URI__HierarchicalURI OOC_Repository_FileSystem__ModuleDesc_GetURI(volatile OOC_Repository_FileSystem__Module m, volatile OOC_INT8 fileId, volatile OOC_CHAR8 allowRelative);
+#define _TBN_OOC_Repository_FileSystem__ModuleDesc_GetURI 8
+typedef URI__HierarchicalURI (*_TBP_OOC_Repository_FileSystem__ModuleDesc_GetURI)(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId, OOC_CHAR8 allowRelative);
+extern void OOC_Repository_FileSystem__ModuleDesc_GetTimeStamp(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId, struct Time__TimeStamp *ts, RT0__Struct ts__tag);
+#define _TBN_OOC_Repository_FileSystem__ModuleDesc_GetTimeStamp 10
+typedef void (*_TBP_OOC_Repository_FileSystem__ModuleDesc_GetTimeStamp)(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId, struct Time__TimeStamp *ts, RT0__Struct ts__tag);
+extern OOC_CHAR8 OOC_Repository_FileSystem__ModuleDesc_FileExists(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId);
+#define _TBN_OOC_Repository_FileSystem__ModuleDesc_FileExists 11
+typedef OOC_CHAR8 (*_TBP_OOC_Repository_FileSystem__ModuleDesc_FileExists)(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId);
+extern OOC_Scanner_InputBuffer__Buffer OOC_Repository_FileSystem__ModuleDesc_GetInputBuffer(OOC_Repository_FileSystem__Module m);
+#define _TBN_OOC_Repository_FileSystem__ModuleDesc_GetInputBuffer 7
+typedef OOC_Scanner_InputBuffer__Buffer (*_TBP_OOC_Repository_FileSystem__ModuleDesc_GetInputBuffer)(OOC_Repository_FileSystem__Module m);
+extern void OOC_Repository_FileSystem__ModuleDesc_CreateOutputDir(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId);
+#define _TBN_OOC_Repository_FileSystem__ModuleDesc_CreateOutputDir 12
+typedef void (*_TBP_OOC_Repository_FileSystem__ModuleDesc_CreateOutputDir)(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId);
+extern IO__ByteChannel OOC_Repository_FileSystem__ModuleDesc_GetOutputChannel(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId, OOC_CHAR8 makeTmp);
+#define _TBN_OOC_Repository_FileSystem__ModuleDesc_GetOutputChannel 13
+typedef IO__ByteChannel (*_TBP_OOC_Repository_FileSystem__ModuleDesc_GetOutputChannel)(OOC_Repository_FileSystem__Module m, OOC_INT8 fileId, OOC_CHAR8 makeTmp);
+extern void OOC_OOC_Repository_FileSystem_init(void);
+extern void OOC_OOC_Repository_FileSystem_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Repository_FileSystem__Repository;
+extern RT0__StructDesc _td_OOC_Repository_FileSystem__RepositoryDesc;
+extern RT0__StructDesc _td_OOC_Repository_FileSystem__Module;
+extern RT0__StructDesc _td_OOC_Repository_FileSystem__ModuleDesc;
+extern RT0__StructDesc _td_OOC_Repository_FileSystem__2660;
+extern RT0__StructDesc _td_OOC_Repository_FileSystem__2961;
+extern RT0__StructDesc _td_OOC_Repository_FileSystem__4661;
+#endif /* _MODULE_OOC_Repository_FileSystem_ */
+
+/* --- */

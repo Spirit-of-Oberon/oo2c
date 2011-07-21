@@ -1,0 +1,87 @@
+#ifndef _MODULE_OOC_SSA_XML_
+#define _MODULE_OOC_SSA_XML_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <ADT/Dictionary/IntValue.oh>
+#include <ADT/StringBuffer.oh>
+#include <XML/Writer.oh>
+#include <OOC/SSA.oh>
+#include <OOC/SSA/Schedule.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_SSA_XML__WriterDesc *OOC_SSA_XML__Writer;
+typedef struct OOC_SSA_XML__WriterDesc {
+  XML_UnicodeCodec__Factory codecFactory;
+  XML_UnicodeCodec__Codec codec;
+  IO__ByteChannel writer;
+  IO__Error error;
+  OOC_CHAR8 *byteBuffer;
+  OOC_INT32 byteStart;
+  OOC_INT32 byteEnd;
+  OOC_CHAR16 *unicodeBuffer;
+  OOC_INT32 unicodeEnd;
+  OOC_INT32 indentLevel;
+  OOC_INT32 indent;
+  OOC_CHAR8 newLine[3];
+  OOC_CHAR8 __pad47;
+  OOC_INT32 lenNewLine;
+  OOC_CHAR8 emptyElementHTML;
+  OOC_CHAR8 __pad53;
+  OOC_CHAR8 __pad54;
+  OOC_CHAR8 __pad55;
+  URI__HierarchicalURI baseURI;
+  XML_Writer__Elements elementStack;
+  OOC_INT32 lenElementStack;
+  OOC_CHAR8 doIndent;
+  OOC_CHAR8 openStartTag;
+  OOC_CHAR8 openEmptyTag;
+  OOC_CHAR8 __pad71;
+  ADT_StringBuffer__StringBuffer sb;
+  ADT_Dictionary_IntValue__Dictionary idMap;
+} OOC_SSA_XML__WriterDesc;
+extern void OOC_SSA_XML__InitWriter(OOC_SSA_XML__Writer w, IO__ByteChannel cw);
+extern OOC_SSA_XML__Writer OOC_SSA_XML__NewWriter(IO__ByteChannel cw);
+extern void OOC_SSA_XML__WriterDesc_WriteInstrAttr(OOC_SSA_XML__Writer w, OOC_SSA__Instr instr);
+#define _TBN_OOC_SSA_XML__WriterDesc_WriteInstrAttr 30
+typedef void (*_TBP_OOC_SSA_XML__WriterDesc_WriteInstrAttr)(OOC_SSA_XML__Writer w, OOC_SSA__Instr instr);
+extern void OOC_SSA_XML__WriterDesc_WriteInstrChildren(OOC_SSA_XML__Writer w, OOC_SSA__Instr instr);
+#define _TBN_OOC_SSA_XML__WriterDesc_WriteInstrChildren 31
+typedef void (*_TBP_OOC_SSA_XML__WriterDesc_WriteInstrChildren)(OOC_SSA_XML__Writer w, OOC_SSA__Instr instr);
+extern OOC_INT32 OOC_SSA_XML__WriterDesc_GetId(OOC_SSA_XML__Writer w, OOC_SSA__Result result);
+#define _TBN_OOC_SSA_XML__WriterDesc_GetId 32
+typedef OOC_INT32 (*_TBP_OOC_SSA_XML__WriterDesc_GetId)(OOC_SSA_XML__Writer w, OOC_SSA__Result result);
+extern void OOC_SSA_XML__WriterDesc_AttrId(OOC_SSA_XML__Writer w, const OOC_CHAR16 name__ref[], OOC_LEN name_0d, OOC_SSA__Result result);
+#define _TBN_OOC_SSA_XML__WriterDesc_AttrId 33
+typedef void (*_TBP_OOC_SSA_XML__WriterDesc_AttrId)(OOC_SSA_XML__Writer w, const OOC_CHAR16 name__ref[], OOC_LEN name_0d, OOC_SSA__Result result);
+extern void OOC_SSA_XML__WriterDesc_AttrRef(OOC_SSA_XML__Writer w, OOC_SSA__Result res);
+#define _TBN_OOC_SSA_XML__WriterDesc_AttrRef 34
+typedef void (*_TBP_OOC_SSA_XML__WriterDesc_AttrRef)(OOC_SSA_XML__Writer w, OOC_SSA__Result res);
+extern void OOC_SSA_XML__WriterDesc_WriteInstr(OOC_SSA_XML__Writer w, OOC_SSA__Instr instr);
+#define _TBN_OOC_SSA_XML__WriterDesc_WriteInstr 35
+typedef void (*_TBP_OOC_SSA_XML__WriterDesc_WriteInstr)(OOC_SSA_XML__Writer w, OOC_SSA__Instr instr);
+extern void OOC_SSA_XML__WriterDesc_WriteProcBody(OOC_SSA_XML__Writer w, OOC_SSA__ProcBlock pb, OOC_CHAR8 includeDeadCode);
+#define _TBN_OOC_SSA_XML__WriterDesc_WriteProcBody 36
+typedef void (*_TBP_OOC_SSA_XML__WriterDesc_WriteProcBody)(OOC_SSA_XML__Writer w, OOC_SSA__ProcBlock pb, OOC_CHAR8 includeDeadCode);
+extern void OOC_SSA_XML__Write(IO__ByteChannel cw, OOC_SSA__ProcBlock pb, OOC_CHAR8 includeDeadCode);
+extern void OOC_SSA_XML__ToStderr(volatile OOC_SSA__ProcBlock pb);
+extern void OOC_SSA_XML__WriterDesc_WriteSchedule(OOC_SSA_XML__Writer w, OOC_SSA_Schedule__Block domRoot);
+#define _TBN_OOC_SSA_XML__WriterDesc_WriteSchedule 37
+typedef void (*_TBP_OOC_SSA_XML__WriterDesc_WriteSchedule)(OOC_SSA_XML__Writer w, OOC_SSA_Schedule__Block domRoot);
+extern void OOC_SSA_XML__WriteSchedule(IO__ByteChannel cw, OOC_SSA_Schedule__Block domRoot);
+extern void OOC_OOC_SSA_XML_init(void);
+extern void OOC_OOC_SSA_XML_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_XML__Writer;
+extern RT0__StructDesc _td_OOC_SSA_XML__WriterDesc;
+extern RT0__StructDesc _td_OOC_SSA_XML__2193;
+extern RT0__StructDesc _td_OOC_SSA_XML__2248;
+extern RT0__StructDesc _td_OOC_SSA_XML__4184;
+extern RT0__StructDesc _td_OOC_SSA_XML__4398;
+extern RT0__StructDesc _td_OOC_SSA_XML__4861;
+#endif /* _MODULE_OOC_SSA_XML_ */
+
+/* --- */

@@ -1,0 +1,270 @@
+8. Expressions
+
+Missing Tests 2002/10/16: Literals, Division by Zero (compile-time,
+run-time), Index computed once.
+
+Literals
+--------
+
+REJECT
+
+  1) value of an integer constant cannot be stored in the largest
+     integer type
+  2) value of a floating point constant without exponent, or with
+     an "E" exponent, is out of the range of REAL
+  3) value of a floating point constant with a "D" exponent is out
+     of the range of LONGREAL
+  4) value of a character constant cannot be stored in the largest
+     character type
+
+
+
+8.1 Operands
+------------
+
+  a[e]
+
+ACCEPT:
+
+  1) a is an array [OpArray1]
+  2) a is a pointer an array [OpArray6]
+
+REJECT:
+
+  1) a does not designate an array or a pointer to array [OpArray2]
+  2) e is not an integer [OpArray3]
+  3) e is constant and not in the range 0 <= e < LEN(a) [OpArray4 OpArray5]
+  4) a is the result of a function call [OpArray6]
+
+ERROR:
+
+  1) a is a NIL pointer [OpArray10]
+  2) e is not in the range 0 <= e < LEN(a) [OpArray7 OpArray8]
+
+
+  a[e_1, e_2, ..., e_n]
+
+(Only test for dimension related stuff, the above tests should cover
+the rest.)
+ACCEPT:
+
+  1) Check that every index value is computed once, even if index
+     checks are enabled.
+
+REJECT:
+
+  1) a does not designate an array or pointer to array  [OpArray2]
+  2) a has less than n dimensions  [OpArray11]
+  3) some e_i is not an integer  [OpArray3]
+  4) e_i is constant not in the range 0 <= e_i < LEN(a,i)  [OpArray4 OpArray5]
+  5) a is the result of a function call  [OpArray6]
+
+ERROR:
+
+  1) a is a NIL pointer  [OpArray10]
+  2) e_i is not in the range 0 <= e_i < LEN(a,i)  [OpArray7 OpArray8]
+
+
+  r.f
+
+ACCEPT:
+
+  1) r is a record [OpRecord1]
+  2) r is a pointer to a record  [OpRecord1]
+
+REJECT:
+
+  1) r is not a record or a pointer to a record [OpRecord2]
+  2) there is no field or procedure f bound to the static type of r [OpRecord3]
+  3) r is the result of a function call [OpRecord4]
+
+ERROR:
+
+  1) r is a NIL pointer [OpRecord5]
+
+
+  p^
+
+ACCEPT:
+
+  1) Explicit and implied pointer indirection [OpRecord1, OpArray1]
+  2) Super call [OpPointer3]
+
+REJECT:
+
+  1) p is not a pointer or type-bound procedure [OpPointer1]
+  2) p is a type-bound procedure, but does not exist in the base type 
+     [OpPointer2, OpPointer7]
+  3) p is the result of a function call [OpPointer4]
+  4) p is a super call (i.e., proc^^ is not allowed) [OpPointer5]
+
+ERROR:
+
+  1) p is NIL [OpPointer6]
+
+
+  v(T)
+
+ACCEPT:
+
+  1) v is a pointer to a record type [OpTypeGuard1]
+  2) v is a variable parameter of record type [OpTypeGuard1]
+  3) v is a dereferenced pointer to a record type (like p^(R)) [OpTypeGuard1]
+
+REJECT:
+
+  1) v is not a (dereferenced) pointer or variable parameter of record
+     type. [OpTypeGuard2 OpTypeGuard10]
+  2) v is a pointer of non-record type (eg. pointer to array). [OpTypeGuard8]
+  3) T is not a type. [OpTypeGuard9]
+  4) T is not an extension of the static type of v. [OpTypeGuard3]
+  5) v is the result of a function call [OpTypeGuard7]
+
+ERROR:
+
+  5) The dynamic type of v is not T, or an extension of T.
+     [OpTypeGuard4, OpTypeGuard6]
+  6) v IS NIL  [OpTypeGuard5]
+
+
+8.2 Operators
+-------------
+
+  a OP b
+
+Expression Compatible Types:
+
+  Operator        Operand Types
+  --------        -------------
+   +               string  [OOC extension]
+   + - *           numeric
+   /               numeric
+   + - * /         SET
+   DIV MOD         integer
+   OR & ~          BOOLEAN
+
+   = # < <= > >=   numeric
+		   CHAR
+		   character array or string
+
+   = #             BOOLEAN
+                   SET
+		   operands are either NIL, or pointer types T1 and T0 such
+		   that T1 is an extension of T0.
+                   dito, or procedures types T1 and T0 such that the formal
+                   parameters of T1 and T0 match
+
+ACCEPT (Expression-compatible):
+
+  Combinations of different but expression-compatible types. Test combinations
+  in both orders [OpExprCompat1].
+
+  1) shortint + integer
+  2) integer + longint
+  3) longint + real
+  4) real + longreal
+  5) integer / integer
+  6) char array = string
+  7) char array = char array
+  8) pointer = NIL
+  9) POINTER TO T = POINTER TO S, where S is an extension of T.
+
+REJECT (Expression-compatible):
+
+  Combinations of types which are allowed for the operator, but which are
+  not expression-compatible.
+
+  1) integer + string [OpExprCompat2]
+  2) integer + set [OpExprCompat3]
+  3) string + set [OpExprCompat4]
+  4) real DIV real [OpExprCompat5]
+  5) numeric = char [OpExprCompat6]
+  6) numeric = NIL [OpExprCompat7]
+  7) POINTER TO T = POINTER TO S, where S in not an extension of T.
+     [OpExprCompat8]
+
+REJECT (Expression compatible):
+
+  To verify that numeric types are "widened" correctly, reject these:
+
+  1) shortint := shortint + integer; [OpExprCompat9]
+  2) integer := integer + longint; [OpExprCompat10]
+  3) longint := longint + real; [OpExprCompat11]
+  4) real := real + longreal; [OpExprCompat12]
+  5) integer := integer / integer; [OpExprCompat13]
+  6) real := real / longreal; [OpExprCompat14]
+
+REJECT (Divide by zero, compile-time):
+
+  1) a DIV 0
+  2) a MOD 0
+  3) a / 0.0
+
+ERROR (Divide by zero, run-time):
+
+  1) a DIV b 
+  2) a MOD b
+  3) a / b
+
+  where b is zero at run-time.
+
+ACCEPT (Boolean operator evaluation):
+
+  Verify that "short-circuit" evaulation of BOOLEAN expressions occurs. ie.
+
+  1) (FALSE & b) does not evaulate b.  [And1]
+  2) (TRUE OR b) does not evaulate b.  [Or1]
+
+ERROR (Character arrays):
+
+  1) Comparison between unterminated character arrays (run-time exception).
+     [Result of such an operation is undefined, and does not need to
+      be detected.]
+
+  a IN b
+
+REJECT (SET IN operation):
+
+  1) a is not integer [OpSet6]
+  2) b is not SET [OpSet7]
+  3) a is constant and out of the range 0 <= a < size of b [OpSet5]
+
+ERROR:
+
+  1) a is out of the range 0 <= a < size of b
+     [This is probably undefined, too.  At least, the report does not
+      specify this, and I know that many years ago one ETH compiler 
+      implemented "a IN b == (a MOD size) IN b".]
+
+  {a..b}
+
+REJECT (SET constructor):
+
+  1) a is not an integer [OpSet1 OpSet3]
+  2) b is not an integer [OpSet2 OpSet3]
+  3) a is negative, or larger than the size of the largest set type [OpSet4]
+  4) b is negative, or larger than the size of the largest set type [OpSet4]
+
+ACCEPT (SET constructor):
+
+  1) a > b produces the empty set (both compile-time and run-time)  [OpSet8]
+
+
+  v IS T
+
+ACCEPT:
+
+  1) v is a variable parameter of record type.  [TypeTest3 TypeTest4]
+  2) v is a pointer to a record type.  [TypeTest1]
+  3) v is a dereferenced pointer to a record type.  [TypeTest2]
+
+REJECT:
+
+  1) v is neither a variable record type or (possibly derferenced)
+     pointer.  [TypeTest5 TypeTest9]
+  2) T is not a type.  [TypeTest6]
+  3) T is not an extension of the static type of v.  [TypeTest7]
+
+ERROR:
+
+  1) v is NIL  [TypeTest8]

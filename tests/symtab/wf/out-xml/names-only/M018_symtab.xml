@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <procedure_type id='1' pos='20' line='2' column='9' resultType='#none'>
+    <type_name id='2' pos='38' line='2' column='27' ident_name='INTEGER' ident_pos='38' ident_line='2' ident_column='27'/>
+    <var_decl id='3' name='a' pos='35' line='2' column='24' visible_from='45' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='2'/>
+  </procedure_type>
+  <type_decl id='4' name='P' pos='16' line='2' column='5' visible_from='46' export='no' type_id='1'/>
+</module>

@@ -1,0 +1,27 @@
+#ifndef _MODULE_HashCode_
+#define _MODULE_HashCode_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+typedef OOC_INT32 HashCode__Hash;
+#define HashCode__init 257
+extern OOC_INT32 HashCode__Boolean(OOC_CHAR8 x);
+extern OOC_INT32 HashCode__Real(OOC_REAL32 x);
+extern OOC_INT32 HashCode__LongReal(OOC_REAL64 x);
+extern OOC_INT32 HashCode__Set(OOC_UINT32 x);
+extern OOC_INT32 HashCode__Ptr(OOC_PTR x);
+extern OOC_INT32 HashCode__CharRegion(const OOC_CHAR8 data__ref[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
+extern OOC_INT32 HashCode__LongCharRegion(const OOC_CHAR16 data__ref[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
+extern OOC_INT32 HashCode__UCS4CharRegion(const OOC_CHAR32 data__ref[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
+extern void HashCode__Append(OOC_INT32 x, OOC_INT32 *hash);
+extern void OOC_HashCode_init(void);
+extern void OOC_HashCode_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_HashCode__1534;
+extern RT0__StructDesc _td_HashCode__1609;
+extern RT0__StructDesc _td_HashCode__1688;
+#endif /* _MODULE_HashCode_ */
+
+/* --- */

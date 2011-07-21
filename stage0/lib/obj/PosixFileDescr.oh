@@ -1,0 +1,158 @@
+#ifndef _MODULE_PosixFileDescr_
+#define _MODULE_PosixFileDescr_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <C.oh>
+#include <Time.oh>
+#include <CharClass.oh>
+#include <Channel.oh>
+#include <Msg.oh>
+#include <LongStrings.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef Msg__Msg PosixFileDescr__Result;
+#define PosixFileDescr__noLength (-1)
+#define PosixFileDescr__noPosition (-2)
+#define PosixFileDescr__done  0
+#define PosixFileDescr__invalidChannel 1
+#define PosixFileDescr__writeError 2
+#define PosixFileDescr__noRoom 3
+#define PosixFileDescr__outOfRange 4
+#define PosixFileDescr__readAfterEnd 5
+#define PosixFileDescr__channelClosed 6
+#define PosixFileDescr__readError 7
+#define PosixFileDescr__invalidFormat 8
+#define PosixFileDescr__noReadAccess 9
+#define PosixFileDescr__noWriteAccess 10
+#define PosixFileDescr__closeError 11
+#define PosixFileDescr__noModTime 12
+#define PosixFileDescr__noTmpName 13
+#define PosixFileDescr__freeErrorCode 14
+#define PosixFileDescr__readOnly 0
+#define PosixFileDescr__writeOnly 1
+#define PosixFileDescr__readWrite 2
+#define PosixFileDescr__stdinFileno 0
+#define PosixFileDescr__stdoutFileno 1
+#define PosixFileDescr__stderrFileno 2
+#define PosixFileDescr__noBuffer 0
+#define PosixFileDescr__lineBuffer 1
+#define PosixFileDescr__blockBuffer 2
+typedef struct PosixFileDescr__ChannelDesc *PosixFileDescr__Channel;
+typedef struct PosixFileDescr__ReaderDesc *PosixFileDescr__Reader;
+typedef struct PosixFileDescr__WriterDesc *PosixFileDescr__Writer;
+typedef struct PosixFileDescr__ChannelDesc {
+  Msg__Msg res;
+  OOC_CHAR8 readable;
+  OOC_CHAR8 writable;
+  OOC_CHAR8 open;
+  OOC_CHAR8 __pad7;
+  OOC_INT32 fd;
+  OOC_INT32 pos;
+  OOC_CHAR8 positionable;
+  OOC_CHAR8 append;
+  OOC_CHAR8 dirty;
+  OOC_INT8 buffering;
+  OOC_CHAR8 *buf;
+  OOC_INT32 sizeBuffer;
+  OOC_INT32 bufStart;
+  OOC_INT32 bufEnd;
+  PosixFileDescr__Reader reader;
+  PosixFileDescr__Writer writer;
+} PosixFileDescr__ChannelDesc;
+typedef struct PosixFileDescr__ReaderDesc {
+  Channel__Channel base;
+  Msg__Msg res;
+  OOC_INT32 bytesRead;
+  OOC_CHAR8 positionable;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 pos;
+} PosixFileDescr__ReaderDesc;
+typedef struct PosixFileDescr__WriterDesc {
+  Channel__Channel base;
+  Msg__Msg res;
+  OOC_INT32 bytesWritten;
+  OOC_CHAR8 positionable;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 pos;
+} PosixFileDescr__WriterDesc;
+typedef OOC_INT32 PosixFileDescr__FileDescriptor;
+typedef struct PosixFileDescr__ErrorContextDesc *PosixFileDescr__ErrorContext;
+typedef struct PosixFileDescr__ErrorContextDesc {
+  Msg__StringPtr id;
+} PosixFileDescr__ErrorContextDesc;
+extern void PosixFileDescr__ErrorContextDesc_GetTemplate(PosixFileDescr__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_PosixFileDescr__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_PosixFileDescr__ErrorContextDesc_GetTemplate)(PosixFileDescr__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void PosixFileDescr__InitReader(PosixFileDescr__Reader r, PosixFileDescr__Channel ch);
+extern void PosixFileDescr__InitWriter(PosixFileDescr__Writer w, PosixFileDescr__Channel ch);
+extern OOC_INT32 PosixFileDescr__ReaderDesc_Pos(PosixFileDescr__Reader r);
+#define _TBN_PosixFileDescr__ReaderDesc_Pos 0
+typedef OOC_INT32 (*_TBP_PosixFileDescr__ReaderDesc_Pos)(PosixFileDescr__Reader r);
+extern OOC_INT32 PosixFileDescr__ReaderDesc_Available(PosixFileDescr__Reader r);
+#define _TBN_PosixFileDescr__ReaderDesc_Available 1
+typedef OOC_INT32 (*_TBP_PosixFileDescr__ReaderDesc_Available)(PosixFileDescr__Reader r);
+extern void PosixFileDescr__ReaderDesc_SetPos(PosixFileDescr__Reader r, OOC_INT32 newPos);
+#define _TBN_PosixFileDescr__ReaderDesc_SetPos 2
+typedef void (*_TBP_PosixFileDescr__ReaderDesc_SetPos)(PosixFileDescr__Reader r, OOC_INT32 newPos);
+extern void PosixFileDescr__ReaderDesc_ReadByte(PosixFileDescr__Reader r, OOC_CHAR8 *x);
+#define _TBN_PosixFileDescr__ReaderDesc_ReadByte 3
+typedef void (*_TBP_PosixFileDescr__ReaderDesc_ReadByte)(PosixFileDescr__Reader r, OOC_CHAR8 *x);
+extern void PosixFileDescr__ReaderDesc_ReadBytes(PosixFileDescr__Reader r, OOC_CHAR8 x[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+#define _TBN_PosixFileDescr__ReaderDesc_ReadBytes 4
+typedef void (*_TBP_PosixFileDescr__ReaderDesc_ReadBytes)(PosixFileDescr__Reader r, OOC_CHAR8 x[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+extern OOC_INT32 PosixFileDescr__WriterDesc_Pos(PosixFileDescr__Writer w);
+#define _TBN_PosixFileDescr__WriterDesc_Pos 0
+typedef OOC_INT32 (*_TBP_PosixFileDescr__WriterDesc_Pos)(PosixFileDescr__Writer w);
+extern void PosixFileDescr__WriterDesc_SetPos(PosixFileDescr__Writer w, OOC_INT32 newPos);
+#define _TBN_PosixFileDescr__WriterDesc_SetPos 1
+typedef void (*_TBP_PosixFileDescr__WriterDesc_SetPos)(PosixFileDescr__Writer w, OOC_INT32 newPos);
+extern void PosixFileDescr__WriterDesc_WriteByte(PosixFileDescr__Writer w, OOC_CHAR8 x);
+#define _TBN_PosixFileDescr__WriterDesc_WriteByte 2
+typedef void (*_TBP_PosixFileDescr__WriterDesc_WriteByte)(PosixFileDescr__Writer w, OOC_CHAR8 x);
+extern void PosixFileDescr__WriterDesc_WriteBytes(PosixFileDescr__Writer w, const OOC_CHAR8 x__ref[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+#define _TBN_PosixFileDescr__WriterDesc_WriteBytes 3
+typedef void (*_TBP_PosixFileDescr__WriterDesc_WriteBytes)(PosixFileDescr__Writer w, const OOC_CHAR8 x__ref[], OOC_LEN x_0d, OOC_INT32 start, OOC_INT32 n);
+extern OOC_INT32 PosixFileDescr__ChannelDesc_Length(PosixFileDescr__Channel ch);
+#define _TBN_PosixFileDescr__ChannelDesc_Length 0
+typedef OOC_INT32 (*_TBP_PosixFileDescr__ChannelDesc_Length)(PosixFileDescr__Channel ch);
+extern void PosixFileDescr__ChannelDesc_GetModTime(PosixFileDescr__Channel ch, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag);
+#define _TBN_PosixFileDescr__ChannelDesc_GetModTime 1
+typedef void (*_TBP_PosixFileDescr__ChannelDesc_GetModTime)(PosixFileDescr__Channel ch, struct Time__TimeStamp *mtime, RT0__Struct mtime__tag);
+extern PosixFileDescr__Reader PosixFileDescr__ChannelDesc_NewReader(PosixFileDescr__Channel ch);
+#define _TBN_PosixFileDescr__ChannelDesc_NewReader 2
+typedef PosixFileDescr__Reader (*_TBP_PosixFileDescr__ChannelDesc_NewReader)(PosixFileDescr__Channel ch);
+extern PosixFileDescr__Writer PosixFileDescr__ChannelDesc_NewWriter(PosixFileDescr__Channel ch);
+#define _TBN_PosixFileDescr__ChannelDesc_NewWriter 3
+typedef PosixFileDescr__Writer (*_TBP_PosixFileDescr__ChannelDesc_NewWriter)(PosixFileDescr__Channel ch);
+extern void PosixFileDescr__ChannelDesc_Flush(PosixFileDescr__Channel ch);
+#define _TBN_PosixFileDescr__ChannelDesc_Flush 4
+typedef void (*_TBP_PosixFileDescr__ChannelDesc_Flush)(PosixFileDescr__Channel ch);
+extern void PosixFileDescr__ChannelDesc_Close(PosixFileDescr__Channel ch);
+#define _TBN_PosixFileDescr__ChannelDesc_Close 5
+typedef void (*_TBP_PosixFileDescr__ChannelDesc_Close)(PosixFileDescr__Channel ch);
+extern void PosixFileDescr__Init(PosixFileDescr__Channel ch, OOC_INT32 fd, OOC_INT8 mode);
+extern void PosixFileDescr__Truncate(PosixFileDescr__Writer w, OOC_INT32 newLength);
+extern void OOC_PosixFileDescr_init(void);
+extern void OOC_PosixFileDescr_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_PosixFileDescr__Channel;
+extern RT0__StructDesc _td_PosixFileDescr__Reader;
+extern RT0__StructDesc _td_PosixFileDescr__Writer;
+extern RT0__StructDesc _td_PosixFileDescr__ChannelDesc;
+extern RT0__StructDesc _td_PosixFileDescr__3767;
+extern RT0__StructDesc _td_PosixFileDescr__ReaderDesc;
+extern RT0__StructDesc _td_PosixFileDescr__WriterDesc;
+extern RT0__StructDesc _td_PosixFileDescr__ErrorContext;
+extern RT0__StructDesc _td_PosixFileDescr__ErrorContextDesc;
+extern RT0__StructDesc _td_PosixFileDescr__5406;
+extern RT0__StructDesc _td_PosixFileDescr__5760;
+#endif /* _MODULE_PosixFileDescr_ */
+
+/* --- */

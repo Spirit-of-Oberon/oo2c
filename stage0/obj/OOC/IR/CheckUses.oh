@@ -1,0 +1,114 @@
+#ifndef _MODULE_OOC_IR_CheckUses_
+#define _MODULE_OOC_IR_CheckUses_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <ADT/Dictionary.oh>
+#include <ADT/Dictionary/IntValue.oh>
+#include <ADT/ArrayList.oh>
+#include <OOC/Config/Pragmas.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/Error.oh>
+#include <OOC/IR.oh>
+#include <OOC/IR/VisitAll.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_IR_CheckUses__DefDesc *OOC_IR_CheckUses__Def;
+typedef struct OOC_IR_CheckUses__DefDesc {
+  ADT_Dictionary_IntValue__Dictionary _class;
+  OOC_CHAR8 unreachable;
+} OOC_IR_CheckUses__DefDesc;
+typedef struct OOC_IR_CheckUses__ProcDataDesc *OOC_IR_CheckUses__ProcData;
+typedef struct OOC_IR_CheckUses__ProcDataDesc {
+  ADT_ArrayList__ArrayList callers;
+  ADT_Dictionary_IntValue__Dictionary inout;
+  OOC_CHAR8 inWorklist;
+  OOC_CHAR8 updatedInOut;
+} OOC_IR_CheckUses__ProcDataDesc;
+typedef struct OOC_IR_CheckUses__VisitorDesc *OOC_IR_CheckUses__Visitor;
+typedef struct OOC_IR_CheckUses__VisitorDesc {
+  OOC_Error__List errList;
+  OOC_Config_Pragmas__History pragmaHistory;
+  OOC_INT8 pass;
+  OOC_CHAR8 __pad9;
+  OOC_CHAR8 __pad10;
+  OOC_CHAR8 __pad11;
+  ADT_Dictionary__Dictionary knownProcs;
+  OOC_IR_CheckUses__Def procExit;
+  OOC_SymbolTable__ProcDecl localProc;
+  OOC_IR_CheckUses__ProcData localProcData;
+  OOC_IR_CheckUses__Def def;
+  OOC_INT8 mode;
+} OOC_IR_CheckUses__VisitorDesc;
+typedef struct OOC_IR_CheckUses__VisitorCallsDesc *OOC_IR_CheckUses__VisitorCalls;
+typedef struct OOC_IR_CheckUses__VisitorCallsDesc {
+  OOC_SymbolTable__ProcDecl localProc;
+  ADT_Dictionary__Dictionary knownProcs;
+} OOC_IR_CheckUses__VisitorCallsDesc;
+typedef struct OOC_IR_CheckUses__ErrorContextDesc *OOC_IR_CheckUses__ErrorContext;
+typedef struct OOC_IR_CheckUses__ErrorContextDesc {
+  Msg__StringPtr id;
+} OOC_IR_CheckUses__ErrorContextDesc;
+extern void OOC_IR_CheckUses__ErrorContextDesc_GetTemplate(OOC_IR_CheckUses__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_IR_CheckUses__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_IR_CheckUses__ErrorContextDesc_GetTemplate)(OOC_IR_CheckUses__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void OOC_IR_CheckUses__VisitorCallsDesc_VisitCall(OOC_IR_CheckUses__VisitorCalls v, OOC_IR__Call call);
+#define _TBN_OOC_IR_CheckUses__VisitorCallsDesc_VisitCall 40
+typedef void (*_TBP_OOC_IR_CheckUses__VisitorCallsDesc_VisitCall)(OOC_IR_CheckUses__VisitorCalls v, OOC_IR__Call call);
+extern OOC_IR_CheckUses__Def OOC_IR_CheckUses__DefDesc_Copy(OOC_IR_CheckUses__Def def);
+#define _TBN_OOC_IR_CheckUses__DefDesc_Copy 4
+typedef OOC_IR_CheckUses__Def (*_TBP_OOC_IR_CheckUses__DefDesc_Copy)(OOC_IR_CheckUses__Def def);
+extern OOC_INT32 OOC_IR_CheckUses__DefDesc_GetClass(OOC_IR_CheckUses__Def def, OOC_SymbolTable__Item var);
+#define _TBN_OOC_IR_CheckUses__DefDesc_GetClass 5
+typedef OOC_INT32 (*_TBP_OOC_IR_CheckUses__DefDesc_GetClass)(OOC_IR_CheckUses__Def def, OOC_SymbolTable__Item var);
+extern void OOC_IR_CheckUses__DefDesc_SetClass(OOC_IR_CheckUses__Def def, OOC_SymbolTable__Item var, OOC_INT32 _class);
+#define _TBN_OOC_IR_CheckUses__DefDesc_SetClass 6
+typedef void (*_TBP_OOC_IR_CheckUses__DefDesc_SetClass)(OOC_IR_CheckUses__Def def, OOC_SymbolTable__Item var, OOC_INT32 _class);
+extern void OOC_IR_CheckUses__DefDesc_Merge(OOC_IR_CheckUses__Def def, OOC_IR_CheckUses__Def def2);
+#define _TBN_OOC_IR_CheckUses__DefDesc_Merge 7
+typedef void (*_TBP_OOC_IR_CheckUses__DefDesc_Merge)(OOC_IR_CheckUses__Def def, OOC_IR_CheckUses__Def def2);
+extern void OOC_IR_CheckUses__DefDesc_Unreachable(OOC_IR_CheckUses__Def def);
+#define _TBN_OOC_IR_CheckUses__DefDesc_Unreachable 8
+typedef void (*_TBP_OOC_IR_CheckUses__DefDesc_Unreachable)(OOC_IR_CheckUses__Def def);
+extern void OOC_IR_CheckUses__ProcDataDesc_SetReadFlag(OOC_IR_CheckUses__ProcData pd, OOC_SymbolTable__VarDecl varDecl, OOC_INT32 flag);
+#define _TBN_OOC_IR_CheckUses__ProcDataDesc_SetReadFlag 4
+typedef void (*_TBP_OOC_IR_CheckUses__ProcDataDesc_SetReadFlag)(OOC_IR_CheckUses__ProcData pd, OOC_SymbolTable__VarDecl varDecl, OOC_INT32 flag);
+extern void OOC_IR_CheckUses__ProcDataDesc_SetWriteFlag(OOC_IR_CheckUses__ProcData pd, OOC_SymbolTable__Item item, OOC_INT32 flag);
+#define _TBN_OOC_IR_CheckUses__ProcDataDesc_SetWriteFlag 5
+typedef void (*_TBP_OOC_IR_CheckUses__ProcDataDesc_SetWriteFlag)(OOC_IR_CheckUses__ProcData pd, OOC_SymbolTable__Item item, OOC_INT32 flag);
+extern void OOC_IR_CheckUses__VisitorDesc_VisitVar(OOC_IR_CheckUses__Visitor v, OOC_IR__Var var);
+#define _TBN_OOC_IR_CheckUses__VisitorDesc_VisitVar 36
+typedef void (*_TBP_OOC_IR_CheckUses__VisitorDesc_VisitVar)(OOC_IR_CheckUses__Visitor v, OOC_IR__Var var);
+extern void OOC_IR_CheckUses__VisitorDesc_VisitDeref(OOC_IR_CheckUses__Visitor v, OOC_IR__Deref deref);
+#define _TBN_OOC_IR_CheckUses__VisitorDesc_VisitDeref 12
+typedef void (*_TBP_OOC_IR_CheckUses__VisitorDesc_VisitDeref)(OOC_IR_CheckUses__Visitor v, OOC_IR__Deref deref);
+extern void OOC_IR_CheckUses__VisitorDesc_VisitIndex(OOC_IR_CheckUses__Visitor v, OOC_IR__Index index);
+#define _TBN_OOC_IR_CheckUses__VisitorDesc_VisitIndex 14
+typedef void (*_TBP_OOC_IR_CheckUses__VisitorDesc_VisitIndex)(OOC_IR_CheckUses__Visitor v, OOC_IR__Index index);
+extern void OOC_IR_CheckUses__VisitorDesc_VisitAdr(OOC_IR_CheckUses__Visitor v, OOC_IR__Adr adr);
+#define _TBN_OOC_IR_CheckUses__VisitorDesc_VisitAdr 2
+typedef void (*_TBP_OOC_IR_CheckUses__VisitorDesc_VisitAdr)(OOC_IR_CheckUses__Visitor v, OOC_IR__Adr adr);
+extern void OOC_IR_CheckUses__VisitorDesc_VisitCall(OOC_IR_CheckUses__Visitor v, OOC_IR__Call call);
+#define _TBN_OOC_IR_CheckUses__VisitorDesc_VisitCall 40
+typedef void (*_TBP_OOC_IR_CheckUses__VisitorDesc_VisitCall)(OOC_IR_CheckUses__Visitor v, OOC_IR__Call call);
+extern void OOC_IR_CheckUses__CheckUses(OOC_IR__Module module, OOC_SymbolTable__Module moduleDecl, OOC_Config_Pragmas__History pragmaHistory, OOC_Error__List errList);
+extern void OOC_OOC_IR_CheckUses_init(void);
+extern void OOC_OOC_IR_CheckUses_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_IR_CheckUses__Def;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__DefDesc;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__ProcData;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__ProcDataDesc;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__Visitor;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__VisitorDesc;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__VisitorCalls;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__VisitorCallsDesc;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__ErrorContext;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__4964;
+#endif /* _MODULE_OOC_IR_CheckUses_ */
+
+/* --- */

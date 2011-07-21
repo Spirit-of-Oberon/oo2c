@@ -1,0 +1,4 @@
+...is set to the position after the mark.
+
+*Pre-condition*: foobar
+

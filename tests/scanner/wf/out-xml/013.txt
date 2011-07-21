@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>a</symbol>
+<symbol id='whitespace' pos='1' line='0' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='2' line='1' column='0'>&lt;*IF FALSE THEN*&gt;&#10;b&#10;&lt;*ELSIF TRUE THEN*&gt;</symbol>
+<symbol id='whitespace' pos='41' line='3' column='19'>&#10;</symbol>
+<symbol id='ident' pos='42' line='4' column='0'>c</symbol>
+<symbol id='whitespace' pos='43' line='4' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='44' line='5' column='0'>&lt;*ELSE*&gt;&#10;d&#10;&lt;*END*&gt;</symbol>
+<symbol id='whitespace' pos='62' line='7' column='7'>&#10;</symbol>
+<symbol id='ident' pos='63' line='8' column='0'>e</symbol>
+<symbol id='whitespace' pos='64' line='8' column='1'>&#10;</symbol>
+<symbol id='endOfFile' pos='65' line='9' column='0'></symbol>
+</document>

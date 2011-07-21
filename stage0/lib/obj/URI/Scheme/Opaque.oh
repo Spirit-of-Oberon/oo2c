@@ -1,0 +1,44 @@
+#ifndef _MODULE_URI_Scheme_Opaque_
+#define _MODULE_URI_Scheme_Opaque_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#include <URI.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct URI_Scheme_Opaque__GenericDesc *URI_Scheme_Opaque__Generic;
+typedef struct URI_Scheme_Opaque__GenericDesc {
+  Object__String schemeId;
+  Object__String opaque;
+} URI_Scheme_Opaque__GenericDesc;
+extern void URI_Scheme_Opaque__Init(URI_Scheme_Opaque__Generic uri, Object__String schemeId, Object__String opaque);
+extern URI_Scheme_Opaque__Generic URI_Scheme_Opaque__New(Object__String schemeId, Object__String opaque);
+extern URI_Scheme_Opaque__Generic URI_Scheme_Opaque__GenericDesc_Clone(URI_Scheme_Opaque__Generic uri);
+#define _TBN_URI_Scheme_Opaque__GenericDesc_Clone 4
+typedef URI_Scheme_Opaque__Generic (*_TBP_URI_Scheme_Opaque__GenericDesc_Clone)(URI_Scheme_Opaque__Generic uri);
+extern void URI_Scheme_Opaque__GenericDesc_Copy(URI_Scheme_Opaque__Generic uri, URI__URI dest);
+#define _TBN_URI_Scheme_Opaque__GenericDesc_Copy 5
+typedef void (*_TBP_URI_Scheme_Opaque__GenericDesc_Copy)(URI_Scheme_Opaque__Generic uri, URI__URI dest);
+extern void URI_Scheme_Opaque__GenericDesc_ParseOpaquePart(URI_Scheme_Opaque__Generic uri, Object__CharsLatin1 str, OOC_INT16 offset);
+#define _TBN_URI_Scheme_Opaque__GenericDesc_ParseOpaquePart 11
+typedef void (*_TBP_URI_Scheme_Opaque__GenericDesc_ParseOpaquePart)(URI_Scheme_Opaque__Generic uri, Object__CharsLatin1 str, OOC_INT16 offset);
+extern void URI_Scheme_Opaque__GenericDesc_WriteXML(URI_Scheme_Opaque__Generic uri, TextRider__Writer w);
+#define _TBN_URI_Scheme_Opaque__GenericDesc_WriteXML 7
+typedef void (*_TBP_URI_Scheme_Opaque__GenericDesc_WriteXML)(URI_Scheme_Opaque__Generic uri, TextRider__Writer w);
+extern Object__String8 URI_Scheme_Opaque__GenericDesc_ToString(URI_Scheme_Opaque__Generic uri);
+#define _TBN_URI_Scheme_Opaque__GenericDesc_ToString 1
+typedef Object__String8 (*_TBP_URI_Scheme_Opaque__GenericDesc_ToString)(URI_Scheme_Opaque__Generic uri);
+extern void OOC_URI_Scheme_Opaque_init(void);
+extern void OOC_URI_Scheme_Opaque_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_URI_Scheme_Opaque__Generic;
+extern RT0__StructDesc _td_URI_Scheme_Opaque__GenericDesc;
+extern RT0__StructDesc _td_URI_Scheme_Opaque__1870;
+#endif /* _MODULE_URI_Scheme_Opaque_ */
+
+/* --- */

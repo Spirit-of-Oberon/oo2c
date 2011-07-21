@@ -1,0 +1,10 @@
+MODULE M;
+
+TYPE
+  R0 = RECORD a: INTEGER END;
+  R1 = RECORD (R0) END;
+
+PROCEDURE (VAR r: R0) a;
+  END a;
+  
+END M.

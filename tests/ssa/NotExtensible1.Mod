@@ -1,0 +1,10 @@
+MODULE NotExtensible1;
+
+TYPE
+  R1* = RECORD [NOT_EXTENSIBLE]
+  END;
+  R2* = RECORD [NOT_EXTENSIBLE]
+    (R1)
+  END;
+
+END NotExtensible1.

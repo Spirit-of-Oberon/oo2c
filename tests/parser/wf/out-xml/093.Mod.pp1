@@ -1,0 +1,10 @@
+MODULE M [FOREIGN "C"];
+
+VAR
+  v ["call_me_al"]: BOOLEAN;
+
+TYPE
+  string* = POINTER  [CSTRING]TO ARRAY OF char;
+
+PROCEDURE  [PROC_ID=123]P*;
+END M.

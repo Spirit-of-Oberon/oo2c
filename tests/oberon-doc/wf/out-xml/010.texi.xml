@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <itemize pad-after='yes'>
+    <itemize-mark><bullet/></itemize-mark>
+    <itemize-text>
+      <p pad-after='yes' no-indent='yes'>[Some text after @itemize tag, that streches over multiple lines.  I have no idea what this feature is for, but <code>makeinfo</code> renders it nevertheless.]</p>
+      <p pad-after='no' no-indent='no'>A second paragraph.</p>
+    </itemize-text>
+    <item pad-after='no'>
+      <p pad-after='no' no-indent='yes'>Lonely item.  This is its second line.</p>
+    </item>
+  </itemize>
+</oberon-doc>

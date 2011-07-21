@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M005' id=''>
+  <class name='Channel'>
+    <type-decl name='Channel' id='Channel' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='ChannelDesc' href='#ChannelDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='ChannelDesc' id='ChannelDesc' export='yes'>
+      <oberon-doc>
+        <summary>This is a class type.</summary>
+        <p pad-after='yes' no-indent='yes'>This is a class type.</p>
+      </oberon-doc>
+      <type>
+        <record>
+          <field-decl name='f' id='ChannelDesc.f' export='read-only'>
+            <oberon-doc>
+              <summary>This is a read-only field.</summary>
+              <p pad-after='yes' no-indent='yes'>This is a read-only field.</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='CHAR'/>
+            </type>
+          </field-decl>
+        </record>
+      </type>
+    </type-decl>
+    <procedure name='P' id='ChannelDesc.P' export='yes'>
+      <oberon-doc>
+        <summary>This is a type-bound procedure.</summary>
+        <p pad-after='yes' no-indent='yes'>This is a type-bound procedure.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ch' id='ChannelDesc.P.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </receiver-decl>
+      </formal-parameters>
+    </procedure>
+    <procedure name='New' id='New' export='yes'>
+      <oberon-doc>
+        <summary>This is a constructor function.</summary>
+        <p pad-after='yes' no-indent='yes'>This is a constructor function.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <result-type>
+          <type-name name='Channel' href='#Channel'/>
+        </result-type>
+      </formal-parameters>
+    </procedure>
+    <procedure name='Init' id='Init' export='yes'>
+      <oberon-doc>
+        <summary>This is an initialization procedure.</summary>
+        <p pad-after='yes' no-indent='yes'>This is an initialization procedure.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <parameter-decl name='ch' id='Init.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </parameter-decl>
+      </formal-parameters>
+    </procedure>
+  </class>
+</interface-description>

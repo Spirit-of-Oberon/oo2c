@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>Oberon</symbol>
+<symbol id='minus' pos='6' line='0' column='6'>-</symbol>
+<symbol id='number10' pos='7' line='0' column='7'>2</symbol>
+<symbol id='whitespace' pos='8' line='0' column='8'> </symbol>
+<symbol id='ident' pos='9' line='0' column='9'>does</symbol>
+<symbol id='whitespace' pos='13' line='0' column='13'> </symbol>
+<symbol id='ident' pos='14' line='0' column='14'>not</symbol>
+<symbol id='whitespace' pos='17' line='0' column='17'> </symbol>
+<symbol id='ident' pos='18' line='0' column='18'>have</symbol>
+<symbol id='whitespace' pos='22' line='0' column='22'> </symbol>
+<symbol id='ident' pos='23' line='0' column='23'>a</symbol>
+<symbol id='whitespace' pos='24' line='0' column='24'> </symbol>
+<symbol id='ident' pos='25' line='0' column='25'>symbol</symbol>
+<symbol id='whitespace' pos='31' line='0' column='31'> </symbol>
+<symbol id='invalid' pos='32' line='0' column='32'>%</symbol>
+<symbol id='whitespace' pos='33' line='0' column='33'>&#10;</symbol>
+<symbol id='endOfFile' pos='34' line='1' column='0'></symbol>
+</document>

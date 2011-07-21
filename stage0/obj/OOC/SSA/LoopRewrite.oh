@@ -1,0 +1,39 @@
+#ifndef _MODULE_OOC_SSA_LoopRewrite_
+#define _MODULE_OOC_SSA_LoopRewrite_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern void OOC_SSA_LoopRewrite__Flatten(OOC_SSA__Result res);
+extern void OOC_SSA_LoopRewrite__Transform(OOC_SSA__ProcBlock pb);
+extern void OOC_OOC_SSA_LoopRewrite_init(void);
+extern void OOC_OOC_SSA_LoopRewrite_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__Worklist;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__WorklistDesc;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__Sum;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__2107;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__Factors;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__Product;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__ProductDesc;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__PList;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__PListDesc;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__2914;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__2903;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__CycleElement;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__SumDesc;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__InductionCycle;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__CycleElementDesc;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__5545;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__RewrittenCycle;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__RewrittenCycleDesc;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__5879;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__5868;
+extern RT0__StructDesc _td_OOC_SSA_LoopRewrite__InductionCycleDesc;
+#endif /* _MODULE_OOC_SSA_LoopRewrite_ */
+
+/* --- */

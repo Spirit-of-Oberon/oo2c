@@ -1,0 +1,13 @@
+In file not-wf/src/M012.Mod: 
+Could not resolve identifier `x'
+column=12
+ident=x
+line=1
+pos=25
+
+Could not resolve identifier `x'
+column=12
+ident=x
+line=1
+pos=25
+

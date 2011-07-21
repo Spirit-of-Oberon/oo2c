@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<configuration>
+  <options>
+    <define name='abc' type='boolean'>TRUE</define>
+    <set name='abc'>FALSE_</set>
+  </options>
+</configuration>

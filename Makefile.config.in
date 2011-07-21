@@ -1,0 +1,57 @@
+# ==================== Where To Install Things ===========================
+
+# The default location for installation.  Everything is placed in
+# subdirectories of this directory.  The default values for many of
+# the variables below are expressed in terms of this one, so you may
+# not need to change them.  This defaults to /usr/local.
+prefix=@prefix@
+
+# Like `prefix', but used for architecture-specific files.
+exec_prefix=@exec_prefix@
+
+# Where to install oo2c and other binaries that people will want to
+# run directly.
+bindir=@bindir@
+
+# Where to install shared and static library files.  This directory
+# should be in the linker's search path.
+libdir=@libdir@
+
+# Where to install other files needed to run oo2c, like symbol files.
+oocdir=@libdir@/oo2c
+
+# Where to install oo2c's man pages, and what extension they should have.
+mandir=@mandir@/man1
+manext=.1
+
+# ==================== Utility Programs for the Build ====================
+
+# Allow the user to specify the install program.
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_SCRIPT=@INSTALL_SCRIPT@
+INSTALL_DATA=@INSTALL_DATA@
+
+# ========================================================================
+
+export OOC=@OOC@
+export OOEF=@OOEF@
+export DIFF=@DIFF@
+export XSLTPROC=@XSLTPROC@
+export PERL=@PERL@
+
+export CC=@CC@
+export CFLAGS=@CFLAGS@
+export CPPFLAGS=@CPPFLAGS@
+export LDFLAGS=@LDFLAGS@
+export LIBS=@LIBS@
+
+PACKAGE_VERSION=@PACKAGE_VERSION@
+DISTDIR=oo2c_32-$(PACKAGE_VERSION)
+OFLAGS=@OFLAGS@
+
+PRINT=@echo
+MKDIR=mkdir -p -m 755
+RM=rm -f
+RM_R=rm -Rf
+LN_S=ln -s

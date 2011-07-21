@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE test-setup SYSTEM "../../rsrc/OOC/TestFramework/test-setup.dtd">
+
+<test-setup lang="O2">
+  &test-env;
+  
+  <processor name="oo2c"
+	     version="&OOC_VERSION;"
+	     command="&OOC;"
+	     config-file="./sample-oo2crc"
+	     flags="--config ./sample-oo2crc -Ow"
+	     working-dir="./wd" 
+	     filter-command="&OOEF;" 
+	     diff-command="&DIFF;"/>
+
+  <test-suite uri="testsuite.xml" />
+</test-setup>

@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+
+<!ENTITY % oberon-doc SYSTEM "oberon-doc.dtd">
+%oberon-doc;
+
+<!ENTITY % reference-attributes
+  "module CDATA #REQUIRED
+   name CDATA #REQUIRED 
+   class CDATA #REQUIRED
+   href CDATA #REQUIRED">
+
+<!ENTITY % any-type "type-name|array|record|pointer|formal-parameters|qualified-type">
+
+<!ELEMENT interface-description (oberon-doc?,
+                                 import-decl*, 
+                                 (const-decl|type-decl|var-decl)*,
+                                 procedure*,
+                                 class*,
+                                 module-ref*)>
+<!ATTLIST interface-description name CDATA #REQUIRED
+                                id   CDATA #REQUIRED>
+
+<!ELEMENT class (type-decl*, procedure*, base-class*, known-extension*)>
+<!ATTLIST class name CDATA #REQUIRED>
+
+<!ELEMENT base-class ((inherited-field | inherited-method)*, base-class?)>
+<!ATTLIST base-class module CDATA #REQUIRED
+                     class CDATA #REQUIRED
+                     href CDATA #REQUIRED>
+
+<!ELEMENT inherited-field EMPTY>
+<!ATTLIST inherited-field %reference-attributes;>
+
+<!ELEMENT inherited-method EMPTY>
+<!ATTLIST inherited-method %reference-attributes;>
+
+<!ELEMENT redefined-method EMPTY>
+<!ATTLIST redefined-method %reference-attributes;>
+
+<!ELEMENT known-extension EMPTY>
+<!ATTLIST known-extension %reference-attributes;>
+
+<!ELEMENT doc-inherited-from EMPTY>
+<!ATTLIST doc-inherited-from %reference-attributes;>
+
+
+<!ELEMENT import-decl (oberon-doc?)>
+<!ATTLIST import-decl name CDATA #REQUIRED
+                      id ID #REQUIRED
+                      export (yes|no|read-only) #REQUIRED
+                      module CDATA #REQUIRED>
+
+<!ELEMENT const-decl (oberon-doc?)>
+<!ATTLIST const-decl name CDATA #REQUIRED
+                     id ID #REQUIRED
+                     export (yes|no|read-only) #REQUIRED
+                     value CDATA #REQUIRED>
+
+<!ELEMENT type-decl (oberon-doc?, type)>
+<!ATTLIST type-decl name CDATA #REQUIRED
+                    id ID #REQUIRED
+                    export (yes|no|read-only) #REQUIRED>
+
+<!ELEMENT type-parameters (type-decl)*>
+
+<!ELEMENT var-decl (oberon-doc?, type)>
+<!ATTLIST var-decl name CDATA #REQUIRED
+                   id ID #REQUIRED
+                   export (yes|no|read-only) #REQUIRED>
+
+<!ELEMENT receiver-decl (oberon-doc?, type, type-alias-list?)>
+<!ATTLIST receiver-decl name CDATA #REQUIRED
+                        id ID #REQUIRED
+                        export (yes|no|read-only) #REQUIRED
+                        variable-parameter (yes|no) #REQUIRED>
+
+<!ELEMENT type-alias-list (type-alias)*>
+<!ELEMENT type-alias EMPTY>
+<!ATTLIST type-alias name CDATA #REQUIRED
+                     id ID #REQUIRED>
+
+<!ELEMENT parameter-decl (oberon-doc?, type)>
+<!ATTLIST parameter-decl name CDATA #REQUIRED
+                         id ID #REQUIRED
+                         export (yes|no|read-only) #REQUIRED
+                         variable-parameter (yes|no) #REQUIRED>
+
+<!ELEMENT field-decl (oberon-doc?, type)>
+<!ATTLIST field-decl name CDATA #REQUIRED
+                     id ID #IMPLIED
+                     export (yes|no|read-only) #REQUIRED>
+<!-- A field declaration may appear multiple times in the description
+file for degenerate cases like "VAR x*, y*: RECORD a*: CHAR", where
+the field "a" appears in the XML output both within the declaration
+of "x" and of "y".  Because id attributes must be unique, only the
+first declaration is assigned an id.  -->
+
+
+<!ELEMENT procedure ((doc-inherited-from?, oberon-doc)?,
+                     formal-parameters, redefined-method*)>
+<!ATTLIST procedure name CDATA #REQUIRED
+                    id ID #REQUIRED
+                    export (yes|no|read-only) #REQUIRED>
+
+
+
+<!ELEMENT type-name EMPTY>
+<!ATTLIST type-name module CDATA ""
+                    name CDATA #REQUIRED
+                    href CDATA #IMPLIED>
+
+<!ELEMENT pointer (pointer-base)>
+
+<!ELEMENT pointer-base (type-name|array|record)>
+
+<!ELEMENT array (length?, element-type)>
+
+<!ELEMENT length (#PCDATA)>
+
+<!ELEMENT element-type (%any-type;)>
+
+<!ELEMENT record (field-decl*)>
+
+<!ELEMENT formal-parameters (receiver-decl?, parameter-decl*,
+                             result-type?, exceptions?)>
+
+<!ELEMENT result-type (type-name)>
+
+<!ELEMENT qualified-type (type, type-arguments)>
+
+<!ELEMENT type-arguments (%any-type;)*>
+
+<!ELEMENT exceptions (type-name)*>
+
+<!ELEMENT type (%any-type;)>
+
+
+<!ELEMENT module-ref (ref-target+)>
+<!ATTLIST module-ref name CDATA #REQUIRED>
+
+<!ELEMENT ref-target EMPTY>
+<!ATTLIST ref-target type (html) #REQUIRED
+                     relative-uri CDATA #REQUIRED>
+
+<!--
+
+Some words regarding the class stuff: Oberon-2's notion of classes is
+rather vague.  The border between a class and a record is fuzzy, and a
+class may be based on a pointer type or just on a record type.
+Additionally, there is no established notation to associate a class
+with its constructors.
+
+All in all, this situation imposes some problems when one tries to
+extract documentation for a class from source code in an automated
+way.  All the tidbits of information that make up a class must be
+collected.  This includes the record type, the associated pointer type
+(if present), any constructor functions, and (if present)
+initialization procedures used by the constructors.  
+
+I don't want to make things too complicated, so I will try to get
+along for the moment with a set of simple rules.  These rules only
+cover the situation where a class is an heap object, that is, a record
+type and a pointer type.
+
+1. A record is classified as a "class" if it is defined on the module
+level, has exactly one pointer type declaration refering to it, and if
+it
+  a) extends an existing record, or
+  b) if there are any type-bound procedures in the same module that use
+  it as receiver type.
+
+2. The class name is either the name of the record type, or, if the
+pointer's type name is a prefix of the record type, the pointer name.
+
+3. All type-bound procedures belong to the class of their receiver
+type.
+
+4. All normal procedures that have the class pointer type as their
+result are assumed to be constructors of this class.  The result type
+must be defined in the same module as the procedure.
+
+5. All normal procedures
+  a) whose name is "Init", or whose name begins with "Init", 
+  b) whose first argument is of a class type from the same module, and
+  c) and that are not function procedures,
+are assumed to be auxiliary functions or constructors.  They are
+considered to be part of the class definition.
+
+There may be additional constants, variables, and type definitions
+that logically are part of a class definition.  They appear in the
+module documentation.  There is no simple way to connect them to a
+class without hints provided by the programmer.
+
+-->

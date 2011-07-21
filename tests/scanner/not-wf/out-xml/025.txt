@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*DEFINE predef_true:=FALSE*&gt;</symbol>
+<symbol id='endOfFile' pos='29' line='0' column='29'></symbol>
+</document>

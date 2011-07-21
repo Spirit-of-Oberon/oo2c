@@ -1,0 +1,2411 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
+
+<testsuite-ext profile="Test Suite for Translation Patterns">
+
+<!--<testsuite-ext profile="Test Suite for Translation Patterns"
+  select ="&SetupTestCasesWithOut; generic73 generic74">-->
+
+  &TestSetupWithOut;
+    
+  <testcases profile="OOC2 Development" default-lang="O2">
+    <test id="assign1" type="reject" file="Assign1.Mod">
+      Left side of an assignment is a constant.
+    </test>
+    <test id="assign2" type="reject" file="Assign2.Mod">
+      Left side of an assignment is a type-bound procedure.
+    </test>
+    <test id="assign_ro" type="accept" file="AssignRO.Mod">
+      Prepare exports for read-only tests.
+    </test>
+    <test id="assign3" type="reject" file="Assign3.Mod">
+      Assignment to a variable that is exported read-only.
+    </test>
+    <test id="assign4" type="reject" file="Assign4.Mod">
+      Assignment to a record field that is exported read-only.
+    </test>
+    <test id="assign5" type="reject" file="Assign5.Mod">
+      Right side of assignment is a type name.
+    </test>
+    <test id="assign6" type="reject" file="Assign6.Mod">
+      Right side of assignment is a module name.
+    </test>
+    <test id="assign7" type="reject" file="Assign7.Mod">
+      Left side of assignment is an open array variable.
+    </test>
+    <test id="assign8" type="reject" file="Assign8.Mod">
+      Trying to assign <code>NIL</code> to a <code>LONGINT</code>
+      variable.
+    </test>
+    <test id="assign9" type="reject" file="Assign9.Mod">
+      Trying to assign a string constant that is too long.
+    </test>
+    <test id="assign10" type="reject" file="Assign10.Mod">
+      Procedure assignment: number of arguments differ.
+    </test>
+    <test id="assign11" type="reject" file="Assign11.Mod">
+      Procedure assignment: result type differs.
+    </test>
+    <test id="assign12" type="reject" file="Assign12.Mod">
+      Procedure assignment: type of parameter differs.
+    </test>
+    <test id="assign13" type="reject" file="Assign13.Mod">
+      Procedure assignment: parameter differs in variable/value mode.
+    </test>
+    <test id="assign14" type="reject" file="Assign14.Mod">
+      Procedure assignment: number of arguments differ.
+    </test>
+    <test id="assign15" type="reject" file="Assign15.Mod">
+      Invalid assignment to module name.
+    </test>
+    <test id="assign16" type="reject" file="Assign16.Mod">
+      Invalid assignment to type name.
+    </test>
+    <test id="assign17" type="run" file="Assign17.Mod" output="Assign17.Ref">
+      Right hand of assignment is a type guard applied to a
+      dereferenced record pointer.
+    </test>
+    
+    <test id="return1" type="reject" file="Return1.Mod">
+      <code>RETURN</code> of a procedure has an expression.
+    </test>
+    <test id="return2" type="reject" file="Return2.Mod">
+      <code>RETURN</code> of a function procedure no expression.
+    </test>
+    <test id="return3" type="reject" file="Return3.Mod">
+      Value of the <code>RETURN</code> is not assignment compatible to
+      the function's result type.
+    </test>
+    <test id="return4" type="reject" file="Return4.Mod">
+      <code>RETURN</code> in the module body has an expression.
+    </test>
+    
+    <test id="proc1" type="reject" file="Proc1.Mod">
+      Procedure call syntax, but the designator in front of the
+      argument list is an integer variable.
+    </test>
+    <test id="proc2" type="reject" file="Proc2.Mod">
+      Calling a function procedure in a statement.
+    </test>
+    <test id="proc3" type="reject" file="Proc3.Mod">
+      Calling a procedure with too few arguments.
+    </test>
+    <test id="proc4" type="reject" file="Proc4.Mod">
+      Calling a procedure with parameters without any argument list.
+    </test>
+    <test id="proc5" type="reject" file="Proc5.Mod">
+      Calling a procedure more arguments than formal parameters.
+    </test>
+    <test id="proc6" type="reject" file="Proc6.Mod">
+      Argument not assignment compatible to value parameter.
+    </test>
+    <test id="proc7" type="reject" file="Proc7.Mod">
+      Argument to a variable parameter is a constant.
+    </test>
+    <test id="proc8" type="reject" file="Proc8.Mod">
+      Argument to a variable parameter is imported read-only.
+    </test>
+    <test id="proc9" type="reject" file="Proc9.Mod">
+      Argument to an open array value parameter has wrong element type.
+    </test>
+    <test id="proc10" type="reject" file="Proc10.Mod">
+      Argument to an open array value parameter has wrong number of
+      dimensions.
+    </test>
+    <test id="proc11" type="reject" file="Proc11.Mod">
+      Argument to an open array variable parameter has wrong element
+      type.
+    </test>
+    <test id="proc12" type="reject" file="Proc12.Mod">
+      Argument to an open array variable parameter has wrong number of
+      dimensions.
+    </test>
+    <test id="proc13" type="run" file="Proc13.Mod" output="Proc13.Ref">
+      Assignment to value parameter of type <code>INTEGER</code> has
+      no effect outside procedure.
+    </test>
+    <test id="proc14" type="accept" file="Proc14.Mod">
+      Any pointer type can be passed to a formal <code>VAR</code>
+      parameter of type <code>PTR</code>.
+    </test>
+
+    <test id="function1" type="run"
+      file="../compile/HOTFunction1.Mod" output="../compile/HOTFunction1.Ref">
+      A very simple function: No input arguments, and a return
+      statement with a constant expression.
+    </test>
+    <test id="function2" type="run"
+      file="../compile/HOTFunction2.Mod" output="../compile/HOTFunction2.Ref">
+      Another very simple function: The input parameter is used as the
+      function's return value, without any transformation.
+    </test>
+    <test id="function3" type="run"
+      file="HOTFunction3.Mod" output="HOTFunction3.Ref">
+      Another very simple function: The input parameter is copied to 
+      a local variable, which is subsequently used as the
+      function's return value.
+    </test>
+    
+    <test id="if1" type="run"
+      file="HOTIf1.Mod" output="HOTIf1.Ref">
+      A simple <code>IF-ELSE-END</code> statement, using a
+      boolean parameter as guard.
+    </test>
+    
+    <test id="if2" type="run"
+      file="HOTIf2.Mod" output="HOTIf2.Ref">
+      A simple <code>IF-END</code> statement, using a boolean parameter
+      as guard.
+    </test>
+    
+    <test id="if3" type="run"
+      file="HOTIf3.Mod" output="HOTIf3.Ref">
+      A simple <code>IF-ELSIF-ELSE-END</code> statement, using 
+      boolean parameters as guards.
+    </test>
+    
+    <test id="if4" type="reject" file="HOTIf4.Mod">
+      Guard is not a boolean expression.
+    </test>
+    
+    <test id="with1" type="run" file="With1.Mod" output="With1.Ref">
+      A simple <code>WITH</code> statement, serving as a sequence
+      of type tests.
+    </test>
+    <test id="with2" type="run" file="With2.Mod" output="With2.Ref">
+      A simple <code>WITH</code> statement.  Fields of the guarded
+      variable are accessed under the guard.  The variable is
+      a parameter, but there is no recursive call involved.  That is,
+      a compiler passes this test even if it modifies the signature
+      of a procedure within a branch of a <code>WITH</code>.
+    </test>
+    <test id="with3" type="error" file="With3.Mod">
+      Check that a run-time error is reported if none of the guards
+      triggers, and the <code>WITH</code> has no <code>ELSE</code>
+      part.
+    </test>
+    <test id="with4" type="accept" file="With4.Mod">
+      Check that the procedure signature remains unchanged when seen
+      from within a <code>WITH</code> region.
+    </test>
+    <test id="with5" type="reject" file="With5.Mod">
+      The variable of the type test is not a qualified identifier.
+    </test>
+    <test id="with6" type="reject" file="With6.Mod">
+      The variable of the type test is a value parameter.
+    </test>
+    <test id="with7" type="reject" file="With7.Mod">
+      The given type is not an extension of the type of the variable.
+    </test>
+    
+    <test id="function4" type="run"
+      file="HOTFunction4.Mod" output="HOTFunction4.Ref">
+      Another simple function: The boolean input parameter selects
+      between one of the two <code>RETURN</code> statements in
+      the <code>IF</code> statement.
+    </test>
+    
+    <test id="function5" type="run"
+      file="HOTFunction5.Mod" output="HOTFunction5.Ref">
+      Yet another simple function: Increment input value by one and
+      return the result.
+    </test>
+    
+    <test id="designator1" type="run"
+      file="HOTDesignator1.Mod" output="HOTDesignator1.Ref">
+      Designator test: access of elements of a character array.
+      The array is passed as a parameter to the function, as is
+      the index.
+    </test>
+    
+    <test id="function6" type="run"
+      file="HOTFunction6.Mod" output="HOTFunction6.Ref">
+      Simple functions: Compare character parameter with constant
+      character and return different integer values depending on the result.
+    </test>
+    <test id="function7" type="error" file="HOTFunction7.Mod">
+      An error should be signaled if control reaches the end of a
+      function.
+    </test>
+    <test id="function8" type="reject" file="HOTFunction8.Mod">
+      Calling a normal procedure as a function.
+    </test>
+    
+    
+    <test id="loop1" type="run"
+      file="HOTLoop1.Mod" output="HOTLoop1.Ref">
+      Loop variant <code>REPEAT-UNTIL</code>: Calculate string length.
+    </test>
+    <test id="loop2" type="run"
+      file="HOTLoop2.Mod" output="HOTLoop2.Ref">
+      Loop variant <code>WHILE-DO</code>: Calculate string length.
+    </test>
+    <test id="loop3" type="run"
+      file="HOTLoop3.Mod" output="HOTLoop3.Ref">
+      Loop variant <code>LOOP-EXIT-END</code>: Calculate string length.
+    </test>
+    <test id="loop4" type="run"
+      file="HOTLoop4.Mod" output="HOTLoop4.Ref">
+      Loop variant <code>LOOP-EXIT-EXIT-END</code>: Calculate <code>x
+      DIV 10</code> in a rather silly way for <code>0 &lt;= x &lt; 20</code>.
+    </test>
+    <test id="loop5" type="run"
+      file="HOTLoop5.Mod" output="HOTLoop5.Ref">
+      Nested <code>REPEAT-UNTIL</code> loops.
+    </test>
+    <test id="loop6" type="run" file="HOTLoop6.Mod">
+      Nested loops that triggered a bug in the SSA back-end.
+    </test>
+    <test id="loop7" type="reject" file="HOTLoop7.Mod">
+      Guard of <code>WHILE</code> is not boolean.
+    </test>
+    <test id="loop8" type="reject" file="HOTLoop8.Mod">
+      Termination criterion of <code>REPEAT</code> is not boolean.
+    </test>
+    <test id="loop9" type="reject" file="HOTLoop9.Mod">
+      <code>EXIT</code> outside of of a <code>LOOP</code>.
+    </test>
+    <test id="loop10" type="run" file="HOTLoop10.Mod" output="HOTLoop10.Ref">
+      Quicksort on <code>INTEGER</code> array.
+    </test>
+    <test id="loop11" type="run" file="HOTLoop11.Mod" output="HOTLoop11.Ref">
+      A <code>IF</code> within a <code>LOOP</code>, where part of the 
+      loop body is located after the last exit point.  This triggered
+      a bug in the SSA back-end, where values which needed to be live
+      across the whole loop body were clobbered in the last part of
+      the body.
+    </test>
+    <test id="loop12" type="run" file="HOTLoop12.Mod" output="HOTLoop12.Ref">
+      A code snippet that caused the SSA back-end to misplace a
+      <code>select</code> statement in the middle of a block, instead
+      of the beginning.  The result was a clobbered register.
+    </test>
+    <test id="loop13" type="accept" file="HOTLoop13.Mod">
+      Empty <code>LOOP-END</code>.  This should not force the
+      <em>compiler</em> into an endless loop ;-)
+    </test>
+    <test id="loop14" type="accept" file="HOTLoop14.Mod">
+      <code>LOOP</code> without <code>EXIT</code>, but with an
+      assignment that is referenced outside the loop.  This caused
+      <code>OOC:SSA:Destore</code> to crash.
+    </test>
+ 
+    
+    <test id="for1" type="reject" file="For1.Mod">
+      Loop variable is an array element.
+    </test>
+    <test id="for2" type="reject" file="For2.Mod">
+      Loop variable is a type name.
+    </test>
+    <test id="for3" type="reject" file="For3.Mod">
+      Loop variable is of character type.
+    </test>
+    <test id="for4" type="reject" file="For4.Mod">
+      Start of loop is not assignment compatible to loop variable.
+    </test>
+    <test id="for5" type="reject" file="For5.Mod">
+      End of loop is not assignment compatible to loop variable.
+    </test>
+    <test id="for6" type="reject" file="For6.Mod">
+      Type of loop variable does not include step.
+    </test>
+    <test id="for7" type="reject" file="For7.Mod">
+      Step value is not a constant.
+    </test>
+    <test id="for8" type="reject" file="For8.Mod">
+      Step value is zero.
+    </test>
+    <test id="for9" type="run" file="For9.Mod" output="For9.Ref">
+      For loop with positive step value.
+    </test>
+    <test id="for10" type="run" file="For10.Mod" output="For10.Ref">
+      For loop with negative step value.
+    </test>
+    <test id="for11" type="run" file="For11.Mod">
+      Nested <code>FOR</code> loops where the end value of innermost
+      loop is the induction variable of the outer one.
+    </test>
+    
+    
+    <test id="case1" type="run" file="Case1.Mod" output="Case1.Ref">
+      <code>CASE</code> statement using branches with one label, two
+      labels, a range as a label, and an <code>ELSE</code> part.
+      The selector is an integer value.
+    </test>
+    <test id="case2" type="error" file="Case2.Mod">
+      Check that a run-time error is reported if none of the labels
+      matches, and the <code>CASE</code> has no <code>ELSE</code>
+      part.
+    </test>
+    <test id="case3" type="reject" file="Case3.Mod">
+      Boolean value is not a valid <code>CASE</code> selector.
+    </test>
+    <test id="case4" type="reject" file="Case4.Mod">
+      Case label is not constant.
+    </test>
+    <test id="case5" type="reject" file="Case5.Mod">
+      Integer case label is not included in the select expression's
+      type.
+    </test>
+    <test id="case6" type="reject" file="Case6.Mod">
+      Character case label is not included in the select expression's
+      type.
+    </test>
+    <test id="case7" type="reject" file="Case7.Mod">
+      Duplicate label: earlier branch use same value.
+    </test>
+    <test id="case8" type="reject" file="Case8.Mod">
+      Duplicate label: value appears twice in branch.
+    </test>
+    <test id="case9" type="reject" file="Case9.Mod">
+      Duplicate label: range intersects with previous label.
+    </test>
+    <test id="case10" type="run" file="Case10.Mod" output="Case10.Ref">
+      <code>CASE</code> statement with a branch whose labels evaluate
+      to the empty set.
+    </test>
+    <test id="case11" type="run" file="Case11.Mod" output="Case11.Ref">
+      <code>CASE</code> statement using a character expression, 
+      and empty branches.
+    </test>
+    <test id="case12" type="accept" file="Case12.Mod">
+      This <code>CASE</code> statement exposed a wrong OOC operand
+      class for the default path.
+    </test>
+    
+    
+    <test id="and1" type="run" file="And1.Mod" output="And1.Ref">
+      Testing shortcut evaluation of operator `<code>&amp;</code>'.
+    </test>
+    
+    <test id="or1" type="run" file="Or1.Mod" output="Or1.Ref">
+      Testing shortcut evaluation of operator `<code>OR</code>'.
+    </test>
+    
+    <test id="varpar1" type="run"
+      file= "HOTVarPar1.Mod" output="HOTVarPar1.Ref">
+      Accessing a global variable through a <code>VAR</code> parameter.
+    </test>
+    
+    <test id="inc1" type="run" file="Inc1.Mod" output="Inc1.Ref">
+      Performing <code>INC</code> with default delta on global variable.
+    </test>
+    <test id="inc2" type="reject" file="Inc2.Mod">
+      First argument of <code>INC</code> is of type <code>CHAR</code>.
+    </test>
+    <test id="inc3" type="reject" file="Inc3.Mod">
+      First argument of <code>INC</code> is of constant.
+    </test>
+    <test id="inc4" type="reject" file="Inc4.Mod">
+      Second argument of <code>INC</code> is a constant out of the
+      range of the first argument's type.
+    </test>
+    <test id="inc5" type="reject" file="Inc5.Mod">
+      Second argument of <code>INC</code> is a variable larger than
+      the first argument's type.
+    </test>
+    
+    <test id="dec1" type="run" file="Dec1.Mod" output="Dec1.Ref">
+      Performing <code>DEC</code> with default delta on global variable.
+    </test>
+    
+    <test id="incl1" type="run" file="Incl1.Mod" output="Incl1.Ref">
+      Doing <code>INCL</code> and <code>EXCL</code> on
+      <code>SET</code> variable.
+    </test>
+    <test id="incl2" type="reject" file="Incl2.Mod">
+      First argument of <code>INCL</code> is <code>INTEGER</code>
+      variable.
+    </test>
+    <test id="incl3" type="reject" file="Incl3.Mod">
+      First argument of <code>INCL</code> is a constant.
+    </test>
+    <test id="incl4" type="reject" file="Incl4.Mod">
+      Second argument of <code>INCL</code> is a character.
+    </test>
+    
+    <test id="new1" type="reject" file="New1.Mod">
+      Calling <code>NEW</code> for a variable of type
+      <code>SYSTEM.PTR</code>.
+    </test>
+    <test id="new2" type="reject" file="New2.Mod">
+      Calling <code>NEW</code> for a function result.
+    </test>
+    <test id="new3" type="reject" file="New3.Mod">
+      Calling <code>NEW</code> with a non-integer length.
+    </test>
+    <test id="new4" type="reject" file="New4.Mod">
+      Calling <code>NEW</code> with a too many length arguments.
+    </test>
+    <test id="new5" type="reject" file="New5.Mod">
+      Calling <code>NEW</code> with a too few length arguments.
+    </test>
+    <test id="new6" type="reject" file="New6.Mod">
+      Calling <code>NEW</code> with an open array parameter.
+    </test>
+    <test id="new7" type="error" file="New7.Mod">
+      Calling <code>NEW</code> with a negative length.
+    </test>
+    <test id="new8" type="reject" file="New8.Mod">
+      Applying a field selector to the result of <code>NEW</code>.
+    </test>
+    
+    <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
+      Predefined function <code>ABS</code> for some integers and reals.
+    </test>
+    <test id="abs2" type="reject" file="Abs2.Mod">
+      Calling <code>ABS</code> for a character value.
+    </test>
+    <test id="abs3" type="reject" file="Abs3.Mod">
+      Calling <code>ABS</code> as a normal procedure.
+    </test>
+    
+    <test id="ash1" type="run" file="Ash1.Mod" output="Ash1.Ref">
+      Calling <code>ASH</code> for positive and negative values, with
+      both left and right shift.
+    </test>
+    <test id="ash2" type="reject" file="Ash2.Mod">
+      Calling <code>ASH</code> with a character as argument.
+    </test>
+    <test id="ash3" type="reject" file="Ash3.Mod">
+      Calling <code>ASH</code> with a character as shift distance.
+    </test>
+    
+    <test id="cap1" type="run" file="Cap1.Mod" output="Cap1.Ref">
+      Predefined function <code>CAP</code> for some ASCII characters.
+    </test>
+    <test id="cap2" type="run" file="Cap2.Mod" output="Cap2.Ref">
+      Code snipped using <code>CAP</code> to decode hex digits.
+    </test>
+    <test id="cap3" type="reject" file="Cap3.Mod">
+      Calling <code>CAP</code> with an integer value.
+    </test>
+    <test id="cap4" type="reject" file="Cap4.Mod">
+      Calling <code>CAP</code> with an integer value.
+    </test>
+    
+    <test id="chr1" type="run" file="Chr1.Mod" output="Chr1.Ref">
+      Predefined function <code>CHR</code> for some ASCII characters.
+    </test>
+    <test id="chr2" type="reject" file="Chr2.Mod">
+      Calling <code>CHR</code> with a <code>REAL</code> argument.
+    </test>
+    <test id="chr3" type="reject" file="Chr3.Mod">
+      Calling <code>CHR</code> with an invalid integer constant.
+    </test>
+    <test id="chr4" type="accept" file="Chr4.Mod">
+      Calling <code>LONGCHR</code> and <code>UCS4CHR</code> with
+      constant argument.
+    </test>
+    
+    <test id="entier1" type="run" file="Entier1.Mod" output="Entier1.Ref">
+      Predefined function <code>ENTIER</code> for <code>REAL</code>
+      and <code>LONGREAL</code> values.
+    </test>
+    <test id="entier2" type="reject" file="Entier2.Mod">
+      Calling <code>ENTIER</code> with an integer value.
+    </test>
+
+    <test id="div1" type="run" file="Div1.Mod" output="Div1.Ref">
+      Checks that <code>DIV</code> performs rounding to negative
+      infinity.  The divisor is positive.
+    </test>
+    <test id="div2" type="run" relevance="informal"
+          file="Div2.Mod" output="Div2.Ref">
+      Checks result of <code>DIV</code> if the divisor is negative.
+    </test>
+    <test id="div3" type="run" file="Div3.Mod" output="Div3.Ref">
+      Checks that <code>DIV</code> by a power of two works as
+      intended for positive and negative left side.
+    </test>
+    
+    <test id="mod1" type="run" file="Mod1.Mod" output="Mod1.Ref">
+      Checks that <code>MOD</code> performs rounding to negative
+      infinity.  The divisor is positive.
+    </test>
+    <test id="mod2" type="run" relevance="informal"
+          file="Mod2.Mod" output="Mod2.Ref">
+      Checks result of <code>MOD</code> if the divisor is negative.
+    </test>
+    
+    <test id="len1" type="run" file="Len1.Mod" output="Len1.Ref">
+      Calling <code>LEN</code> on a 2-dimensional array.  All legal
+      argument variants are excercised: without dimension, with
+      dimension, and with partially indexed array.  Three different
+      kinds of array variables are used: global array variable, open
+      array parameter, and partially open array parameter.
+    </test>
+    <test id="len2" type="reject" file="Len2.Mod">
+      Calling <code>LEN</code> without arguments.
+    </test>
+    <test id="len3" type="reject" file="Len3.Mod">
+      Calling <code>LEN</code> with too many arguments.
+    </test>
+    <test id="len4" type="reject" file="Len4.Mod">
+      Calling <code>LEN</code> with non-array argument.
+    </test>
+    <test id="len5" type="reject" file="Len5.Mod">
+      Calling <code>LEN</code> with an out of range dimension number.
+    </test>
+    <test id="len6" type="reject" file="Len6.Mod">
+      Calling <code>LEN</code> with a non-integer dimension number.
+    </test>
+    <test id="len7" type="reject" file="Len7.Mod">
+      Calling <code>LEN</code> with an integer variable as dimension number.
+    </test>
+    <test id="len8" type="reject" file="Len8.Mod">
+      Calling <code>LEN</code> for a record value.
+    </test>
+
+    <test id="minmax1" type="run" file="MinMax1.Mod" output="MinMax1.Ref">
+      <code>MIN</code> and <code>MAX</code> of the integer types.
+    </test>
+    <test id="minmax2" type="run" file="MinMax2.Mod" output="MinMax2.Ref">
+      <code>MIN</code> and <code>MAX</code> of the real types.
+    </test>
+    <test id="minmax3" type="run" file="MinMax3.Mod" output="MinMax3.Ref">
+      <code>MIN</code> and <code>MAX</code> of the character types.
+    </test>
+    <test id="minmax4" type="reject" file="MinMax4.Mod">
+      Calling <code>MIN</code> for a variable.
+    </test>
+    <test id="minmax5" type="reject" file="MinMax5.Mod">
+      Calling <code>MIN</code> for a pointer type.
+    </test>
+    <test id="minmax6" type="reject" file="MinMax6.Mod">
+      Calling <code>MIN</code> for <code>BOOLEAN</code>.
+    </test>
+
+    <test id="odd1" type="run" file="Odd1.Mod" output="Odd1.Ref">
+      Calling <code>ODD</code> for positive and negative integers.
+    </test>
+    <test id="odd2" type="reject" file="Odd2.Mod">
+      Calling <code>ODD</code> for a character value.
+    </test>
+    
+    <test id="short1" type="run" file="Short1.Mod">
+      Calling <code>SHORT</code> with various argument types.
+    </test>
+    <test id="short2" type="reject" file="Short2.Mod">
+      Calling <code>SHORT</code> for <code>SHORTINT</code> value.
+    </test>
+    <test id="short3" type="reject" file="Short3.Mod">
+      Calling <code>SHORT</code> for <code>REAL</code> value.
+    </test>
+    <test id="short4" type="reject" file="Short4.Mod">
+      Calling <code>SHORT</code> for <code>CHAR</code> value.
+    </test>
+    <test id="short5" type="reject" file="Short5.Mod">
+      Calling <code>SHORT</code> for <code>BOOLEAN</code> value.
+    </test>
+    <test id="short6" type="reject" file="Short6.Mod">
+      Calling <code>SHORT</code> for record value.
+    </test>
+
+    <test id="long1" type="run" file="Long1.Mod">
+      Calling <code>LONG</code> with various argument types.
+    </test>
+    <test id="long2" type="reject" file="Long2.Mod">
+      Calling <code>LONG</code> for <code>LONGINT</code> value.
+    </test>
+    <test id="long3" type="reject" file="Long3.Mod">
+      Calling <code>LONG</code> for <code>LONGREAL</code> value.
+    </test>
+    <test id="long4" type="reject" file="Long4.Mod">
+      Calling <code>LONG</code> for <code>UCS4CHAR</code> value.
+    </test>
+    <test id="long5" type="reject" file="Long5.Mod">
+      Calling <code>LONG</code> for <code>BOOLEAN</code> value.
+    </test>
+    <test id="long6" type="reject" file="Long6.Mod">
+      Calling <code>LONG</code> for record value.
+    </test>
+
+    <test id="size1" type="reject" file="Size1.Mod">
+      Calling <code>SIZE</code> with a non-type argument.
+    </test>
+    <test id="size2" type="reject" file="Size2.Mod">
+      Calling <code>SIZE</code> with a type constructor argument.
+    </test>
+    <test id="size3" type="reject" file="Size3.Mod">
+      Calling <code>SIZE</code> for an open array type..
+    </test>
+
+    <test id="assert1" type="reject" file="Assert1.Mod">
+      Asserted value is a character.
+    </test>
+    <test id="assert2" type="reject" file="Assert2.Mod">
+      Exit code is a character.
+    </test>
+    <test id="assert3" type="reject" file="Assert3.Mod">
+      Exit code is a variable, not a constant.
+    </test>
+    <test id="assert4" type="reject" file="Assert4.Mod">
+      Exit code is out of range.
+    </test>
+
+    <test id="halt1" type="reject" file="Halt1.Mod">
+      Halted value is a character.
+    </test>
+    <test id="halt3" type="reject" file="Halt3.Mod">
+      Exit code is a variable, not a constant.
+    </test>
+    <test id="halt4" type="reject" file="Halt4.Mod">
+      Exit code is out of range.
+    </test>
+
+    <test id="copy1" type="run" file="Copy1.Mod" output="Copy1.Ref">
+      Some valid invocations of <code>COPY</code>.
+    </test>
+    <test id="copy2" type="reject" file="Copy2.Mod">
+      Target of <code>COPY</code> is an undefined variable.
+    </test>
+    <test id="copy3" type="reject" file="Copy3.Mod">
+      Trying to <code>COPY</code> to an <code>ARRAY OF
+      SHORTINT</code>.
+    </test>
+    <test id="copy4" type="reject" file="Copy4.Mod">
+      Trying to <code>COPY</code> to a <code>RECORD</code>.
+    </test>
+    <test id="copy5" type="reject" file="Copy5.Mod">
+      Trying to <code>COPY</code> to a read-only imported variable.
+    </test>
+    <test id="copy6" type="reject" file="Copy6.Mod">
+      Trying to <code>COPY</code> an <code>ARRAY OF SHORTINT</code>.
+    </test>
+  </testcases>
+  
+    
+  <testcases profile="OOC2 Development: Checking Anti-Dependencies"
+             default-lang="O1 O2 AO">
+    <test id="antidep1" type="run" file="AntiDep1.Mod" output="AntiDep1.Ref">
+      The record field must be read before it is overwritten.
+    </test>
+  </testcases>
+  
+      
+  <testcases profile="OOC2 Development: Data Types" default-lang="O1 O2 AO">
+    <test id="record1" type="run" file="Record1.Mod" output="Record1.Ref">
+      Assignments to the fields of a global record variable.
+    </test>
+    <test id="record2" type="run" file="Record2.Mod" output="Record2.Ref">
+      Assignments to the fields of a variable parameter of record type.
+    </test>
+    <test id="record3" type="run" file="Record3.Mod" output="Record3.Ref">
+      Assignments to the fields of a value parameter of record type.
+    </test>
+    <test id="record4" type="run" file="Record4.Mod" output="Record4.Ref">
+      Similar to <code>record1</code>, but with part of the record's
+      fields taken from a base type.
+    </test>
+    <test id="record5" type="run" file="Record5.Mod" output="Record5.Ref">
+      Similar to <code>record2</code>, but with part of the record's
+      fields taken from a base type.
+    </test>
+    <test id="record6" type="run" file="Record6.Mod" output="Record6.Ref">
+      Similar to <code>record3</code>, but with part of the record's
+      fields taken from a base type.
+    </test>
+    <test id="record7" type="run" file="Record7.Mod" output="Record7.Ref">
+     Similar to <code>record4</code>, but the variable is allocated
+      on the heap.
+    </test>
+    <test id="record8" type="run" file="Record8.Mod" output="Record8.Ref">
+      Similar to <code>record5</code>, but the variable is allocated
+      on the heap.
+    </test>
+    <test id="record9" type="run" file="Record9.Mod" output="Record9.Ref">
+      Similar to <code>record6</code>, but the variable is allocated
+      on the heap.
+    </test>
+    <test id="record10" type="run" file="Record10.Mod">
+      An array variable nested within a record.  This test breaks if
+      the array length is not computed before the array size is
+      calculated. 
+    </test>
+    <test id="record11" type="error" file="Record11.Mod">
+      Assigning to a record variable whose dynamic type does not match
+      its static type.
+    </test>
+    <test id="record12" type="run" file="Record12.Mod" output="Record12.Ref">
+      Assigning to a record variable whose dynamic type does match
+      its static type.  This test complements <code>record11</code>.
+    </test>
+    <test id="record13" type="reject" file="Record13.Mod">
+      Declaring two fields of the same name within a record.
+    </test>
+    <test id="record14" type="reject" file="Record14.Mod">
+      Declaring two fields of the same name, one in the base record
+      and one in an extension.
+    </test>
+    <test id="record15" type="run" file="Record15.Mod">
+      Declaring two fields of the same name, one in the base record
+      and one in an extension in another module.  Since the field in
+      the base record is not exported, this module should compile
+      fine.
+    </test>
+    
+    
+    <test id="array1" type="run" file="Array1.Mod" output="Array1.Ref">
+      Assignments to an <code>ARRAY 3 OF SHORTINT</code>, and a loop 
+      summing up the elements.  The array is passed both as value and
+      variable parameter to the summation function.
+    </test>
+    <test id="array2" type="run" file="Array2.Mod" output="Array2.Ref">
+      As <code>array1</code>, but with <code>INTEGER</code> as element
+      type.
+    </test>
+    <test id="array3" type="run" file="Array3.Mod" output="Array3.Ref">
+      Fill an 2-dimensional array of <code>INTEGER</code> and write
+      the array lines.  The array is a global variable.
+    </test>
+    <test id="array4" type="run" file="Array4.Mod" output="Array4.Ref">
+      Like <code>array3</code>, but the array is a parameter with 2
+      open dimensions.
+    </test>
+    <test id="array5" type="run" file="Array5.Mod" output="Array5.Ref">
+      Like <code>array4</code>, but the array elements are of type
+      <code>SHORTINT</code>.
+    </test>
+    <test id="array6" type="run" file="Array6.Mod" output="Array6.Ref">
+      Like <code>array1</code>, but the array variable is allocated on
+      the heap.  Additionally, summation is also done directly on the
+      pointer variable.
+    </test>
+    <test id="array7" type="run" file="Array7.Mod" output="Array7.Ref">
+      Like <code>array6</code>, but the variable is an open
+      array allocated on the heap.
+    </test>
+    <test id="array8" type="run" file="Array8.Mod" output="Array8.Ref">
+      Like <code>array5</code>, but the variable is a 2-dimensional
+      open array allocated on the heap.
+    </test>
+    <test id="array9" type="run" file="Array9.Mod" output="Array9.Ref">
+      Assignment to a value parameter of array type is not visible
+      outside procedure.
+    </test>
+    <test id="array10" type="run" file="Array10.Mod" output="Array10.Ref">
+      Assignment to a variable parameter of array type is visible
+      outside procedure.
+    </test>
+    <test id="array11" type="accept" file="Array11.Mod">
+      Define an array type with the <code>READ_ONLY</code> flag set.
+    </test>
+    <test id="array12" type="reject" file="Array12.Mod">
+      Trying to assign to an array element imported with
+      <code>READ_ONLY</code>.
+    </test>
+    
+    <test id="procvar1" type="run" file="ProcVar1.Mod" output="ProcVar1.Ref">
+      Call procedures through procedure variables.  The procedures
+      have no arguments.
+    </test>
+    <test id="procvar2" type="run" file="ProcVar2.Mod" output="ProcVar2.Ref">
+      Call procedures through procedure variables.  The procedures
+      have a value and a <code>VAR</code> argument.
+    </test>
+    <test id="procvar3" type="run" file="ProcVar3.Mod" output="ProcVar3.Ref">
+      Call function procedures through procedure variables.
+    </test>
+    <test id="procvar4" type="run" file="ProcVar4.Mod" output="ProcVar4.Ref">
+      Call procedure through procedure variables.  The procedures
+      have a value and a <code>VAR</code> argument of type
+      <code>RECORD</code>.
+    </test>
+    <test id="procvar5" type="run" file="ProcVar5.Mod" output="ProcVar5.Ref">
+      Call procedure through procedure variables.  The procedures
+      have a value and a <code>VAR</code> argument of type
+      <code>ARRAY</code>.
+    </test>
+    <test id="procvar6" type="accept" file="ProcVar6.Mod">
+      Assign <code>NIL</code> to a procedure variable.
+    </test>
+
+    <!--NOTE: The SSA back-end assumes that the called global
+      procedure cannot modify variables local to Sum().  This is not
+      true in this scenario.  Either make the back-end smarter, or
+      disallow assignment of local procedures to variables.
+
+    <test id="procvar7" type="run" file="ProcVar7.Mod" output="ProcVar7.Ref">
+      Passing a local procedure to a procedure variable and calling it
+      from another global procedure.  The current implementation of
+      the C back-end actually allows this: gcc inserts trampoline code
+      that restores the context for the nested function before calling
+      the function itself.  For this to work, the context must still
+      be active, of course.  I'm not sure if allowing the procedure
+      assignment is a feature that should stay, or if it should be
+      turned into an error.  It is nice to implement iterators,
+      though, because the enclosing procedure can hold the state of
+      the function called from the iterator.
+    </test>  -->
+
+    
+    <test id="typetest1" type="run" file="TypeTest1.Mod" output="TypeTest1.Ref">
+      Type tests on pointer variables.
+    </test>
+    <test id="typetest2" type="run" file="TypeTest2.Mod" output="TypeTest2.Ref">
+      This is like <code>typetest1</code>, only that the pointer are
+      dereferenced and tested against the corresponding record type.
+    </test>
+    <test id="typetest3" type="run" file="TypeTest3.Mod" output="TypeTest3.Ref">
+      Type tests on <code>VAR</code> parameters of record type.  The
+      record variables are deferenced pointers.
+    </test>
+    <test id="typetest4" type="run" file="TypeTest4.Mod" output="TypeTest4.Ref">
+      Like <code>typetest3</code>, but using record variables.
+    </test>
+    <test id="typetest5" type="reject" file="TypeTest5.Mod">
+      The type expression is <code>LONGINT</code>.
+    </test>
+    <test id="typetest6" type="reject" file="TypeTest6.Mod">
+      The type expression is variable.
+    </test>
+    <test id="typetest7" type="reject" file="TypeTest7.Mod">
+      The type is no extension of the tested expression's type.
+    </test>
+    <test id="typetest8" type="error" file="TypeTest8.Mod">
+      Applying a type test to <code>NIL</code>.
+    </test>
+    <test id="typetest9" type="reject" file="TypeTest9.Mod">
+      The tested variable is a value parameter of type <code>RECORD</code>.
+    </test>
+  </testcases>
+
+  <testcases profile="OOC2 Development: Procedures" default-lang="O2">
+    <test id="tbproc1" type="run" file="TBProc1.Mod" output="TBProc1.Ref">
+      Calling a type-bound procedure of a pointer variable.
+    </test>
+    <test id="tbproc2" type="run" file="TBProc2.Mod" output="TBProc2.Ref">
+      Calling a type-bound procedure of a record variable.
+    </test>
+    <test id="tbproc3" type="run" file="TBProc3.Mod" output="TBProc3.Ref">
+      Calling a type-bound procedure of a dereferenced pointer variable.
+    </test>
+    <test id="tbproc4" type="run" file="TBProc4.Mod" output="TBProc4.Ref">
+      Calling a type-bound procedure of an implictly dereferenced
+      pointer variable.
+    </test>
+    <test id="tbproc5" type="run" file="TBProc5.Mod" output="TBProc5.Ref">
+      Calling a type-bound procedure of a pointer variable.  The
+      procedure is redefined in an extension of the pointer's type.
+    </test>
+    <test id="tbproc6" type="run" file="TBProc6.Mod" output="TBProc6.Ref">
+      Calling a type-bound procedure of a pointer variable.  The
+      procedure is inherited from the pointer's type.
+    </test>
+    <test id="tbproc7" type="run" file="TBProc7.Mod" output="TBProc7.Ref">
+      Calling a type-bound procedure of a pointer variable.  The
+      procedure is redefined in an extension of the pointer's type,
+      and the redefinition does a super call.
+    </test>
+    <test id="tbproc8" type="reject" file="TBProc8.Mod">
+      The called type-bound procedure is not exported by
+      <code>TBProc1.Mod</code>.
+    </test>
+    <test id="tbproc9" type="run" file="TBProc9.Mod" output="TBProc9.Ref">
+      Super call to a different procedure.
+    </test>
+    <test id="tbproc10" type="run" file="TBProc10.Mod" output="TBProc10.Ref">
+      Super call to a different procedure, with the procedure
+      redefinition placed after the call.
+    </test>
+    <test id="tbproc11" type="run" file="TBProc11.Mod" output="TBProc11.Ref">
+      Super call to a different procedure, with the called procedure
+      defined after the call.
+    </test>
+    <test id="tbproc12" type="run" file="TBProc12.Mod" output="TBProc12.Ref">
+      Super call to a different procedure, with the called procedure
+      and the redefinition placed after the call.
+    </test>
+    <test id="tbproc13" type="reject" file="TBProc13.Mod">
+      The record type to which a type-bound procedure is attached must
+      be from the current module.
+    </test>
+
+    
+    <test id="nestedproc1" type="run"
+          file="NestedProc1.Mod" output="NestedProc1.Ref">
+      Calling a nested procedure.
+    </test>
+    
+    <test id="nestedproc2" type="run"
+          file="NestedProc2.Mod" output="NestedProc2.Ref">
+      Calling a nested procedure, which sets a variable of the 
+      enclosing procedure.
+    </test>
+    
+    <test id="nestedproc3" type="run"
+          file="NestedProc3.Mod" output="NestedProc3.Ref">
+      Calling a nested procedure, which sets a variable of the 
+      enclosing procedure that is shadowed by one of its parameters.
+    </test>
+
+    <test id="opArray1" type="run"  
+          file="OpArray1.Mod" output="OpArray1.Ref">
+      Exercise array designators.
+    </test>
+    <test id="opArray2" type="reject" file="OpArray2.Mod">
+      Array designator applied to non-array.
+    </test>
+    <test id="opArray3" type="reject" file="OpArray3.Mod">
+      Array indexed by non-integer.
+    </test>
+    <test id="opArray4" type="reject" file="OpArray4.Mod">
+      Constant array index exceeds array length.
+    </test>
+    <test id="opArray5" type="reject" file="OpArray5.Mod">
+      Constant array index is negative.
+    </test>
+    <test id="opArray6" type="reject" file="OpArray6.Mod">
+      Array designator applied to function result.
+    </test>
+    <test id="opArray7" type="error" file="OpArray7.Mod">
+      Accessing an index just after the end of the array.
+    </test>
+    <test id="opArray8" type="error" file="OpArray8.Mod">
+      Accessing index <code>-1</code>.
+    </test>
+    <test id="opArray9" type="run" file="OpArray9.Mod" output="OpArray9.Ref">
+      Array index is result of a function call.
+    </test>
+    <test id="opArray10" type="error" file="OpArray10.Mod">
+      Trying to access an element of a array pointer with value
+      <code>NIL</code>.
+    </test>
+    <test id="opArray11" type="reject"
+          file="OpArray11.Mod" output="OpArray11.Ref">
+      Trying to access a third dimension of a 2-dimensional array.
+    </test>
+
+    <test id="opRecord1" type="run" file="OpRecord1.Mod"
+       output="OpRecord1.Ref">
+      Excercise RECORD operators.
+    </test>
+    <test id="opRecord2" type="reject" file="OpRecord2.Mod">
+      Field selection operator applied to non-RECORD.
+    </test>
+    <test id="opRecord3" type="reject" file="OpRecord3.Mod">
+      Select a field that is not bound to a record type.
+    </test>
+    <test id="opRecord4" type="reject" file="OpRecord4.Mod">
+      Operator applied to function result.
+    </test>
+    <test id="opRecord5" type="error" file="OpRecord5.Mod">
+      Using a record pointer with a value of <code>NIL</code>.
+    </test>
+    <test id="opRecord6" type="reject" file="OpRecord6.Mod">
+      Left side of a field sector is an integer constant.
+    </test>
+
+    <test id="opPointer1" type="reject" file="OpPointer1.Mod">
+      Dereference operator applied to non-pointer.
+    </test>
+    <test id="opPointer2" type="reject" file="OpPointer2.Mod">
+      Dereference operator applied to type-bound procedure that does not exist
+      in the base type.
+    </test>
+    <test id="opPointer3" type="run" file="OpPointer3.Mod"
+      output="OpPointer3.Ref">
+      Super call.
+    </test>
+    <test id="opPointer4" type="reject" file="OpPointer4.Mod">
+      Dereference operator applied to function result.
+    </test>
+    <test id="opPointer5" type="reject" file="OpPointer5.Mod">
+      More than one level of "super" call.
+    </test>
+    <test id="opPointer6" type="error" file="OpPointer6.Mod">
+      Dereferencing a <code>NIL</code> pointer.
+    </test>
+    <test id="opPointer7" type="reject" file="OpPointer7.Mod">
+      Variant of <code>opPointer2</code>, where no base type exists.
+    </test>
+    
+    <test id="opTypeGuard1" type="run" file="OpTypeGuard1.Mod"
+      output="OpTypeGuard1.Ref">
+      Excercise type guards.
+    </test>
+    <test id="opTypeGuard2" type="reject" file="OpTypeGuard2.Mod">
+      Guard type is not a valid RECORD type.
+    </test>
+    <test id="opTypeGuard3" type="reject" file="OpTypeGuard3.Mod">
+      Guard type is not extension of designator type.
+    </test>
+    <test id="opTypeGuard4" type="error" file="OpTypeGuard4.Mod">
+      Provoke failure of type guard on a pointer variable.
+    </test>
+    <test id="opTypeGuard5" type="error" file="OpTypeGuard5.Mod">
+      Provoke failure of type guard on a <code>NIL</code> value.
+    </test>
+    <test id="opTypeGuard6" type="error" file="OpTypeGuard6.Mod">
+      Provoke failure of type guard on a variable parameter of record
+      type.
+    </test>
+    <test id="opTypeGuard7" type="reject" file="OpTypeGuard7.Mod">
+      Type guard applied to function result.
+    </test>
+    <test id="opTypeGuard8" type="reject" file="OpTypeGuard8.Mod">
+      Type guard applied to pointer to non-record (ie. pointer to array)
+    </test>
+    <test id="opTypeGuard9" type="reject" file="OpTypeGuard9.Mod">
+      Guard type is not a type.
+    </test>
+    <test id="opTypeGuard10" type="reject" file="OpTypeGuard10.Mod">
+      Applying a type guard type to a value parameter.
+    </test>
+    <test id="opExprCompat1" type="run" file="OpExprCompat1.Mod"
+      output="OpExprCompat1.Ref">
+      Excercise combinations of different operand types.
+    </test>
+    
+    <test id="opExprCompat2" type="reject" file="OpExprCompat2.Mod">
+      Types are allowed for operator, but not expression-compatible.
+    </test>
+
+    <test id="opExprCompat3" type="reject" file="OpExprCompat3.Mod">
+      Types are allowed for operator, but not expression-compatible.
+    </test>
+
+    <test id="opExprCompat4" type="reject" file="OpExprCompat4.Mod">
+      Types are allowed for operator, but not expression-compatible.
+    </test>
+
+    <test id="opExprCompat5" type="reject" file="OpExprCompat5.Mod">
+      Types are allowed for operator, but not expression-compatible.
+    </test>
+
+    <test id="opExprCompat6" type="reject" file="OpExprCompat6.Mod">
+      Types are allowed for operator, but not expression-compatible.
+    </test>
+
+    <test id="opExprCompat7" type="reject" file="OpExprCompat7.Mod">
+      Types are allowed for operator, but not expression-compatible.
+    </test>
+
+    <test id="opExprCompat8" type="reject" file="OpExprCompat8.Mod">
+      Types are allowed for operator, but not expression-compatible.
+    </test>
+
+    <test id="opExprCompat9" type="reject" file="OpExprCompat9.Mod">
+      Result of numeric operator is "widened" to largest operand.
+    </test>
+
+    <test id="opExprCompat10" type="reject" file="OpExprCompat10.Mod">
+      Result of numeric operator is "widened" to largest operand.
+    </test>
+
+    <test id="opExprCompat11" type="reject" file="OpExprCompat11.Mod">
+      Result of numeric operator is "widened" to largest operand.
+    </test>
+
+    <test id="opExprCompat12" type="reject" file="OpExprCompat12.Mod">
+      Result of numeric operator is "widened" to largest operand.
+    </test>
+
+    <test id="opExprCompat13" type="reject" file="OpExprCompat13.Mod">
+      Result of numeric operator is "widened" to largest operand.
+    </test>
+
+    <test id="opExprCompat14" type="reject" file="OpExprCompat14.Mod">
+      Result of numeric operator is "widened" to largest operand.
+    </test>
+    
+    
+    <test id="opString1" type="run" file="OpString1.Mod" output="OpString1.Ref">
+      Test string concatenation operator.
+    </test>
+    <test id="opString2" type="accept" file="OpString2.Mod">
+      Test compatibility of string constant with character and character array
+      types.
+    </test>
+    <test id="opString3" type="accept" file="OpString3.Mod">
+      Test compatibility of character constant with character and character
+      array types.
+    </test>
+    <test id="opString4" type="reject" file="OpString4.Mod">
+      Test compatibility of character constant with character and character
+      array types.
+    </test>
+    <test id="opString5" type="run" file="OpString5.Mod" output="OpString5.Ref">
+      Test comparison operators for character strings.
+    </test>
+    <test id="opString6" type="run" file="OpString6.Mod" output="OpString5.Ref">
+      Test comparison operators for long character strings.
+    </test>
+    <test id="opString7" type="run" file="OpString7.Mod" output="OpString7.Ref">
+      Check argument passing for which string constants must be
+      converted to <code>LONGCHAR</code> strings.
+    </test>
+    
+    <test id="opSet1" type="reject" file="OpSet1.Mod">
+      Set range constructor with non-integer single argument
+    </test>
+    <test id="opSet2" type="reject" file="OpSet2.Mod">
+      Set constructor with with non-integer second argument 
+    </test>
+    <test id="opSet3" type="reject" file="OpSet3.Mod">
+      Set constructor with two non-integer arguments
+    </test>
+    <test id="opSet4" type="reject" file="OpSet4.Mod">
+      Constructor with arguments outside range MIN(SET)..MAX(SET)
+    </test>
+    <test id="opSet5" type="reject" file="OpSet5.Mod">
+      "a IN b" with a outside range MIN(SET)..MAX(SET)
+    </test>
+    <test id="opSet6" type="reject" file="OpSet6.Mod">
+      "a IN b" with a non-integer
+    </test>
+    <test id="opSet7" type="reject" file="OpSet7.Mod">
+      "a IN b" with b non-set
+    </test>
+    <test id="opSet8" type="run" file="OpSet8.Mod" output="OpSet8.Ref">
+      Set range "{a..b}" with some combinations of <code>a</code> and
+      <code>b</code>, both constant and variable.
+    </test>
+  </testcases>
+
+  <testcases profile="Module SYSTEM" default-lang="O2">
+    <test id="adr1" type="run" file="Adr1.Mod">
+      Using <code>SYSTEM.ADR</code> to retrieve the address of
+      variables, variable parameters, and string constants.
+    </test>
+    <test id="adr2" type="reject" file="Adr2.Mod">
+      Calling <code>SYSTEM.ADR</code> with a scalar constant.
+    </test>
+    <test id="adr3" type="reject" file="Adr3.Mod">
+      Calling <code>SYSTEM.ADR</code> with a type name.
+    </test>
+
+    
+    <test id="val1" type="run" file="Val1.Mod" output="Val1.Ref">
+      Use <code>SYSTEM.VAL</code> to cast a <code>REAL</code> to
+      a <code>LONGINT</code>.  This requires some trickery in the C
+      back-end, because a type conversion must be prevented.
+    </test>
+    <test id="val2" type="run" file="Val2.Mod" output="Val2.Ref">
+      Use <code>SYSTEM.VAL</code> to cast a <code>SET</code> to
+      a <code>LONGINT</code>.
+    </test>
+    <test id="val3" type="run" file="Val3.Mod" output="Val3.Ref">
+      Integer constants in hex notation.  Very basic ;-)
+    </test>
+    <test id="val4" type="run" file="Val4.Mod" output="Val4.Ref">
+      Casting between <code>REAL</code>, <code>SET</code>, and
+      <code>LONGINT</code> with <code>SYSTEM.VAL</code>.
+    </test>
+    <test id="val5" type="reject" file="Val5.Mod">
+      First argument of <code>SYSTEM.VAL</code> is not a type.
+    </test>
+    <test id="val6" type="reject" file="Val6.Mod">
+      Arguments of <code>SYSTEM.VAL</code> have different size.
+    </test>
+
+    <test id="lsh1" type="run" file="Lsh1.Mod" output="Lsh1.Ref">
+      Shifting bits with <code>SYSTEM.LSH</code> for various integer
+      types, character types, and <code>BYTE</code>.
+    </test>
+    <test id="lsh2" type="reject" file="Lsh2.Mod">
+      Calling <code>SYSTEM.LSH</code> with a real number.
+    </test>
+    <test id="lsh3" type="reject" file="Lsh3.Mod">
+      Calling <code>SYSTEM.LSH</code> with a non-integer offset.
+    </test>
+
+    <test id="rot1" type="run" file="Rot1.Mod" output="Rot1.Ref">
+      Shifting bits with <code>SYSTEM.ROT</code> for various integer
+      types, character types, and <code>BYTE</code>.
+    </test>
+    <test id="rot2" type="reject" file="Rot2.Mod">
+      Calling <code>SYSTEM.ROT</code> with a real number.
+    </test>
+    <test id="rot3" type="reject" file="Rot3.Mod">
+      Calling <code>SYSTEM.ROT</code> with a non-integer offset.
+    </test>
+    <test id="rot4" type="accept" file="Rot4.Mod">
+      Calling <code>SYSTEM.ROT</code> on a <code>SET</code> value is
+      permitted.  The Oberon-2 language report says otherwise, but
+      nobody seems to be happy with this restriction.
+    </test>
+
+    <test id="move1" type="run" file="Move1.Mod" output="Move1.Ref">
+      Using <code>SYSTEM.MOVE</code> to move the value of one local
+      variable to another.
+    </test>
+  </testcases>
+
+  <testcases profile="Declaration &amp; Type Modifier Flags" default-lang="O2">
+    <test id="noCopy1" type="reject" file="NoCopy1.Mod">
+      <code>NO_COPY</code> is used for a variable.
+    </test>
+    <test id="noCopy2" type="reject" file="NoCopy2.Mod">
+      <code>NO_COPY</code> is used for a <code>VAR</code> parameter.
+    </test>
+    <test id="noCopy3" type="reject" file="NoCopy3.Mod">
+      <code>NO_COPY</code> is used for a value parameter of type
+      <code>LONGINT</code>.
+    </test>
+    <test id="noCopy4" type="reject" file="NoCopy4.Mod">
+      Trying to asssign to an element of a <code>NO_COPY</code> array
+      parameter.
+    </test>
+    <test id="noCopy5" type="reject" file="NoCopy5.Mod">
+      Trying pass a <code>NO_COPY</code> array to a <code>VAR</code>
+      parameter.
+    </test>
+    <test id="noCopy6" type="reject" file="NoCopy6.Mod">
+      Trying pass an element of an <code>NO_COPY</code> array to a
+      <code>VAR</code> parameter.
+    </test>
+
+    <test id="nilCompat1" type="reject" file="NilCompat1.Mod">
+      <code>NIL_COMPAT</code> is used for a variable.
+    </test>
+    <test id="nilCompat2" type="reject" file="NilCompat2.Mod">
+      <code>NIL_COMPAT</code> is used for pass by value parameter.
+    </test>
+    <test id="nilCompat3" type="accept" file="NilCompat3.Mod">
+      Setting <code>NIL_COMPAT</code> for a character array parameter.
+    </test>
+    <test id="nilCompat4" type="reject" file="NilCompat4.Mod">
+      Passing <code>NIL</code> to a standard character array parameter.
+    </test>
+    <test id="nilCompat5" type="accept" file="NilCompat5.Mod">
+      Passing <code>NIL</code> to a <code>NIL_COMPAT</code>
+      character array parameter.
+    </test>
+
+    <!-- noLengthInfo1 is in tests/ssa-c-output/ -->
+    <test id="noLengthInfo2" type="reject" file="NoLengthInfo2.Mod">
+      <code>NO_LENGTH_INFO</code> is used for a fixed size array.
+    </test>
+    <test id="noLengthInfo3" type="reject" file="NoLengthInfo3.Mod">
+      <code>NO_LENGTH_INFO</code> is used for an array whose
+      element type is another open array.
+    </test>
+    <test id="noLengthInfo4" type="reject" file="NoLengthInfo4.Mod">
+      Can't call <code>LEN</code> on a <code>NO_LENGTH_INFO</code> 
+      array.
+    </test>
+    <test id="noLengthInfo5" type="reject" file="NoLengthInfo5.Mod">
+      Implicit usage of <code>LEN</code> on a
+      <code>NO_LENGTH_INFO</code> array.
+    </test>
+    
+    <!-- noDescriptor1 is in tests/ssa-c-output/ -->
+    <test id="noDescriptor2" type="reject" file="NoDescriptor2.Mod">
+      Applying a type test of a <code>NO_DESCRIPTOR</code> record
+      type.
+    </test>
+
+    <test id="notExtensible1" type="reject" file="NotExtensible1.Mod">
+      Trying to extend a <code>NOT_EXTENSIBLE</code> record type.
+    </test>
+
+    <test id="abstract1" type="reject" file="Abstract1.Mod">
+      Trying to declare a variable for an <code>ABSTRACT</code> record
+      type.
+    </test>
+    <test id="abstract2" type="reject" file="Abstract2.Mod">
+      Trying to declare a field for an <code>ABSTRACT</code> record
+      type.
+    </test>
+    <test id="abstract3" type="reject" file="Abstract3.Mod">
+      Trying to declare an array with an <code>ABSTRACT</code> record
+      type.
+    </test>
+    <test id="abstract4" type="reject" file="Abstract4.Mod">
+      Trying to call <code>NEW</code> with an <code>ABSTRACT</code>
+      record base type.
+    </test>
+    <test id="abstract5" type="reject" file="Abstract5.Mod">
+      Declaring an <code>ABSTRACT</code> type-bound procedure for a
+      non-abstract record type.
+    </test>
+    <test id="abstract6" type="reject" file="Abstract6.Mod">
+      Declaring an <code>ABSTRACT</code> type-bound procedure with
+      a <code>BEGIN</code> part.
+    </test>
+    <test id="abstract7" type="reject" file="Abstract7.Mod">
+      Super call refers to an <code>ABSTRACT</code> type-bound procedure.
+    </test>
+    <test id="abstract8" type="reject" file="Abstract8.Mod">
+      An <code>ABSTRACT</code> type-bound procedure that is not exported.
+    </test>
+    <test id="abstract9" type="reject" file="Abstract9.Mod">
+      A concrete extension of an <code>ABSTRACT</code> record does not
+      define an inherited abstract type-bound procedure.
+    </test>
+    <test id="abstract10" type="reject" file="Abstract10.Mod">
+      Trying to call the function variant of <code>NEW</code> with an
+      <code>ABSTRACT</code> record base type.
+    </test>
+    <test id="abstract11" type="reject" file="Abstract11.Mod">
+      Trying to define a formal value parameter whose type is an
+      <code>ABSTRACT</code> record.
+    </test>
+    <test id="abstract12" type="accept" file="Abstract12.Mod">
+      Defining a formal <code>VAR</code> parameter whose type is an
+      <code>ABSTRACT</code> record.
+    </test>
+
+    <test id="atomic1" type = "run" file="Atomic1.Mod" output="Atomic1.Ref">
+      Test the classification of atomic types, including records with
+      the NO_TRACED_POINTERS flag.
+    </test>
+  </testcases>
+  
+  <testcases profile="OOC2 Development: Generics Extension"
+    default-lang="OOC O2">
+    <test id="generic1" type="accept" file="Generic1.Mod">
+      Generics syntax: declaration of parameterized types, declaration
+      of variables using a parameterized type.  This module also
+      exports some types that are used in later tests.
+    </test>
+    <test id="generic2" type="accept" file="Generic2.Mod">
+      Parametric types derived from arrays.
+    </test>
+    <test id="generic3" type="accept" file="Generic3.Mod">
+      Declarations and instances of parametric record types.
+    </test>
+    <test id="generic4" type="accept" file="Generic4.Mod">
+      Extending a parametric record type.
+    </test>
+    <test id="generic5" type="reject" file="Generic5.Mod">
+      Type bound is not a record pointer.
+    </test>
+    <test id="generic6" type="reject" file="Generic6.Mod">
+      Reference to type variable after its enclosing type
+      declaration.
+    </test>
+    <test id="generic7" type="reject" file="Generic7.Mod">
+      Reference to type variable that only exists in the base type.
+    </test>
+    <test id="generic8" type="reject" file="Generic8.Mod">
+      Base type of qualified type is not parametric.
+    </test>
+    <test id="generic9" type="reject" file="Generic9.Mod">
+      Qualified type with too few arguments.
+    </test>
+    <test id="generic10" type="reject" file="Generic10.Mod">
+      Qualified type with too many arguments.
+    </test>
+    <test id="generic11" type="reject" file="Generic11.Mod">
+      Type argument is not an extension of the type bound.
+    </test>
+    <test id="generic12" type="reject" file="Generic12.Mod">
+      Type argument is a type variable whose bound is not an extension
+      of the type bound.
+    </test>
+    <test id="generic13" type="reject" file="Generic13.Mod">
+      Pointer base type is a type variable.
+    </test>
+    <test id="generic14" type="reject" file="Generic14.Mod">
+      Procedure with a receiver of pointer type refers to a type
+      variable of the pointer's base type.
+    </test>
+    <test id="generic15" type="reject" file="Generic15.Mod">
+      Type-bound procedure refers to a type variable of the record
+      using a qualified identifier.
+    </test>
+    <test id="generic16" type="accept" file="Generic16.Mod">
+      Checks the things one can do with variables whose type is a type
+      variable.
+    </test>
+    <test id="generic17" type="reject" file="Generic17.Mod">
+      If the left hand side of an assignment is a variable type, the
+      right hand side must be of the same type.
+    </test>
+    <test id="generic18" type="reject" file="Generic18.Mod">
+      Cannot use a type variable in a type guard.
+    </test>
+    <test id="generic19" type="reject" file="Generic19.Mod">
+      Cannot use a type variable in a type test.
+    </test>
+    <test id="generic20" type="reject" file="Generic20.Mod">
+      Cannot use <code>NEW</code> on a variable based on a type
+      variable.
+    </test>
+
+    <test id="generic21" type="accept" file="Generic21.Mod">
+      Pathological parametric type: the base type is the type variable
+      itself.  Not sure if this makes much sense, but it is certainly
+      a border case.
+    </test>
+    <test id="generic22" type="reject" file="Generic22.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic23" type="reject" file="Generic23.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic24" type="accept" file="Generic24.Mod">
+      Function result of a type-bound procedure may refer to a type
+      parameter of the class.  A receiver variable's type is
+      implicitly qualified by the type parameters of the class,
+      <em>not</em> their bounds.  <code>NIL</code> is compatible with
+      a qualified type if it is compatible with its base type.
+    </test>
+    <test id="generic25" type="accept" file="Generic25.Mod">
+      Traversing a field select, a pointer deref, and an array index
+      operation to get to a variable that uses a type parameter.
+    </test>
+    <test id="generic26" type="reject" file="Generic26.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic27" type="reject" file="Generic27.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic28" type="reject" file="Generic28.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic29" type="accept" file="Generic29.Mod">
+      Calling a type-bound procedure on a parametric type.  The
+      receiver is a pointer type.
+    </test>
+    <test id="generic30" type="reject" file="Generic30.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic31" type="reject" file="Generic31.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic32" type="accept" file="Generic32.Mod">
+      Calling a type-bound procedure on a parametric type.  The
+      receiver is a record type.
+    </test>
+    <test id="generic33" type="reject" file="Generic33.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic34" type="reject" file="Generic34.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic35" type="accept" file="Generic35.Mod">
+      Redefining a type-bound procedure on a parametric type.
+    </test>
+    <test id="generic36" type="accept" file="Generic36.Mod">
+      Arguments of a parametric type without parameter list default to
+      the bounds of the type parameters.
+    </test>
+    <test id="generic37" type="accept" file="Generic37.Mod">
+      Calling <code>NEW</code> on a variable of parametric type.
+    </test>
+    <test id="generic38" type="accept" file="Generic38.Mod">
+      The argument of a qualified type can be another qualified type.
+      Qualified types can be used as part of formal parameters.
+    </test>
+    <test id="generic39" type="accept" file="Generic39.Mod">
+      Retrieving a generic value from the generic receiver parameter
+      and returning it.
+    </test>
+    <test id="generic40" type="accept" file="Generic40.Mod">
+      Type guards, type tests, and <code>WITH</code> statements with
+      parametric types.
+    </test>
+    <test id="generic41" type="accept" file="Generic41.Mod">
+      Special properties of type-bound procedure `<code>INIT</code>':
+      called procedure is derived from the <em>static</em> type of the
+      receiver value, formal parameters must <em>not</em> match the
+      parameters from the base type, and the procedure must be
+      exported.
+    </test>
+    <test id="generic42" type="accept" file="Generic42.Mod">
+      Calling constructor on a record pointer type without an
+      <code>INIT</code> procedure.
+    </test>
+    <test id="generic43" type="reject" file="Generic43.Mod">
+      Calling constructor on a record pointer type without an
+      <code>INIT</code> procedure with a non-empty argument list.
+    </test>
+    <test id="generic44" type="reject" file="Generic44.Mod">
+      Calling constructor on a non-record pointer type.
+    </test>
+    <test id="generic45" type="run"
+          file="Generic45.Mod" output="Generic45.Ref">
+      Calling constructor with <code>INIT</code> procedure.
+    </test>
+    <test id="generic46" type="accept" file="Generic46.Mod">
+      In a type guard, the compiler must not be able to derive the
+      type arguments of the reference type from the static type of the
+      variable -- if the run-time type information offers enough
+      detail.
+    </test>
+    <test id="generic47" type="accept" file="Generic47.Mod">
+      Parametric types may appear somewhere in a designator, even if
+      the top-level variable is a normal type.
+    </test>
+    <test id="generic48" type="accept" file="Generic48.Mod">
+      Qualified type with a qualified identifier as argument.
+    </test>
+    <test id="generic49" type="accept" file="Generic49.Mod">
+      With a qualified type as array element type, the code generator
+      needs to take properties like element size and alignment from
+      the qualified type's base type.
+    </test>
+    <test id="generic50" type="run"
+          file="Generic50.Mod" output="Generic50.Ref">
+      Calling a type-bound procedure on a type variable is like
+      calling it on the variable's type bound.
+    </test>
+    <!-- generic51 is in tests/ssa-c-output/ -->
+    <test id="generic52" type="accept" file="Generic52.Mod">
+      Qualified pointer typs and type variables are assignment
+      compatible to <code>SYSTEM.PTR</code>.
+    </test>
+    <test id="generic53" type="accept" file="Generic53.Mod">
+      Receiver declaration introduces type aliases for the 
+      type parameters of the base record type.
+    </test>
+    <test id="generic54" type="reject" file="Generic54.Mod">
+      One type alias name must be given in the receiver for every type
+      parameter of the base record type.
+    </test>
+    <test id="generic55" type="reject" file="Generic55.Mod">
+      If the base record type is not parametric, no list of alias
+      names must be present.
+    </test>
+    <test id="generic56" type="accept" file="Generic56.Mod">
+      Apply type closure to formal parameters of the function variant
+      of <code>NEW</code>.
+    </test>
+    <test id="generic57" type="accept" file="Generic57.Mod">
+      Regression test: Call procedure <code>NEW</code> for a
+      parametric array pointer.
+    </test>
+    <test id="generic58" type="accept" file="Generic58.Mod">
+      Regression test: Pass parametric type to a variable open array
+      parameter.
+    </test>
+    <test id="generic59" type="reject" file="Generic59.Mod">
+      Regression test: Defining an <code>INIT</code> procedure with a
+      type parameter, even though the base record is a non-parametric
+      type.
+    </test>
+    <test id="generic60" type="accept" file="Generic60.Mod">
+      Regression test: Using a variable of procedure type whose
+      argument has a parametric type.
+    </test>
+    <test id="generic61" type="accept" file="Generic61.Mod">
+      Regression test: Using a variable of procedure type whose
+      result is a parametric type.
+    </test>
+    <test id="generic62" type="accept" file="Generic62.Mod">
+      The type argument of a qualified type can be a forward reference
+      to a pointer type defined later.
+    </test>
+    <test id="generic63" type="accept" file="Generic63.Mod">
+      The type parameter of a parametric type can be a forward
+      reference to a pointer type defined later.
+    </test>
+    <!-- generic64 is part of the "Warnings" tests -->
+    <test id="generic65" type="run" file="Generic65.Mod"
+          output="Generic65.Ref">
+      Type test where the right hand side is a qualified type.
+    </test>
+    <test id="generic66" type="reject" file="Generic66.Mod">
+      Using an undefined name as a type argument.
+    </test>
+    <test id="generic67" type="reject" file="Generic67.Mod">
+      Using an undefined parametric type in the receiver of a
+      type-bound procedure.
+    </test>
+    <test id="generic68" type="run" file="Generic68.Mod">
+      Regression test for <code>oo2c</code>: Don't reference the
+      record type before it has been declared.
+    </test>
+    <test id="generic69" type="run" file="Generic69.Mod"
+          output="Generic69.Ref">
+      Regression test for <code>oo2c</code>: Don't drop inherited
+      type-bound procedures if the record base type is parametric.
+    </test>
+    <test id="generic70" type="reject" file="Generic70.Mod">
+      It is an error if a <code>NEW(T)</code> appears before the
+      definition to <code>T</code>'s <code>INIT</code> procedure.
+    </test>
+    <test id="generic71" type="reject" file="Generic71.Mod">
+      Regression test for <code>oo2c</code>: Don't crash when
+      stumbling over a type name for a botched parametric type.
+    </test>
+    <test id="generic72" type="run" file="Generic72.Mod">
+      Regression test: Handle assignment of non-scalar type correctly,
+      even if the right hand side of the assignment is a parametric
+      record.
+    </test>
+    <test id="generic73" type="run" file="Generic73.Mod">
+      Regression test: Parametric value parameters of array type are
+      passed just like their non-parametric counterparts.  For
+      <code>oo2c</code> this means that the array is passed by
+      reference, the length is passed as an implicit second parameter,
+      and the callee allocates space on the stack for a local copy of
+      the array.
+    </test>
+    <test id="generic74" type="run" file="Generic74.Mod">
+      Regression test: Like <code>generic73</code>, but for a record
+      parameter.
+    </test>
+  </testcases>
+
+  <testcases profile="Tests for Warnings" default-lang="OOC O2">
+    <test id="undef1" type="accept" file="Undef1.Mod">
+      Trivial example of reading an uninitialized scalar variable.
+    </test>
+    <test id="undef2" type="accept" file="Undef2.Mod">
+      Previous assignment to record field should prevent warning.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef3" type="accept" file="Undef3.Mod">
+      Variable is undefined on <code>TRUE</code> path through
+      <code>IF</code> statement.
+    </test>
+    <test id="undef4" type="accept" file="Undef4.Mod">
+      Variable is undefined on <code>TRUE</code> path through
+      <code>IF</code> statement.
+    </test>
+    <test id="undef5" type="accept" file="Undef5.Mod">
+      Assignment on both paths through <code>IF</code> should prevent
+      warning. 
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef6" type="accept" file="Undef6.Mod">
+      Variable is undefined for one <code>EXIT</code>.
+    </test>
+    <test id="undef7" type="accept" file="Undef7.Mod">
+      Assignment visible for all <code>EXIT</code> should prevent
+      warning. 
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef8" type="accept" file="Undef8.Mod">
+      Dereferencing an undefined pointer variable.
+    </test>
+    <test id="undef9" type="accept" file="Undef9.Mod">
+      Statements after <code>RETURN</code> are unreachable.
+    </test>
+    <test id="undef10" type="accept" file="Undef10.Mod">
+      Statements after <code>LOOP</code> without <code>EXIT</code> 
+      are unreachable.
+    </test>
+    <test id="undef11" type="accept" file="Undef11.Mod">
+      Statements after <code>EXIT</code> 
+      are unreachable.
+    </test>
+    <test id="undef12" type="accept" file="Undef12.Mod">
+      Control can reach end of function.
+    </test>
+    <test id="undef13" type="accept" file="Undef13.Mod">
+      Control can reach end of function.
+    </test>
+    <test id="undef14" type="accept" file="Undef14.Mod">
+      A <code>WITH</code> without an <code>ELSE</code> has no 
+      default path.
+    </test>
+    <test id="undef15" type="accept" file="Undef15.Mod">
+      Warn if a <code>WITH</code> guard makes a later guard
+      unreachable.
+    </test>
+    <test id="undef16" type="accept" file="Undef16.Mod">
+      Called nested procedure reads a local variable that is not
+      defined at the place of the call.
+    </test>
+    <test id="undef17" type="accept" file="Undef17.Mod">
+      Called nested procedure only partially defines a local variable.
+    </test>
+    <test id="undef18" type="accept" file="Undef18.Mod">
+      Variation of <code>undef16</code>, using a variable parameter.
+    </test>
+    <test id="undef19" type="accept" file="Undef19.Mod">
+      Variation of <code>undef17</code>, using a variable parameter.
+    </test>
+    <test id="undef20" type="accept" file="Undef20.Mod">
+      Variation of <code>undef16</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef21" type="accept" file="Undef21.Mod">
+      Variation of <code>undef17</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef22" type="accept" file="Undef22.Mod">
+      Variation of <code>undef18</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef23" type="accept" file="Undef23.Mod">
+      Variation of <code>undef19</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef24" type="accept" file="Undef24.Mod">
+      The assignment and the recursive nature of the called procedure 
+      should prevent warning.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef25" type="accept" file="Undef25.Mod">
+      Initializing a record through a variable parameter.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef26" type="accept" file="Undef26.Mod">
+      Test for <code>WITH</code> guards.  There should be no warning.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef27" type="accept" file="Undef27.Mod">
+      Analysis should show that <code>Q</code> cannot return, and that
+      code after a call to it is unreachable.
+    </test>
+
+    <test id="deprecated1" type="accept" file="Deprecated1.Mod">
+      Contains examples for all types of declarations that can have a
+      <code>DEPRECATED</code> flag.
+    </test>
+    <test id="deprecated2" type="accept" file="Deprecated2.Mod">
+      Defines a <code>DEPRECATED</code> module.
+    </test>
+    <test id="deprecated3" type="accept" file="Deprecated3.Mod">
+      Calling a <code>DEPRECATED</code> procedure.
+    </test>
+    <test id="deprecated4" type="accept" file="Deprecated4.Mod">
+      Using a variable from a <code>DEPRECATED</code> module.
+    </test>
+    <test id="deprecated5" type="accept" file="Deprecated5.Mod">
+      Using a <code>DEPRECATED</code> constant.
+    </test>
+    <test id="deprecated6" type="accept" file="Deprecated6.Mod">
+      Using a <code>DEPRECATED</code> variable.
+    </test>
+    <test id="deprecated7" type="accept" file="Deprecated7.Mod">
+      Using a <code>DEPRECATED</code> type.
+    </test>
+    <test id="deprecated8" type="accept" file="Deprecated8.Mod">
+      Using a <code>DEPRECATED</code> record field.
+    </test>
+    <test id="deprecated9" type="accept" file="Deprecated9.Mod">
+      Using a <code>DEPRECATED</code> type-bound procedure.
+    </test>
+    <test id="deprecated10" type="accept" file="Deprecated10.Mod">
+      Using a type-bound procedure that redefines a
+      <code>DEPRECATED</code> procedure.
+    </test>
+
+    <test id="generic64" type="accept" file="Generic64.Mod">
+      A <code>INIT</code> procedure without a super-call to the base
+      type's <code>INIT</code>.
+    </test>
+  </testcases>
+  
+  <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
+    <test id="bugDestore1" type="accept" file="BugDestore1.Mod">
+      The test statements caused the module
+      <code>OOC:SSA:Destore</code> to place a reference to a
+      <code>select</code> instruction in a normal value argument.
+    </test>
+    
+    <test id="bugLoopRewrite1" type="accept" file="BugLoopRewrite1.Mod">
+      Regression test: Improper handling of gate within the induction
+      cycle crashed the compiler.
+    </test>
+    <test id="bugLoopRewrite2" type="run"
+          file="BugLoopRewrite2.Mod" output="BugLoopRewrite2.Ref">
+      Regression test: Rewritten cycle used wrong induction cycle as base.
+    </test>
+    <test id="bugLoopRewrite3" type="run"
+          file="BugLoopRewrite3.Mod" output="BugLoopRewrite3.Ref">
+      Regression test: Flatten modified operand of sum when adding two
+      flattened summations.
+    </test>
+
+    <test id="bugDeclC1" type="run" file="BugDeclC1.Mod">
+      Declaring a pointer to a type alias of a record type might cause
+      problems.
+    </test>
+    <test id="bugExport1" type="accept" file="BugExport1.Mod">
+      Regression test: Create an alias for a predefined type name and
+      export it.  Import of this type name should not crash the
+      compiler.
+    </test>
+    <test id="bugExport2" type="accept" file="BugExport2.Mod">
+      Regression test: Create an alias for a predefined type name and
+      export it.  Import of this type name should not crash the
+      compiler.
+    </test>
+  </testcases>
+  
+  <testcases profile="C language Interface" default-lang="OOC O2">
+    <test id="align1" type="run" file="Align1.Mod" output="Align1.Ref">
+      Check that alignment produces correct field offsets for a number of 
+      alignment options.
+    </test>
+    <test id="align2" type="reject" file="Align2.Mod">
+      Reject case with more than one alignment specified.
+    </test>
+
+    <test id="callconv1" type = "accept" file="CallConv1.Mod">
+      Accept calling conventions flags on procedures and procedure types.
+    </test>
+    <test id="callconv2" type = "accept" file="CallConv2.Mod">
+      Accept assignment of procedure variables with correct calling convention.
+    </test>
+    <test id="callconv3" type = "accept" file="CallConv3.Mod">
+      Accept assignment to procedure type from "C" type.
+    </test>
+    <test id="callconv4" type = "reject" file="CallConv4.Mod">
+      Reject assignment to procedure type from "Pascal" type.
+    </test>
+    <test id="cstring1" type = "run" file="CString1.Mod" output="CString1.Ref">
+      Accept various kinds of strings as POINTER [CSTRING].
+    </test>
+
+    <test id="vtable1" type = "run" file="VTable1.Mod">
+      Check that VTABLE flag is accepted for RECORD. This should generate a
+      non-zero RECORD size (allowing space for the VTBL pointer).
+    </test>
+    <test id="vtable2" type = "reject" file="VTable2.Mod">
+      Reject case where record extension does not preserve VTABLE flag.
+    </test>
+    <test id="vtable4" type = "accept" file="VTable4.Mod">
+      Accept abstract VTABLE interface declaration.
+    </test>
+    <test id="vtable3" type = "accept" file="VTable3.Mod" relevance="informal">
+      Accept VTABLE object implemented by foreign code (C++ class).
+    </test>
+    <test id="vtable5" type = "run" file="VTable5.Mod" relevance="informal"
+		output="VTable5.Ref">
+	  Recursively call and call-back between Oberon-2 and C++ VTABLE objects.
+      This will fail if method table is incorrectly ordered, 
+    </test>
+  </testcases>
+
+  <processor-info processor-name="TestCompile">
+    <reject-info id="assign1" pos="%c :=" msg="This must be a variable"/>
+    <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>
+    <reject-info id="assign3" pos="AssignRO.%x :=" msg="This variable is read-only"/>
+    <reject-info id="assign4" pos="AssignRO.y. %a :=" msg="This variable is read-only"/>
+    <reject-info id="assign5" pos="x %:= INTEGER" msg="Expression not compatible with variable type `INTEGER'"/>
+    <reject-info id="assign6" pos="x %:= Out" msg="Expression not compatible with variable type `INTEGER'"/>
+    <reject-info id="assign7" pos="a %:= b" msg="Expression not compatible with variable type `ARRAY'"/>
+    <reject-info id="assign8" pos="x %:= NIL" msg="Expression not compatible with variable type `LONGINT'"/>
+    <reject-info id="assign9" pos='x %:= "123"' msg="Expression not compatible with variable type `ARRAY'"/>
+    <reject-info id="assign10" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign11" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign12" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign13" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign14" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign15" pos='%Out :=' msg="This must be a variable"/>
+    <reject-info id="assign16" pos='%Alp :=' msg="This must be a variable"/>
+        
+    <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
+    <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>
+    <reject-info id="return3" pos="RETURN %128;" msg="Expression not compatible with variable type `SHORTINT'"/>
+    <reject-info id="return4" pos="RETURN %123" msg="RETURN must not provide a result value"/>
+
+    <reject-info id="proc1" pos="%x(" msg="This must be a procedure designator"/>
+    <reject-info id="proc2" pos="%P(" msg="This is a function procedure"/>
+    <reject-info id="proc3" pos="P(123%)" msg="Too few arguments"/>
+    <reject-info id="proc4" pos="%P;" msg="Too few arguments"/>
+    <reject-info id="proc5" pos="P(1, 2, %3);" msg="Too many arguments"/>
+    <reject-info id="proc6" pos="P(%128);"
+      msg="Argument not compatible with formal type `SHORTINT'"/>
+    <reject-info id="proc7" pos="P(%1);" msg="This must be a variable"/>
+    <reject-info id="proc8" pos="P(AssignRO.%x);" msg="This variable is read-only"/>
+    <reject-info id="proc9" pos="P(%x);"
+      msg="Argument not compatible with formal type `ARRAY'"/>
+    <reject-info id="proc10" pos="P(%x);"
+      msg="Argument not compatible with formal type `ARRAY'"/>
+    <reject-info id="proc11" pos="P(%x);"
+      msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
+    <reject-info id="proc12" pos="P(%x);"
+      msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
+    <reject-info id="function8" pos=":= %P(" msg="This is not a function procedure"/>
+
+    <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>
+    <reject-info id="loop7" pos="WHILE str%[i] DO" msg="Expression must be of type BOOLEAN"/>
+    <reject-info id="loop8" pos="UNTIL str%[i];" msg="Expression must be of type BOOLEAN"/>
+    <reject-info id="loop9" pos="%EXIT" msg="EXIT outside of LOOP"/>
+
+    <reject-info id="for1" pos="a%[0]" msg="Expected symbol `:='"/>
+    <reject-info id="for2" pos="FOR %T :=" msg="This must be a variable"/>
+    <reject-info id="for3" pos="FOR %x :=" msg="Expression must be of integer type"/>
+    <reject-info id="for4" pos=":= %128" msg="Expression not compatible with variable type `SHORTINT'"/>
+    <reject-info id="for5" pos="TO %128 DO" msg="Expression not compatible with variable type `SHORTINT'"/>
+    <reject-info id="for6" pos="BY %128 DO" msg="Step value not in type of loop variable"/>
+    <reject-info id="for7" pos="BY %y DO" msg="Expression is not constant"/>
+    <reject-info id="for8" pos="BY %0 DO" msg="Step value must not be zero"/>
+        
+    <reject-info id="case3" pos="CASE %i " msg="Select expression must be integer or character"/>
+    <reject-info id="case4" pos="1..%j" msg="Expression is not constant"/>
+    <reject-info id="case5" pos="| %128:" msg="Label not in type of select expression"/>
+    <reject-info id="case6" pos="| %100X:" msg="Label not in type of select expression"/>
+    <reject-info id="case7" pos="| %1(*second*):" msg="Label already in use"/>
+    <reject-info id="case8" pos="| 1X, %1X:" msg="Label already in use"/>
+    <reject-info id="case9" pos="| 0%..2:" msg="Label already in use"/>
+
+    <reject-info id="with5" pos="r%.p" msg="This must be a variable"/>
+    <reject-info id="with6" pos="WITH %r:"
+      msg="This variable has no dynamic type"/>
+    <reject-info id="with7" pos="WITH r: %R1"
+      msg="Type must be an extension of the left operand's type"/>
+    
+    <reject-info id="record13" pos=", %x:"
+      msg="Multiple declaration of same name"/>
+    <reject-info id="record14" pos="%x:"
+      msg="This name is already defined in the record's base type"/>
+    
+    <reject-info id="array12" pos="p%[0]"
+      msg="This variable is read-only"/>
+    
+    <reject-info id="typetest5" pos="IS %LONGINT"
+      msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="typetest6" pos="IS %x"
+      msg="Type name expected"/>
+    <reject-info id="typetest7" pos="IS %P1"
+      msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="typetest9" pos="(%r IS"
+      msg="This variable has no dynamic type"/>
+    
+    <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
+    <reject-info id="tbproc13" pos="%Proc()"
+                 msg="Receiver's base record is imported"/>
+
+    <reject-info id="inc2" pos="INC(%x,1)"
+      msg="Expression must be of integer type"/>
+    <reject-info id="inc3" pos="INC(%x)"
+      msg="This must be a variable"/>
+    <reject-info id="inc4" pos="INC(x, %128)"
+      msg="Invalid type for operator"/>
+    <reject-info id="inc5" pos="INC(x, %y)"
+      msg="Invalid type for operator"/>
+    
+    <reject-info id="incl2" pos="INCL(%x,1)"
+      msg="Expression must be of set type"/>
+    <reject-info id="incl3" pos="INCL(%x" msg="This must be a variable"/>
+    <reject-info id="incl4" pos="INCL(x,%1X)"
+      msg="Expression must be of integer type"/>
+    
+    <reject-info id="new1" pos="NEW(%p)"
+      msg="This must be a pointer variable"/>
+    <reject-info id="new2" pos="NEW(%F())"
+      msg="This must be a variable"/>
+    <reject-info id="new3" pos="NEW(p, %1X)"
+      msg="Expression must be of integer type"/>
+    <reject-info id="new4" pos="%NEW(p, 2, 3)"
+      msg="Wrong number of arguments"/>
+    <reject-info id="new5" pos="%NEW(p)"
+      msg="Wrong number of arguments"/>
+    <reject-info id="new6" pos="NEW(%p)"
+      msg="This must be a pointer variable"/>
+    <reject-info id="new8" pos="%.GetVal"
+      msg="Operator may not be applied to function result"/>
+    
+    <reject-info id="abs2" pos="ABS(%0X)" msg="Expression must be numeric"/>
+    <reject-info id="abs3" pos="%ABS(-1)" msg="This is a function procedure"/>
+
+    <reject-info id="ash2" pos="ASH(%1X"
+      msg="Expression must be of integer type"/>
+    <reject-info id="ash3" pos="ASH(2, %1X)"
+      msg="Expression must be of integer type"/>
+
+    <reject-info id="cap3" pos="CAP(%97)"
+      msg="Expression must be a character"/>
+    <reject-info id="cap4" pos="ORD(%97)"
+      msg="Expression must be a character"/>
+        
+    <reject-info id="chr2" pos="CHR(%65.0)"
+      msg="Expression must be of integer type"/>
+    <reject-info id="chr3" pos="CHR(%256)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 256' required"/>
+
+    <reject-info id="entier2" pos="ENTIER(%123)"
+      msg="Expression must be of real type"/>
+    
+    <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
+    <reject-info id="len3" pos="Int (%LEN " msg="Wrong number of arguments"/>
+    <reject-info id="len4" pos="LEN (%&quot;abc&quot;"
+        msg="Expression must be an array value"/>
+    <reject-info id="len5" pos="a, %2),"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="len6" pos="a, %0X),"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="len7" pos="a, %d),"
+        msg="Expression is not constant"/>
+    <reject-info id="len8" pos="LEN(%r)"
+        msg="Expression must be an array value"/>
+    
+    <reject-info id="minmax4" pos="MAX(%x)"
+      msg="Type name expected"/>
+    <reject-info id="minmax5" pos="MAX(%P)"
+      msg="MIN/MAX is not applicable to this type"/>
+    <reject-info id="minmax6" pos="MAX(%BOOLEAN)"
+      msg="MIN/MAX is not applicable to this type"/>
+    
+    <reject-info id="odd2" pos="ODD(%0X)"
+      msg="Expression must be of integer type"/>
+    
+    <reject-info id="size1" pos="SIZE(%x)"
+      msg="Type name expected"/>
+    <reject-info id="size2" pos="SIZE(%ARRAY"
+      msg="Factor starts with illegal symbol"/>
+    <reject-info id="size3" pos="SIZE(%A)"
+      msg="Type has no fixed size"/>
+
+    <reject-info id="short2" pos="SHORT(%i8)"
+      msg="Invalid type for operator"/>
+    <reject-info id="short3" pos="SHORT(%r32)"
+      msg="Invalid type for operator"/>
+    <reject-info id="short4" pos="SHORT(%c8)"
+      msg="Invalid type for operator"/>
+    <reject-info id="short5" pos="SHORT(%b)"
+      msg="Invalid type for operator"/>
+    <reject-info id="short6" pos="SHORT(%r)"
+      msg="Invalid type for operator"/>
+
+    <reject-info id="long2" pos="LONG(%i64)"
+      msg="Invalid type for operator"/>
+    <reject-info id="long3" pos="LONG(%r64)"
+      msg="Invalid type for operator"/>
+    <reject-info id="long4" pos="LONG(%c32)"
+      msg="Invalid type for operator"/>
+    <reject-info id="long5" pos="LONG(%b)"
+      msg="Invalid type for operator"/>
+    <reject-info id="long6" pos="LONG(%r)"
+      msg="Invalid type for operator"/>
+    
+    <reject-info id="assert1" pos="ASSERT(%1X)"
+      msg="Expression must be of type BOOLEAN"/>
+    <reject-info id="assert2" pos="ASSERT(TRUE, %1X)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    <reject-info id="assert3" pos="ASSERT(TRUE, %x)"
+      msg="Expression is not constant"/>
+    <reject-info id="assert4" pos="ASSERT(TRUE, %-1)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    
+    <reject-info id="halt1" pos="HALT(%1X)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    <reject-info id="halt3" pos="HALT(%x)"
+      msg="Expression is not constant"/>
+    <reject-info id="halt4" pos="HALT(%-1)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    
+    <reject-info id="copy2" pos="COPY(&quot;abc&quot;, %x)"
+      msg="Undeclared identifier"/>
+    <reject-info id="copy3" pos="COPY(&quot;abc&quot;, %y)"
+      msg="Argument must be a character array"/>
+    <reject-info id="copy4" pos="COPY(&quot;abc&quot;, %y)"
+      msg="Argument must be a character array"/>
+    <reject-info id="copy5" pos="COPY(&quot;abc&quot;, Copy1.%a4)"
+      msg="This variable is read-only"/>
+    <reject-info id="copy6" pos="COPY(%x, y)"
+      msg="Argument must be a character array"/>
+    
+    <reject-info id="opArray2" pos=" i%[0]"
+        msg="Expression must be an array value"/>
+    <reject-info id="opArray3" pos=" a[%c]"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opArray4" pos=" a[%4]"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="opArray5" pos=" a[%-1]"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="opArray6" pos="P()%[0]"
+        msg="Operator may not be applied to function result"/>
+    <reject-info id="opArray11" pos="a[0,1%,2]"
+        msg="Expression must be an array value"/>
+    
+    <reject-info id="opRecord2" pos=":= %i."
+        msg="Expression must be of record type"/>
+    <reject-info id="opRecord3" pos="p.%r :="
+        msg="Undeclared identifier"/>
+    <reject-info id="opRecord4" pos="New(1)%.i"
+        msg="Operator may not be applied to function result"/>
+    <reject-info id="opRecord6" pos="%r.f :="
+        msg="Expression must be of record type"/>
+    
+    <reject-info id="opPointer1" pos=":= %i"
+        msg="Expression must be of pointer type"/>
+    <reject-info id="opPointer2" pos="P%^"
+        msg="Called procedure not defined in base type"/>
+    <reject-info id="opPointer4" pos="New(1)%"
+        msg="Operator may not be applied to function result"/>
+    <reject-info id="opPointer5" pos="P\^%\^"
+        msg="Super call can only apply to the direct base type"/>
+    <reject-info id="opPointer7" pos="P%^"
+        msg="Called procedure not defined in base type"/>
+    
+    <reject-info id="opExprCompat2" pos=" %+"
+        msg="Incompatible types for operator"/>
+    <reject-info id="opExprCompat3" pos=" %+"
+        msg="Incompatible types for operator"/>
+    <reject-info id="opExprCompat4" pos=" %+"
+        msg="Incompatible types for operator"/>
+    <reject-info id="opExprCompat5" pos=" %DIV"
+        msg="Invalid type for operator"/>
+    <reject-info id="opExprCompat6" pos=" %="
+        msg="Incompatible types for operator"/>
+    <reject-info id="opExprCompat7" pos=" %="
+        msg="Incompatible types for operator"/>
+    <reject-info id="opExprCompat8" pos=" %="
+        msg="Incompatible types for operator"/>
+    <reject-info id="opExprCompat9" pos=" %:="
+        msg="Expression not compatible with variable type `SHORTINT'"/>
+    <reject-info id="opExprCompat10" pos=" %:="
+        msg="Expression not compatible with variable type `INTEGER'"/>
+    <reject-info id="opExprCompat11" pos=" %:="
+        msg="Expression not compatible with variable type `LONGINT'"/>
+    <reject-info id="opExprCompat12" pos=" %:="
+        msg="Expression not compatible with variable type `REAL'"/>
+    <reject-info id="opExprCompat13" pos=" %:="
+        msg="Expression not compatible with variable type `INTEGER'"/>
+    <reject-info id="opExprCompat14" pos=" %:="
+        msg="Expression not compatible with variable type `REAL'"/>
+    <reject-info id="opString4" pos=" c %:="
+        msg="Expression not compatible with variable type `CHAR'"/>
+    <reject-info id="opTypeGuard2" pos=" a(%INTEGER)"
+        msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="opTypeGuard3" pos=" a(%C)"
+        msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="opTypeGuard7" pos=" F(a)(%B)"
+        msg="Operator may not be applied to function result"/>
+    <reject-info id="opTypeGuard8" pos=" %a(ADesc)"
+        msg="This must be a procedure designator"/>
+    <reject-info id="opTypeGuard9" pos=" %a(a)"
+        msg="This must be a procedure designator"/>
+    <reject-info id="opTypeGuard10" pos=" %a(ADesc)"
+        msg="This variable has no dynamic type"/>
+    <reject-info id="opSet1" pos="{%TRUE"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opSet2" pos="..%TRUE"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opSet3" pos="{%FALSE"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opSet4" pos="{%-1"
+        msg="Integer constant in the range `0 &lt;= x &lt; 32' required"/>
+    <reject-info id="opSet5" pos="%-1"
+        msg="Integer constant in the range `0 &lt;= x &lt; 32' required"/>
+    <reject-info id="opSet6" pos="%IN"
+        msg="Incompatible types for operator"/>
+    <reject-info id="opSet7" pos="%IN"
+        msg="Incompatible types for operator"/>
+
+    <reject-info id="adr2" pos="ADR(%123)" 
+      msg="This expression has no address"/>
+    <reject-info id="adr3" pos="ADR(%INTEGER)" 
+      msg="This expression has no address"/>
+
+    <reject-info id="val5" pos="VAL(%y,"
+      msg="Type name expected"/>
+    <reject-info id="val6" pos="VAL(LONGINT,%y)"
+      msg="Size mismatch between type and expression"/>
+      
+    <reject-info id="lsh2" pos="LSH(%r,"
+      msg="Invalid type for operator"/>
+    <reject-info id="lsh3" pos="LSH(1,%1.0)"
+      msg="Expression must be of integer type"/>
+
+    <reject-info id="rot2" pos="ROT(%r,"
+      msg="Invalid type for operator"/>
+    <reject-info id="rot3" pos="ROT(1,%1.0)"
+      msg="Expression must be of integer type"/>
+
+    <reject-info id="noCopy1" pos="a[%NO_COPY]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="noCopy2" pos="a[%NO_COPY]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="noCopy3" pos="a[%NO_COPY]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="noCopy4" pos="  %a[0]"
+        msg="This parameter is read-only"/>
+    <reject-info id="noCopy5" pos="F(%a)"
+        msg="This parameter is read-only"/>
+    <reject-info id="noCopy6" pos="F(%a[0])"
+        msg="This parameter is read-only"/>
+
+    <reject-info id="nilCompat1" pos="a[%NIL_COMPAT]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="nilCompat2" pos="a[%NIL_COMPAT]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="nilCompat4" pos="P1(%NIL)"
+        msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
+
+    <reject-info id="noLengthInfo2" pos="ARRAY[%NO_LENGTH_INFO]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="noLengthInfo3" pos="ARRAY[%NO_LENGTH_INFO]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="noLengthInfo4" pos="LEN(a%"
+        msg="Length of this array value cannot be determined"/>
+    <reject-info id="noLengthInfo5" pos="P(a%"
+        msg="Length of this array value cannot be determined"/>
+    
+    <reject-info id="noDescriptor2" pos="IF %r IS"
+        msg="This variable has no dynamic type"/>
+    
+    <reject-info id="notExtensible1" pos="(%R1)"
+        msg="This type cannot be used as a record base type"/>
+
+    <reject-info id="abstract1" pos="r: %R"
+        msg="Cannot create instance of abstract type"/>
+    <reject-info id="abstract2" pos="r: %R"
+        msg="Cannot create instance of abstract type"/>
+    <reject-info id="abstract3" pos="OF %R"
+        msg="Cannot create instance of abstract type"/>
+    <reject-info id="abstract4" pos="NEW(%p)"
+        msg="Cannot create instance of abstract type"/>
+    <reject-info id="abstract5" pos="[ABSTRACT] %P"
+        msg="Receiver type is not abstract"/>
+    <reject-info id="abstract6" pos="%PROCEDURE (p: P)"
+        msg="Abstract procedure cannot have a BEGIN part"/>
+    <reject-info id="abstract7" pos="p.Proc%\^"
+        msg="Called procedure is declared abstract"/>
+    <reject-info id="abstract8" pos=" %Proc"
+        msg="Abstract procedure must be exported"/>
+    <reject-info id="abstract9" pos="R1 = %RECORD"
+        msg="Inherited procedure `Proc' is still abstract"/>
+    <reject-info id="abstract10" pos="NEW(%P)"
+        msg="Cannot create instance of abstract type"/>
+    <reject-info id="abstract11" pos="(r: %R)"
+        msg="Cannot create instance of abstract type"/>
+
+    <reject-info id="generic5" pos="A: %Array"
+        msg="Invalid type bound"/>
+    <reject-info id="generic6" pos="x: %A"
+        msg="Undeclared identifier"/>
+    <reject-info id="generic7" pos="x: %B"
+        msg="Undeclared identifier"/>
+    <reject-info id="generic8" pos="%R()"
+        msg="This is not a parametric type"/>
+    <reject-info id="generic9" pos="%R()"
+        msg="Too few type arguments"/>
+    <reject-info id="generic10" pos="G.Object, %G.Object"
+        msg="Too many type arguments"/>
+    <reject-info id="generic11" pos="R(%G.Object)"
+        msg="This is not an extension of the type bound"/>
+    <reject-info id="generic12" pos="R1(%C)"
+        msg="This is not an extension of the type bound"/>
+    <reject-info id="generic13" pos="POINTER TO %B"
+        msg="Illegal pointer base type"/>
+    <reject-info id="generic14" pos=": %A"
+        msg="Undeclared identifier"/>
+    <reject-info id="generic15" pos="%R2.D"
+        msg="This is not a module name"/>
+    <reject-info id="generic17" pos="v %:= a;"
+        msg="Expression not compatible with variable type `Base'"/>
+    <reject-info id="generic18" pos="a(%Base)"
+        msg="Type test requires static type instance"/>
+    <reject-info id="generic19" pos="v IS %Base"
+        msg="Type test requires static type instance"/>
+    <reject-info id="generic20" pos="NEW(%v)"
+        msg="This must be a pointer variable"/>
+    <reject-info id="generic22" pos="o3 %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic23" pos="o3 %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic26" pos=" %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic27" pos=" %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic28" pos=" %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic30" pos="(%o1)"
+        msg="Argument not compatible with formal type `Generic1.A1'"/>
+    <reject-info id="generic31" pos="(%o1)"
+        msg="Argument not compatible with formal type `Generic1.A1'"/>
+    <reject-info id="generic33" pos="(%o1)"
+        msg="Argument not compatible with formal type `Generic1.A1'"/>
+    <reject-info id="generic34" pos="(%o1)"
+        msg="Argument not compatible with formal type `Generic1.A1'"/>
+    <warning-info id="generic40" pos="l3(%List"
+        msg="Warning: Redundant type test"/>
+    <reject-info id="generic43" pos=", %123)"
+        msg="Too many arguments"/>
+    <reject-info id="generic44" pos=":= NEW(%List"
+        msg="Not a record pointer type"/>
+    <reject-info id="generic46" pos="o1(%List("
+        msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="generic54" pos="(a: %A)"
+        msg="The base record type has 2 type parameter(s)"/>
+    <reject-info id="generic55" pos="(a: %A())"
+        msg="The base record type has no type parameters"/>
+    <reject-info id="generic59" pos="r: %R(T)"
+        msg="The base record type has no type parameters"/>
+    <reject-info id="generic66" pos="%Karamba"
+        msg="Undeclared identifier"/>
+    <reject-info id="generic67" pos="%Karamba"
+        msg="Undeclared identifier"/>
+    <reject-info id="generic70" pos="NEW(%Bet,"
+        msg="The type's INIT procedure must be defined before its use"/>
+    <reject-info id="generic71" pos="%A(B)"
+        msg="Undeclared identifier"/>
+
+    <reject-info id="align2" pos=", %ALIGN2"
+        msg="This modifier flag has no effect here"/>
+
+    <reject-info id="callconv4" pos="%:="
+        msg="Expression not compatible with variable type `CallConv1.Proc'"/>
+
+    <reject-info id="vtable2" pos="BDesc = %RECORD [VTABLE]"
+        msg="VTABLE flag is inconsistent with base type"/>
+
+    <warning-info id="undef1" pos="x := %y;"
+        msg="Warning: Undefined variable"/>
+    <warning-info id="undef3" pos="RETURN %x;"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef4" pos="RETURN %x;"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef6" pos="RETURN %x;"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef8" pos="%p.a"
+        msg="Warning: Undefined variable"/>
+    <warning-info id="undef9" pos="%P()"
+        msg="Warning: Unreachable code"/>
+    <warning-info id="undef10" pos="%P()"
+        msg="Warning: Unreachable code"/>
+    <warning-info id="undef11" pos="%P()"
+        msg="Warning: Unreachable code"/>
+    <warning-info id="undef12" pos="%END Fct"
+        msg="Warning: Control may reach end of function procedure"/>
+    <warning-info id="undef13" pos="%END Fct"
+        msg="Warning: Control may reach end of function procedure"/>
+    <warning-info id="undef14" pos="%P()"
+        msg="Warning: Unreachable code"/>
+    <warning-info id="undef15" pos="x%: P3"
+        msg="Warning: Type test made unreachable by preceeding guard"/>
+    <warning-info id="undef16" pos="y := %N()"
+        msg="Warning: Callee may read undefined variable `x'"/>
+    <warning-info id="undef17" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef18" pos="N(%x)"
+        msg="Warning: Undefined variable"/>
+    <warning-info id="undef19" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef20" pos="y := %Q()"
+        msg="Warning: Callee may read undefined variable `x'"/>
+    <warning-info id="undef21" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef22" pos="%Q()"
+        msg="Warning: Callee may read undefined variable `x'"/>
+    <warning-info id="undef23" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef27" pos="%RETURN"
+        msg="Warning: Unreachable code"/>
+
+    <warning-info id="deprecated3" pos="D.%Proc"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated4" pos="%D.x"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated5" pos="D.%const"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated6" pos="D.%var"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated7" pos="D.%Record"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated8" pos="record.%field"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated9" pos="a.%TBProc"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated10" pos="b.%TBProc"
+        msg="Warning: Use of deprecated object"/>
+    
+    <warning-info id="generic64" pos="(b: B) %INIT"
+        msg="Warning: No call to the base type's INIT procedure"/>
+  </processor-info>
+</testsuite-ext>

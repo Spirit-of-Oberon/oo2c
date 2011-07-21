@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>MOD10</symbol>
+<symbol id='whitespace' pos='5' line='0' column='5'>&#10;</symbol>
+<symbol id='number10' pos='6' line='1' column='0'>10</symbol>
+<symbol id='mod' pos='8' line='1' column='2'>MOD</symbol>
+<symbol id='whitespace' pos='11' line='1' column='5'>&#10;</symbol>
+<symbol id='endOfFile' pos='12' line='2' column='0'></symbol>
+</document>

@@ -1,0 +1,8 @@
+MODULE M;
+
+TYPE A=ARRAY 8 OF CHAR;
+
+PROCEDURE P(): A;
+  END P;
+  
+END M.

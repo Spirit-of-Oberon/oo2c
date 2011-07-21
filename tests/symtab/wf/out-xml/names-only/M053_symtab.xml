@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='39' line='4' column='22' ident_name='ClassDesc' ident_pos='39' ident_line='4' ident_column='22'/>
+  <pointer_type id='2' pos='28' line='4' column='11' base_type_id='1'/>
+  <type_decl id='3' name='Class' pos='19' line='4' column='2' visible_from='48' export='yes' type_id='2'/>
+  <record_type id='4' pos='64' line='5' column='14' class='Class' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='5' name='ClassDesc' pos='52' line='5' column='2' class='Class' visible_from='81' export='no' type_id='4'/>
+  <procedure_decl id='6' name='Init' pos='94' line='9' column='10' visible_from='110' export='yes' is_type_bound='no' is_forward_decl='no'>
+    <procedure_type id='7' pos='84' line='9' column='0' resultType='#none'>
+      <type_name id='8' pos='104' line='9' column='20' ident_name='Class' ident_pos='104' ident_line='9' ident_column='20'/>
+      <var_decl id='9' name='c' pos='101' line='9' column='17' visible_from='109' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='no' type_id='8'/>
+    </procedure_type>
+  </procedure_decl>
+  <procedure_decl id='10' name='New' pos='135' line='12' column='10' visible_from='149' export='yes' is_type_bound='no' is_forward_decl='no'>
+    <procedure_type id='11' pos='125' line='12' column='0' result_type_id='12'>
+      <type_name id='12' pos='144' line='12' column='19' ident_name='Class' ident_pos='144' ident_line='12' ident_column='19'/>
+    </procedure_type>
+  </procedure_decl>
+  <procedure_decl id='13' name='M1' pos='192' line='15' column='29' visible_from='194' export='yes' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='14' pos='163' line='15' column='0' receiver_id='16' resultType='#none'>
+      <type_name id='15' pos='181' line='15' column='18' ident_name='ClassDesc' ident_pos='181' ident_line='15' ident_column='18'/>
+      <var_decl id='16' name='c' pos='178' line='15' column='15' visible_from='190' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='yes' type_id='15'/>
+    </procedure_type>
+  </procedure_decl>
+  <procedure_decl id='17' name='M2' pos='229' line='18' column='21' visible_from='231' export='yes' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='18' pos='208' line='18' column='0' receiver_id='20' resultType='#none'>
+      <type_name id='19' pos='222' line='18' column='14' ident_name='Class' ident_pos='222' ident_line='18' ident_column='14'/>
+      <var_decl id='20' name='c' pos='219' line='18' column='11' visible_from='227' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='no' type_id='19'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

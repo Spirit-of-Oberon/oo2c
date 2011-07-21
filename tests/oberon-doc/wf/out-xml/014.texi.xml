@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>This is an example of an @example command:</summary>
+  <p pad-after='yes' no-indent='yes'>This is an example of an @example command:</p>
+  <example pad-after='yes'>This text is   part of   an example block.
+Examples are not reformatted by the Texinfo parser.
+
+    Dubidubido!
+
+text separated by empty lines
+
+end of example
+</example>
+</oberon-doc>

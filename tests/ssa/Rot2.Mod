@@ -1,0 +1,9 @@
+MODULE Rot2;
+
+IMPORT SYSTEM;
+
+VAR
+  r: REAL;
+BEGIN
+  r := SYSTEM.ROT(r,0);
+END Rot2.

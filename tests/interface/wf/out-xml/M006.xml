@@ -1,0 +1,399 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M006' id=''>
+  <oberon-doc>
+    <summary>This is a partially Texinfo-ized version of a part of the Channel module interface.</summary>
+    <p pad-after='yes' no-indent='yes'>This is a partially Texinfo-ized version of a part of the Channel module interface.  It is used as an early test for the XML based interface documentation facilities.</p>
+  </oberon-doc>
+  <class name='Result'>
+    <type-decl name='Result' id='Result' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='ResultDesc' href='#ResultDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='ResultDesc' id='ResultDesc' export='no'>
+      <type>
+        <record/>
+      </type>
+    </type-decl>
+  </class>
+  <class name='Channel'>
+    <type-decl name='Channel' id='Channel' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='ChannelDesc' href='#ChannelDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='ChannelDesc' id='ChannelDesc' export='yes'>
+      <oberon-doc>
+        <summary>The abstract base type of all byte-stream input/output classes.</summary>
+        <p pad-after='yes' no-indent='yes'>The abstract base type of all byte-stream input/output classes.</p>
+      </oberon-doc>
+      <type>
+        <record>
+          <field-decl name='res' id='ChannelDesc.res' export='yes'>
+            <oberon-doc>
+              <summary>Error flag signalling failure of a call to NewReader, NewWriter, Flush, or Close.</summary>
+              <p pad-after='yes' no-indent='yes'>Error flag signalling failure of a call to NewReader, NewWriter, Flush, or Close.  Initialized to `done' when creating the channel.  Every operation sets this to `done' on success, or to a message object to indicate the error source.</p>
+            </oberon-doc>
+            <type>
+              <type-name name='Result' href='#Result'/>
+            </type>
+          </field-decl>
+          <field-decl name='readable' id='ChannelDesc.readable' export='yes'>
+            <oberon-doc>
+              <summary>TRUE iff readers can be attached to this channel with NewReader</summary>
+              <p pad-after='yes' no-indent='yes'>TRUE iff readers can be attached to this channel with NewReader</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='BOOLEAN'/>
+            </type>
+          </field-decl>
+          <field-decl name='writable' id='ChannelDesc.writable' export='yes'>
+            <oberon-doc>
+              <summary>TRUE iff writers can be attached to this channel with NewWriter</summary>
+              <p pad-after='yes' no-indent='yes'>TRUE iff writers can be attached to this channel with NewWriter</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='BOOLEAN'/>
+            </type>
+          </field-decl>
+          <field-decl name='open' id='ChannelDesc.open' export='yes'>
+            <oberon-doc>
+              <summary>Channel status.</summary>
+              <p pad-after='yes' no-indent='yes'>Channel status.  Set to TRUE on channel creation, set to FALSE by calling Close.  Closing a channel prevents all further read or write operations on it.</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='BOOLEAN'/>
+            </type>
+          </field-decl>
+        </record>
+      </type>
+    </type-decl>
+    <procedure name='Length' id='ChannelDesc.Length' export='yes'>
+      <oberon-doc>
+        <summary>Result is the number of bytes of data that this channel refers to.</summary>
+        <p pad-after='yes' no-indent='yes'>Result is the number of bytes of data that this channel refers to.  If `ch' represents a file, then this value is the file's size.  If `ch' has no fixed length (e.g. because it's interactive), the result is `noLength'.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ch' id='ChannelDesc.Length.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </receiver-decl>
+        <result-type>
+          <type-name module='#predef' name='LONGINT'/>
+        </result-type>
+      </formal-parameters>
+    </procedure>
+    <procedure name='NewReader' id='ChannelDesc.NewReader' export='yes'>
+      <oberon-doc>
+        <summary>Attaches a new reader to the channel `ch'.</summary>
+        <p pad-after='yes' no-indent='yes'>Attaches a new reader to the channel `ch'.  It is placed at the very start of the channel, and its `res' field is initialized to `done'.  `ch.res' is set to `done' on success and the new reader is returned.  Otherwise result is NIL and `ch.res' is changed to indicate the error cause.  Note that always the same reader is returned if the channel does not support multiple reading positions.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ch' id='ChannelDesc.NewReader.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </receiver-decl>
+        <result-type>
+          <type-name name='Reader' href='#Reader'/>
+        </result-type>
+      </formal-parameters>
+    </procedure>
+    <procedure name='NewWriter' id='ChannelDesc.NewWriter' export='yes'>
+      <oberon-doc>
+        <summary>Attaches a new writer to the channel `ch'.</summary>
+        <p pad-after='yes' no-indent='yes'>Attaches a new writer to the channel `ch'.  It is placed at the very start of the channel, and its `res' field is initialized to `done'.  `ch.res' is set to `done' on success and the new writer is returned.  Otherwise result is NIL and `ch.res' is changed to indicate the error cause.  Note that always the same reader is returned if the channel does not support multiple writing positions.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ch' id='ChannelDesc.NewWriter.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </receiver-decl>
+        <result-type>
+          <type-name name='Writer' href='#Writer'/>
+        </result-type>
+      </formal-parameters>
+    </procedure>
+    <procedure name='Flush' id='ChannelDesc.Flush' export='yes'>
+      <oberon-doc>
+        <summary>Flushes all buffers related to this channel.</summary>
+        <p pad-after='yes' no-indent='yes'>Flushes all buffers related to this channel.  Any pending write operations are passed to the underlying OS and all buffers are marked as invalid.  The next read operation will get its data directly from the channel instead of the buffer.  If a writing error occurs during flushing, the field `ch.res' will be changed to `writeError', otherwise it's assigned `done'.  Note that you have to check the channel's `res' flag after an explicit flush yourself, since none of the attached writers will notice any write error in this case.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ch' id='ChannelDesc.Flush.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </receiver-decl>
+      </formal-parameters>
+    </procedure>
+    <procedure name='Close' id='ChannelDesc.Close' export='yes'>
+      <oberon-doc>
+        <summary>Flushes all buffers associated with `ch', closes the channel, and frees all system resources allocated to it.</summary>
+        <p pad-after='yes' no-indent='yes'>Flushes all buffers associated with `ch', closes the channel, and frees all system resources allocated to it.  This invalidates all riders attached to `ch', they can't be used further.  On success, i.e. if all read and write operations (including flush) completed successfully, `ch.res' is set to `done'.  An opened channel can only be closed once, successive calls of `Close' are undefined.  Note that unlike the Oberon System all opened channels have to be closed explicitly.  Otherwise resources allocated to them will remain blocked.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ch' id='ChannelDesc.Close.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </receiver-decl>
+      </formal-parameters>
+    </procedure>
+    <procedure name='ClearError' id='ChannelDesc.ClearError' export='yes'>
+      <oberon-doc>
+        <summary>Sets the result flag `ch.res' to `done'.</summary>
+        <p pad-after='yes' no-indent='yes'>Sets the result flag `ch.res' to `done'.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ch' id='ChannelDesc.ClearError.ch' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Channel' href='#Channel'/>
+          </type>
+        </receiver-decl>
+      </formal-parameters>
+    </procedure>
+  </class>
+  <class name='Reader'>
+    <type-decl name='Reader' id='Reader' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='ReaderDesc' href='#ReaderDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='ReaderDesc' id='ReaderDesc' export='yes'>
+      <oberon-doc>
+        <summary>A byte-oriented reader for a <oberon-type href='#Channel'>Channel</oberon-type> instance.</summary>
+        <p pad-after='yes' no-indent='yes'>A byte-oriented reader for a <oberon-type href='#Channel'>Channel</oberon-type> instance.</p>
+      </oberon-doc>
+      <type>
+        <record>
+          <field-decl name='base' id='ReaderDesc.base' export='yes'>
+            <oberon-doc>
+              <summary>This field refers to the channel the Reader is connected to.</summary>
+              <p pad-after='yes' no-indent='yes'>This field refers to the channel the Reader is connected to.</p>
+            </oberon-doc>
+            <type>
+              <type-name name='Channel' href='#Channel'/>
+            </type>
+          </field-decl>
+          <field-decl name='res' id='ReaderDesc.res' export='yes'>
+            <oberon-doc>
+              <summary>Error flag signalling failure of a call to ReadByte, ReadBytes, or SetPos.</summary>
+              <p pad-after='yes' no-indent='yes'>Error flag signalling failure of a call to ReadByte, ReadBytes, or SetPos.  Initialized to `done' when creating a Reader or by calling ClearError.  The first failed reading (or SetPos) operation changes this to indicate the error, all further calls to ReadByte, ReadBytes, or SetPos will be ignored until ClearError resets this flag.  This means that the successful completion of an arbitrary complex sequence of read operations can be ensured by asserting that `res' equals `done' beforehand and also after the last operation.</p>
+            </oberon-doc>
+            <type>
+              <type-name name='Result' href='#Result'/>
+            </type>
+          </field-decl>
+          <field-decl name='bytesRead' id='ReaderDesc.bytesRead' export='yes'>
+            <oberon-doc>
+              <summary>Set by ReadByte and ReadBytes to indicate the number of bytes that were successfully read.</summary>
+              <p pad-after='yes' no-indent='yes'>Set by ReadByte and ReadBytes to indicate the number of bytes that were successfully read.</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='LONGINT'/>
+            </type>
+          </field-decl>
+          <field-decl name='positionable' id='ReaderDesc.positionable' export='yes'>
+            <oberon-doc>
+              <summary>TRUE iff the Reader can be moved to another position with `SetPos'; for channels that can only be read sequentially, like input from keyboard, this is FALSE.</summary>
+              <p pad-after='yes' no-indent='yes'>TRUE iff the Reader can be moved to another position with `SetPos'; for channels that can only be read sequentially, like input from keyboard, this is FALSE.</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='BOOLEAN'/>
+            </type>
+          </field-decl>
+        </record>
+      </type>
+    </type-decl>
+    <procedure name='Pos' id='ReaderDesc.Pos' export='yes'>
+      <oberon-doc>
+        <summary>Returns the current reading position associated with the reader `r' in channel `r.base'.</summary>
+        <p pad-after='yes' no-indent='yes'>Returns the current reading position associated with the reader `r' in channel `r.base'.  That is, it returns the index of the first byte that is read by the next call to ReadByte resp. ReadBytes.  This procedure will return `noPosition' if the reader has no concept of a reading position (e.g. if it corresponds to input from keyboard), otherwise the result is not negative.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='r' id='ReaderDesc.Pos.r' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Reader' href='#Reader'/>
+          </type>
+        </receiver-decl>
+        <result-type>
+          <type-name module='#predef' name='LONGINT'/>
+        </result-type>
+      </formal-parameters>
+    </procedure>
+    <procedure name='Available' id='ReaderDesc.Available' export='yes'>
+      <oberon-doc>
+        <summary>Returns the number of bytes available for the next reading operation.</summary>
+        <p pad-after='yes' no-indent='yes'>Returns the number of bytes available for the next reading operation.  For a file this is the length of the channel `r.base' minus the current reading position, for an sequential channel (or a channel designed to handle slow transfer rates) this is the number of bytes that can be accessed without additional waiting.  The result is -1 if Close() was called for the channel, or no more byte are available and the remote end of the channel has been closed.  Note that the number of bytes returned is always a lower approximation of the number that could be read at once; for some channels or systems it might be as low as 1 even if tons of bytes are waiting to be processed.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='r' id='ReaderDesc.Available.r' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Reader' href='#Reader'/>
+          </type>
+        </receiver-decl>
+        <result-type>
+          <type-name module='#predef' name='LONGINT'/>
+        </result-type>
+      </formal-parameters>
+    </procedure>
+    <procedure name='SetPos' id='ReaderDesc.SetPos' export='yes'>
+      <oberon-doc>
+        <summary>Sets the reading position to `newPos'.</summary>
+        <p pad-after='yes' no-indent='yes'>Sets the reading position to `newPos'.  A negative value of `newPos' or calling this procedure for a reader that doesn't allow positioning will set `r.res' to `outOfRange'.  A value larger than the channel's length is legal, but the following read operation will most likely fail with an `readAfterEnd' error unless the channel has grown beyond this position in the meantime.  Calls to this procedure while `r.res # done' will be ignored, in particular a call with `r.res.code = readAfterEnd' error will not reset `res' to `done'.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='r' id='ReaderDesc.SetPos.r' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Reader' href='#Reader'/>
+          </type>
+        </receiver-decl>
+        <parameter-decl name='newPos' id='ReaderDesc.SetPos.newPos' export='no' variable-parameter='no'>
+          <type>
+            <type-name module='#predef' name='LONGINT'/>
+          </type>
+        </parameter-decl>
+      </formal-parameters>
+    </procedure>
+    <procedure name='ClearError' id='ReaderDesc.ClearError' export='yes'>
+      <oberon-doc>
+        <summary>Sets the result flag `r.res' to `done', re-enabling further read operations on `r'.</summary>
+        <p pad-after='yes' no-indent='yes'>Sets the result flag `r.res' to `done', re-enabling further read operations on `r'.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='r' id='ReaderDesc.ClearError.r' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Reader' href='#Reader'/>
+          </type>
+        </receiver-decl>
+      </formal-parameters>
+    </procedure>
+  </class>
+  <class name='Writer'>
+    <type-decl name='Writer' id='Writer' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='WriterDesc' href='#WriterDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='WriterDesc' id='WriterDesc' export='yes'>
+      <oberon-doc>
+        <summary>A byte-oriented writer for a <oberon-type href='#Channel'>Channel</oberon-type> instance.</summary>
+        <p pad-after='yes' no-indent='yes'>A byte-oriented writer for a <oberon-type href='#Channel'>Channel</oberon-type> instance.</p>
+      </oberon-doc>
+      <type>
+        <record>
+          <field-decl name='base' id='WriterDesc.base' export='yes'>
+            <oberon-doc>
+              <summary>This field refers to the channel the Writer is connected to.</summary>
+              <p pad-after='yes' no-indent='yes'>This field refers to the channel the Writer is connected to.</p>
+            </oberon-doc>
+            <type>
+              <type-name name='Channel' href='#Channel'/>
+            </type>
+          </field-decl>
+          <field-decl name='res' id='WriterDesc.res' export='yes'>
+            <oberon-doc>
+              <summary>Error flag signalling failure of a call to WriteByte, WriteBytes, or SetPos.</summary>
+              <p pad-after='yes' no-indent='yes'>Error flag signalling failure of a call to WriteByte, WriteBytes, or SetPos.  Initialized to `done' when creating a Writer or by calling ClearError.  The first failed writing (or SetPos) operation changes this to indicate the error, all further calls to WriteByte, WriteBytes, or SetPos will be ignored until ClearError resets this flag.  This means that the successful completion of an arbitrary complex sequence of write operations can be ensured by asserting that `res' equals `done' beforehand and also after the last operation.  Note that due to buffering a write error may occur when flushing or closing the underlying file, so you have to check the channel's `res' field after any Flush() or the final Close(), too.</p>
+            </oberon-doc>
+            <type>
+              <type-name name='Result' href='#Result'/>
+            </type>
+          </field-decl>
+          <field-decl name='bytesWritten' id='WriterDesc.bytesWritten' export='yes'>
+            <oberon-doc>
+              <summary>Set by WriteByte and WriteBytes to indicate the number of bytes that were successfully written.</summary>
+              <p pad-after='yes' no-indent='yes'>Set by WriteByte and WriteBytes to indicate the number of bytes that were successfully written.</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='LONGINT'/>
+            </type>
+          </field-decl>
+          <field-decl name='positionable' id='WriterDesc.positionable' export='yes'>
+            <oberon-doc>
+              <summary>TRUE iff the Writer can be moved to another position with `SetPos'; for channels that can only be written sequentially, like output to terminal, this is FALSE.</summary>
+              <p pad-after='yes' no-indent='yes'>TRUE iff the Writer can be moved to another position with `SetPos'; for channels that can only be written sequentially, like output to terminal, this is FALSE.</p>
+            </oberon-doc>
+            <type>
+              <type-name module='#predef' name='BOOLEAN'/>
+            </type>
+          </field-decl>
+        </record>
+      </type>
+    </type-decl>
+    <procedure name='Pos' id='WriterDesc.Pos' export='yes'>
+      <oberon-doc>
+        <summary>Returns the current writing position associated with the writer `w' in channel `w.base', i.e.</summary>
+        <p pad-after='yes' no-indent='yes'>Returns the current writing position associated with the writer `w' in channel `w.base', i.e. the index of the first byte that is written by the next call to WriteByte resp. WriteBytes.  This procedure will return `noPosition' if the writer has no concept of a writing position (e.g. if it corresponds to output to terminal), otherwise the result is not negative.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='w' id='WriterDesc.Pos.w' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Writer' href='#Writer'/>
+          </type>
+        </receiver-decl>
+        <result-type>
+          <type-name module='#predef' name='LONGINT'/>
+        </result-type>
+      </formal-parameters>
+    </procedure>
+    <procedure name='SetPos' id='WriterDesc.SetPos' export='yes'>
+      <oberon-doc>
+        <summary>Sets the writing position to `newPos'.</summary>
+        <p pad-after='yes' no-indent='yes'>Sets the writing position to `newPos'.  A negative value of `newPos' or calling this procedure for a writer that doesn't allow positioning will set `w.res' to `outOfRange'.  A value larger than the channel's length is legal, the following write operation will fill the gap between the end of the channel and this position with zero bytes.  Calls to this procedure while `w.res # done' will be ignored.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='w' id='WriterDesc.SetPos.w' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Writer' href='#Writer'/>
+          </type>
+        </receiver-decl>
+        <parameter-decl name='newPos' id='WriterDesc.SetPos.newPos' export='no' variable-parameter='no'>
+          <type>
+            <type-name module='#predef' name='LONGINT'/>
+          </type>
+        </parameter-decl>
+      </formal-parameters>
+    </procedure>
+    <procedure name='ClearError' id='WriterDesc.ClearError' export='yes'>
+      <oberon-doc>
+        <summary>Sets the result flag `w.res' to `done', re-enabling further write operations on `w'.</summary>
+        <p pad-after='yes' no-indent='yes'>Sets the result flag `w.res' to `done', re-enabling further write operations on `w'.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='w' id='WriterDesc.ClearError.w' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='Writer' href='#Writer'/>
+          </type>
+        </receiver-decl>
+      </formal-parameters>
+    </procedure>
+  </class>
+  <class name='ErrorContext'>
+    <type-decl name='ErrorContextDesc' id='ErrorContextDesc' export='yes'>
+      <type>
+        <record/>
+      </type>
+    </type-decl>
+  </class>
+</interface-description>

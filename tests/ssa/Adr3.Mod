@@ -1,0 +1,12 @@
+MODULE Adr3;
+
+IMPORT SYSTEM;
+
+PROCEDURE Test*;
+  VAR
+    c: SYSTEM.ADDRESS;
+  BEGIN
+    c := SYSTEM.ADR(INTEGER);
+  END Test;
+
+END Adr3.

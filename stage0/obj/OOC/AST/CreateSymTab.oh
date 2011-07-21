@@ -1,0 +1,92 @@
+#ifndef _MODULE_OOC_AST_CreateSymTab_
+#define _MODULE_OOC_AST_CreateSymTab_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <URI.oh>
+#include <OOC/AST.oh>
+#include <OOC/SymbolTable.oh>
+#include <OOC/SymbolTable/Builder.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_AST_CreateSymTab__VisitorDesc *OOC_AST_CreateSymTab__Visitor;
+typedef struct OOC_AST_CreateSymTab__VisitorDesc {
+  OOC_SymbolTable_Builder__Builder stb;
+  OOC_SymbolTable__Item parent;
+  OOC_SymbolTable__Type type;
+  OOC_SymbolTable__Module root;
+  URI__HierarchicalURI baseURI;
+  URI__HierarchicalURI rootURI;
+} OOC_AST_CreateSymTab__VisitorDesc;
+extern OOC_SymbolTable__Name OOC_AST_CreateSymTab__GetName(OOC_AST__Node node);
+extern void NORETURN OOC_AST_CreateSymTab__VisitorDesc_VisitNodeList(OOC_AST_CreateSymTab__Visitor v, OOC_AST__NodeList nl) NORETURN2;
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitNodeList 0
+typedef void NORETURN (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitNodeList)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__NodeList nl) NORETURN2;
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitModule(volatile OOC_AST_CreateSymTab__Visitor v, volatile OOC_AST__Module module);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitModule 22
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitModule)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Module module);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitImportList(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ImportList importList);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitImportList 20
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitImportList)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ImportList importList);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitBody(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Body body);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitBody 21
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitBody)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Body body);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitImportDecl(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ImportDecl importDecl);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitImportDecl 14
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitImportDecl)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ImportDecl importDecl);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitConstDecl(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ConstDecl constDecl);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitConstDecl 15
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitConstDecl)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ConstDecl constDecl);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitTPSection(OOC_AST_CreateSymTab__Visitor v, OOC_AST__TPSection tpSection);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitTPSection 11
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitTPSection)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__TPSection tpSection);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitTypeDecl(OOC_AST_CreateSymTab__Visitor v, OOC_AST__TypeDecl typeDecl);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitTypeDecl 16
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitTypeDecl)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__TypeDecl typeDecl);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitVarDecl(OOC_AST_CreateSymTab__Visitor v, OOC_AST__VarDecl varDecl);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitVarDecl 17
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitVarDecl)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__VarDecl varDecl);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitReceiver(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Receiver receiver);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitReceiver 18
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitReceiver)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Receiver receiver);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitFPSection(OOC_AST_CreateSymTab__Visitor v, OOC_AST__FPSection fpSection);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitFPSection 8
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitFPSection)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__FPSection fpSection);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitProcDecl(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ProcDecl procDecl);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitProcDecl 19
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitProcDecl)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ProcDecl procDecl);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitFieldList(OOC_AST_CreateSymTab__Visitor v, OOC_AST__FieldList fieldList);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitFieldList 5
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitFieldList)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__FieldList fieldList);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitTerminal(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Terminal terminal);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitTerminal 1
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitTerminal)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Terminal terminal);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitOperator(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Operator _operator);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitOperator 23
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitOperator)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__Operator _operator);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitRecordType(OOC_AST_CreateSymTab__Visitor v, OOC_AST__RecordType recordType);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitRecordType 6
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitRecordType)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__RecordType recordType);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitPointerType(OOC_AST_CreateSymTab__Visitor v, OOC_AST__PointerType pointerType);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitPointerType 7
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitPointerType)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__PointerType pointerType);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitArrayType(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ArrayType arrayType);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitArrayType 4
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitArrayType)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ArrayType arrayType);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitProcType(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ProcType procType);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitProcType 10
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitProcType)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__ProcType procType);
+extern void OOC_AST_CreateSymTab__VisitorDesc_VisitQualType(OOC_AST_CreateSymTab__Visitor v, OOC_AST__QualType qualType);
+#define _TBN_OOC_AST_CreateSymTab__VisitorDesc_VisitQualType 13
+typedef void (*_TBP_OOC_AST_CreateSymTab__VisitorDesc_VisitQualType)(OOC_AST_CreateSymTab__Visitor v, OOC_AST__QualType qualType);
+extern OOC_SymbolTable__Module OOC_AST_CreateSymTab__CreateSymTab(OOC_AST__Node module, OOC_SymbolTable_Builder__Builder stb, Object__String libraryName, URI__HierarchicalURI baseURI, URI__HierarchicalURI rootURI);
+extern void OOC_OOC_AST_CreateSymTab_init(void);
+extern void OOC_OOC_AST_CreateSymTab_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_AST_CreateSymTab__Visitor;
+extern RT0__StructDesc _td_OOC_AST_CreateSymTab__VisitorDesc;
+#endif /* _MODULE_OOC_AST_CreateSymTab_ */
+
+/* --- */

@@ -1,0 +1,40 @@
+#ifndef _MODULE_Out_
+#define _MODULE_Out_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <StdChannels.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern TextRider__Writer Out__writer;
+extern OOC_CHAR8 Out__Done(void);
+extern void Out__ClearError(void);
+extern void Out__SetWriter(TextRider__Writer w);
+extern void Out__Flush(void);
+extern void Out__Char(OOC_CHAR8 ch);
+extern void Out__String(const OOC_CHAR8 s[], OOC_LEN s_0d);
+extern void Out__Object(Object__Object obj);
+extern void Out__Bool(OOC_CHAR8 _bool);
+extern void Out__LongInt(OOC_INT32 lint, OOC_INT32 n);
+extern void Out__ShortInt(OOC_INT8 sint, OOC_INT32 n);
+extern void Out__Int(OOC_INT32 _int, OOC_INT32 n);
+extern void Out__Hex(OOC_INT32 lint, OOC_INT32 n);
+extern void Out__LongReal(OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+extern void Out__Real(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void Out__LongRealFix(OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+extern void Out__RealFix(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void Out__LongRealEng(OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+extern void Out__RealEng(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void Out__Set(OOC_UINT32 s);
+extern void Out__Ln(void);
+extern void OOC_Out_init(void);
+extern void OOC_Out_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Out__2255;
+#endif /* _MODULE_Out_ */
+
+/* --- */

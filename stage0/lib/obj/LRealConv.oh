@@ -1,0 +1,29 @@
+#ifndef _MODULE_LRealConv_
+#define _MODULE_LRealConv_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ConvTypes.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 LRealConv__ConvResults;
+#define LRealConv__strAllRight 0
+#define LRealConv__strOutOfRange 1
+#define LRealConv__strWrongFormat 2
+#define LRealConv__strEmpty 3
+extern void LRealConv__ScanReal(OOC_CHAR8 inputCh, OOC_INT8 *chClass, ConvTypes__ScanState *nextState);
+extern OOC_INT8 LRealConv__FormatReal(const OOC_CHAR8 str__ref[], OOC_LEN str_0d);
+extern OOC_REAL64 LRealConv__ValueReal(const OOC_CHAR8 str__ref[], OOC_LEN str_0d);
+extern OOC_INT16 NORETURN LRealConv__LengthFloatReal(OOC_REAL64 real, OOC_INT16 sigFigs) NORETURN2;
+extern OOC_INT16 NORETURN LRealConv__LengthEngReal(OOC_REAL64 real, OOC_INT16 sigFigs) NORETURN2;
+extern OOC_INT16 NORETURN LRealConv__LengthFixedReal(OOC_REAL64 real, OOC_INT16 place) NORETURN2;
+extern void OOC_LRealConv_init(void);
+extern void OOC_LRealConv_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_LRealConv__2120;
+extern RT0__StructDesc _td_LRealConv__2256;
+#endif /* _MODULE_LRealConv_ */
+
+/* --- */

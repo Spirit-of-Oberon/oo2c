@@ -1,0 +1,69 @@
+#ifndef _MODULE_IO_FileChannel_
+#define _MODULE_IO_FileChannel_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Termination.oh>
+#include <OS/Path.oh>
+#include <IO.oh>
+#include <IO/StdChannels.oh>
+#include <IO/Buffer.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct IO_FileChannel__ChannelDesc *IO_FileChannel__Channel;
+typedef struct IO_FileChannel__ChannelDesc {
+  OOC_UINT32 readyOps;
+  IO__SelectionKeyList keys;
+  OOC_INT32 fd;
+  Object__String origName;
+  Object__String8 tmpName;
+  OOC_INT32 tmpIndex;
+} IO_FileChannel__ChannelDesc;
+#define IO_FileChannel__read 0
+#define IO_FileChannel__write 1
+#define IO_FileChannel__create 2
+#define IO_FileChannel__exclusive 3
+#define IO_FileChannel__truncate 4
+#define IO_FileChannel__append 5
+#define IO_FileChannel__tmpFile 6
+extern IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String file, OOC_UINT32 mode);
+extern IO_Buffer__Channel IO_FileChannel__Open(Object__String file, OOC_UINT32 mode);
+extern void IO_FileChannel__ChannelDesc_SetBlocking(IO_FileChannel__Channel ch, OOC_CHAR8 block);
+#define _TBN_IO_FileChannel__ChannelDesc_SetBlocking 3
+typedef void (*_TBP_IO_FileChannel__ChannelDesc_SetBlocking)(IO_FileChannel__Channel ch, OOC_CHAR8 block);
+extern OOC_INT32 IO_FileChannel__ChannelDesc_Read(IO_FileChannel__Channel ch, OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+#define _TBN_IO_FileChannel__ChannelDesc_Read 7
+typedef OOC_INT32 (*_TBP_IO_FileChannel__ChannelDesc_Read)(IO_FileChannel__Channel ch, OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+extern OOC_INT32 IO_FileChannel__ChannelDesc_Write(IO_FileChannel__Channel ch, const OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+#define _TBN_IO_FileChannel__ChannelDesc_Write 8
+typedef OOC_INT32 (*_TBP_IO_FileChannel__ChannelDesc_Write)(IO_FileChannel__Channel ch, const OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+extern void IO_FileChannel__ChannelDesc_Close(IO_FileChannel__Channel ch);
+#define _TBN_IO_FileChannel__ChannelDesc_Close 4
+typedef void (*_TBP_IO_FileChannel__ChannelDesc_Close)(IO_FileChannel__Channel ch);
+extern void IO_FileChannel__ChannelDesc_CloseAndRegister(IO_FileChannel__Channel ch);
+#define _TBN_IO_FileChannel__ChannelDesc_CloseAndRegister 5
+typedef void (*_TBP_IO_FileChannel__ChannelDesc_CloseAndRegister)(IO_FileChannel__Channel ch);
+extern void IO_FileChannel__ChannelDesc_SetPos(IO_FileChannel__Channel ch, OOC_INT32 pos);
+#define _TBN_IO_FileChannel__ChannelDesc_SetPos 6
+typedef void (*_TBP_IO_FileChannel__ChannelDesc_SetPos)(IO_FileChannel__Channel ch, OOC_INT32 pos);
+extern OOC_INT32 IO_FileChannel__ChannelDesc_Length(IO_FileChannel__Channel ch);
+#define _TBN_IO_FileChannel__ChannelDesc_Length 11
+typedef OOC_INT32 (*_TBP_IO_FileChannel__ChannelDesc_Length)(IO_FileChannel__Channel ch);
+extern OOC_INT32 IO_FileChannel__ChannelDesc_FileDescriptor(IO_FileChannel__Channel ch);
+#define _TBN_IO_FileChannel__ChannelDesc_FileDescriptor 0
+typedef OOC_INT32 (*_TBP_IO_FileChannel__ChannelDesc_FileDescriptor)(IO_FileChannel__Channel ch);
+extern void OOC_IO_FileChannel_init(void);
+extern void OOC_IO_FileChannel_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_IO_FileChannel__Channel;
+extern RT0__StructDesc _td_IO_FileChannel__ChannelList;
+extern RT0__StructDesc _td_IO_FileChannel__ChannelDesc;
+extern RT0__StructDesc _td_IO_FileChannel__3254;
+extern RT0__StructDesc _td_IO_FileChannel__3409;
+#endif /* _MODULE_IO_FileChannel_ */
+
+/* --- */

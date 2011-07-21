@@ -1,0 +1,50 @@
+#ifndef _MODULE_Config_Simple_
+#define _MODULE_Config_Simple_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <IO.oh>
+#include <Config.oh>
+#include <Config/Parser.oh>
+#include <Config/Source/Environment.oh>
+#include <Config/Source/CmdLine.oh>
+#include <Config/Section.oh>
+#include <Config/Section/Options.oh>
+#include <Config/Section/Arguments.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct Config_Simple__ConfigDesc *Config_Simple__Config;
+typedef struct Config_Simple__ConfigDesc {
+  Object__String cfgFile;
+  Config_Source_Environment__VariableTemplate cfgFileEnvVar;
+  Config_Source_CmdLine__OptionTemplate cfgFileCmdLineOption;
+  Config_Source_Environment__Environment envVars;
+  Config_Source_CmdLine__CmdLine cmdLine;
+  ADT_Dictionary__Dictionary typeMap;
+  Config_Section_Options__Section options;
+  Config_Section_Arguments__Section arguments;
+  Config_Section__SectionList sectionList;
+  Config_Parser__Resolver resolver;
+} Config_Simple__ConfigDesc;
+extern void Config_Simple__Init(Config_Simple__Config config, Object__String defaultConfigFile);
+extern Config_Simple__Config Config_Simple__New(Object__String defaultConfigFile);
+extern void Config_Simple__ConfigDesc_ConfigFileEnvVar(Config_Simple__Config config, Config_Source_Environment__VariableTemplate envTemplate);
+#define _TBN_Config_Simple__ConfigDesc_ConfigFileEnvVar 0
+typedef void (*_TBP_Config_Simple__ConfigDesc_ConfigFileEnvVar)(Config_Simple__Config config, Config_Source_Environment__VariableTemplate envTemplate);
+extern void Config_Simple__ConfigDesc_ConfigFileCmdLineOption(Config_Simple__Config config, Config_Source_CmdLine__OptionTemplate optionTemplate);
+#define _TBN_Config_Simple__ConfigDesc_ConfigFileCmdLineOption 1
+typedef void (*_TBP_Config_Simple__ConfigDesc_ConfigFileCmdLineOption)(Config_Simple__Config config, Config_Source_CmdLine__OptionTemplate optionTemplate);
+extern void Config_Simple__ConfigDesc_Read(Config_Simple__Config config, Msg__MsgList errList);
+#define _TBN_Config_Simple__ConfigDesc_Read 2
+typedef void (*_TBP_Config_Simple__ConfigDesc_Read)(Config_Simple__Config config, Msg__MsgList errList);
+extern void OOC_Config_Simple_init(void);
+extern void OOC_Config_Simple_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Config_Simple__Config;
+extern RT0__StructDesc _td_Config_Simple__ConfigDesc;
+#endif /* _MODULE_Config_Simple_ */
+
+/* --- */

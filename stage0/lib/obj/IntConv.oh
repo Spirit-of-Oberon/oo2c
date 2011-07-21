@@ -1,0 +1,29 @@
+#ifndef _MODULE_IntConv_
+#define _MODULE_IntConv_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ConvTypes.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 IntConv__ConvResults;
+#define IntConv__strAllRight 0
+#define IntConv__strOutOfRange 1
+#define IntConv__strWrongFormat 2
+#define IntConv__strEmpty 3
+extern void IntConv__ScanInt(OOC_CHAR8 inputCh, OOC_INT8 *chClass, ConvTypes__ScanState *nextState);
+extern OOC_INT8 IntConv__FormatInt(const OOC_CHAR8 str__ref[], OOC_LEN str_0d);
+extern OOC_INT32 IntConv__ValueInt(const OOC_CHAR8 str__ref[], OOC_LEN str_0d);
+extern OOC_INT16 IntConv__LengthInt(OOC_INT32 _int);
+extern void OOC_IntConv_init(void);
+extern void OOC_IntConv_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_IntConv__1617;
+extern RT0__StructDesc _td_IntConv__5030;
+extern RT0__StructDesc _td_IntConv__5284;
+extern RT0__StructDesc _td_IntConv__6744;
+#endif /* _MODULE_IntConv_ */
+
+/* --- */

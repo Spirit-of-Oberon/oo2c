@@ -1,0 +1,51 @@
+#ifndef _MODULE_XML_UnicodeCodec_Latin1_
+#define _MODULE_XML_UnicodeCodec_Latin1_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <XML/UnicodeCodec.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct XML_UnicodeCodec_Latin1__CodecDesc *XML_UnicodeCodec_Latin1__Codec;
+typedef struct XML_UnicodeCodec_Latin1__CodecDesc {
+  OOC_INT32 invalidChars;
+  OOC_INT8 bom;
+} XML_UnicodeCodec_Latin1__CodecDesc;
+typedef struct XML_UnicodeCodec_Latin1__FactoryDesc *XML_UnicodeCodec_Latin1__Factory;
+typedef struct XML_UnicodeCodec_Latin1__FactoryDesc {
+  OOC_INT8 bom;
+} XML_UnicodeCodec_Latin1__FactoryDesc;
+extern XML_UnicodeCodec_Latin1__Factory XML_UnicodeCodec_Latin1__factory;
+extern void XML_UnicodeCodec_Latin1__CodecDesc_Decode(XML_UnicodeCodec_Latin1__Codec codec, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR16 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+#define _TBN_XML_UnicodeCodec_Latin1__CodecDesc_Decode 0
+typedef void (*_TBP_XML_UnicodeCodec_Latin1__CodecDesc_Decode)(XML_UnicodeCodec_Latin1__Codec codec, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR16 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+extern void XML_UnicodeCodec_Latin1__CodecDesc_Encode(XML_UnicodeCodec_Latin1__Codec codec, OOC_CHAR16 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR8 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+#define _TBN_XML_UnicodeCodec_Latin1__CodecDesc_Encode 1
+typedef void (*_TBP_XML_UnicodeCodec_Latin1__CodecDesc_Encode)(XML_UnicodeCodec_Latin1__Codec codec, OOC_CHAR16 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_CHAR8 dest[], OOC_LEN dest_0d, OOC_INT32 destStart, OOC_INT32 destEnd, OOC_INT32 *sourceDone, OOC_INT32 *destDone);
+extern XML_UnicodeCodec_Latin1__Codec XML_UnicodeCodec_Latin1__FactoryDesc_NewCodec(XML_UnicodeCodec_Latin1__Factory f);
+#define _TBN_XML_UnicodeCodec_Latin1__FactoryDesc_NewCodec 0
+typedef XML_UnicodeCodec_Latin1__Codec (*_TBP_XML_UnicodeCodec_Latin1__FactoryDesc_NewCodec)(XML_UnicodeCodec_Latin1__Factory f);
+extern XML_UnicodeCodec_Latin1__Codec XML_UnicodeCodec_Latin1__FactoryDesc_NewCodecBOM(XML_UnicodeCodec_Latin1__Factory f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+#define _TBN_XML_UnicodeCodec_Latin1__FactoryDesc_NewCodecBOM 1
+typedef XML_UnicodeCodec_Latin1__Codec (*_TBP_XML_UnicodeCodec_Latin1__FactoryDesc_NewCodecBOM)(XML_UnicodeCodec_Latin1__Factory f, OOC_CHAR8 source[], OOC_LEN source_0d, OOC_INT32 sourceStart, OOC_INT32 sourceEnd, OOC_INT32 *sourceDone);
+extern void XML_UnicodeCodec_Latin1__FactoryDesc_GetEncodingName(XML_UnicodeCodec_Latin1__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_XML_UnicodeCodec_Latin1__FactoryDesc_GetEncodingName 2
+typedef void (*_TBP_XML_UnicodeCodec_Latin1__FactoryDesc_GetEncodingName)(XML_UnicodeCodec_Latin1__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_XML_UnicodeCodec_Latin1_init(void);
+extern void OOC_XML_UnicodeCodec_Latin1_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__Codec;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__CodecDesc;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__Factory;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__FactoryDesc;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__851;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__977;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__1512;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__1642;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__3487;
+extern RT0__StructDesc _td_XML_UnicodeCodec_Latin1__3770;
+#endif /* _MODULE_XML_UnicodeCodec_Latin1_ */
+
+/* --- */

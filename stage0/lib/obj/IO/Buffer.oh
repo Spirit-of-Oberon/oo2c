@@ -1,0 +1,64 @@
+#ifndef _MODULE_IO_Buffer_
+#define _MODULE_IO_Buffer_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Ascii.oh>
+#include <Object.oh>
+#include <IO.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct IO_Buffer__ChannelDesc *IO_Buffer__Channel;
+typedef struct IO_Buffer__ChannelDesc {
+  OOC_UINT32 readyOps;
+  IO__SelectionKeyList keys;
+  IO__ByteChannel base;
+  OOC_CHAR8 reading;
+  OOC_CHAR8 __pad13;
+  OOC_CHAR8 __pad14;
+  OOC_CHAR8 __pad15;
+  OOC_INT32 pos;
+  OOC_INT32 endOfBuffer;
+  OOC_CHAR8 buffer[8192];
+} IO_Buffer__ChannelDesc;
+extern IO_Buffer__Channel IO_Buffer__Open(IO__ByteChannel base);
+extern void IO_Buffer__ChannelDesc_Flush(IO_Buffer__Channel ch);
+#define _TBN_IO_Buffer__ChannelDesc_Flush 9
+typedef void (*_TBP_IO_Buffer__ChannelDesc_Flush)(IO_Buffer__Channel ch);
+extern void IO_Buffer__ChannelDesc_SetPos(IO_Buffer__Channel ch, OOC_INT32 pos);
+#define _TBN_IO_Buffer__ChannelDesc_SetPos 6
+typedef void (*_TBP_IO_Buffer__ChannelDesc_SetPos)(IO_Buffer__Channel ch, OOC_INT32 pos);
+extern OOC_INT32 IO_Buffer__ChannelDesc_Read(IO_Buffer__Channel ch, OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+#define _TBN_IO_Buffer__ChannelDesc_Read 7
+typedef OOC_INT32 (*_TBP_IO_Buffer__ChannelDesc_Read)(IO_Buffer__Channel ch, OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+extern Object__String8 IO_Buffer__ChannelDesc_ReadLineLF(IO_Buffer__Channel ch);
+#define _TBN_IO_Buffer__ChannelDesc_ReadLineLF 11
+typedef Object__String8 (*_TBP_IO_Buffer__ChannelDesc_ReadLineLF)(IO_Buffer__Channel ch);
+extern OOC_INT32 IO_Buffer__ChannelDesc_Write(IO_Buffer__Channel ch, const OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+#define _TBN_IO_Buffer__ChannelDesc_Write 8
+typedef OOC_INT32 (*_TBP_IO_Buffer__ChannelDesc_Write)(IO_Buffer__Channel ch, const OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
+extern void IO_Buffer__ChannelDesc_SetBlocking(IO_Buffer__Channel ch, OOC_CHAR8 block);
+#define _TBN_IO_Buffer__ChannelDesc_SetBlocking 3
+typedef void (*_TBP_IO_Buffer__ChannelDesc_SetBlocking)(IO_Buffer__Channel ch, OOC_CHAR8 block);
+extern OOC_INT32 IO_Buffer__ChannelDesc_FileDescriptor(IO_Buffer__Channel ch);
+#define _TBN_IO_Buffer__ChannelDesc_FileDescriptor 0
+typedef OOC_INT32 (*_TBP_IO_Buffer__ChannelDesc_FileDescriptor)(IO_Buffer__Channel ch);
+extern void IO_Buffer__ChannelDesc_Close(IO_Buffer__Channel ch);
+#define _TBN_IO_Buffer__ChannelDesc_Close 4
+typedef void (*_TBP_IO_Buffer__ChannelDesc_Close)(IO_Buffer__Channel ch);
+extern void IO_Buffer__ChannelDesc_CloseAndRegister(IO_Buffer__Channel ch);
+#define _TBN_IO_Buffer__ChannelDesc_CloseAndRegister 5
+typedef void (*_TBP_IO_Buffer__ChannelDesc_CloseAndRegister)(IO_Buffer__Channel ch);
+extern void OOC_IO_Buffer_init(void);
+extern void OOC_IO_Buffer_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_IO_Buffer__Channel;
+extern RT0__StructDesc _td_IO_Buffer__ChannelDesc;
+extern RT0__StructDesc _td_IO_Buffer__1361;
+extern RT0__StructDesc _td_IO_Buffer__2303;
+extern RT0__StructDesc _td_IO_Buffer__6244;
+#endif /* _MODULE_IO_Buffer_ */
+
+/* --- */

@@ -1,0 +1,21 @@
+#ifndef _MODULE_OS_HostPath_
+#define _MODULE_OS_HostPath_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <CharClass.oh>
+#include <C.oh>
+#include <IO.oh>
+#include <IO/StdChannels.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern Object__String OS_HostPath__Normalize(Object__String path);
+extern Object__String OS_HostPath__Denormalize(Object__String path);
+extern void OOC_OS_HostPath_init(void);
+extern void OOC_OS_HostPath_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OS_HostPath_ */
+
+/* --- */

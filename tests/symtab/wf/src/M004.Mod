@@ -1,0 +1,5 @@
+MODULE M;
+
+TYPE T=INTEGER;
+
+END M.

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>a</symbol>
+<symbol id='pragma' pos='1' line='0' column='1'>&lt;*DEFINE new:=TRUE; IF new THEN*&gt;</symbol>
+<symbol id='ident' pos='34' line='0' column='34'>b</symbol>
+<symbol id='pragma' pos='35' line='0' column='35'>&lt;*ELSE*&gt;c&lt;*END*&gt;</symbol>
+<symbol id='ident' pos='51' line='0' column='51'>d</symbol>
+<symbol id='endOfFile' pos='52' line='0' column='52'></symbol>
+</document>

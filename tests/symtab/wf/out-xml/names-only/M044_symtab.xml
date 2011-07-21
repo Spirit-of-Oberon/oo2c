@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='33' line='3' column='17' ident_name='R' ident_pos='33' ident_line='3' ident_column='17'/>
+  <pointer_type id='2' pos='22' line='3' column='6' base_type_id='1'/>
+  <type_decl id='3' name='P' pos='18' line='3' column='2' visible_from='34' export='no' type_id='2'/>
+  <record_type id='4' pos='42' line='4' column='6' class='R' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='5' name='R' pos='38' line='4' column='2' class='R' visible_from='52' export='no' type_id='4'/>
+</module>

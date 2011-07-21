@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M061' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='39' line='3' column='20' ident_name='ObjDesc' ident_pos='39' ident_line='3' ident_column='20'/>
+  <pointer_type id='2' pos='28' line='3' column='9' base_type_id='1'/>
+  <type_decl id='3' name='Obj' pos='21' line='3' column='2' visible_from='46' export='yes' type_id='2'/>
+  <record_type id='4' pos='61' line='4' column='13' class='Obj' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='5' name='ObjDesc' pos='50' line='4' column='2' class='Obj' visible_from='71' export='yes' type_id='4'/>
+  <type_pars id='6'>
+    <type_name id='7' pos='87' line='6' column='11' ident_name='Obj' ident_pos='87' ident_line='6' ident_column='11'/>
+    <type_var id='8' pos='87' line='6' column='11' bound_id='7'/>
+    <type_decl id='9' name='Base' pos='81' line='6' column='5' visible_from='90' export='no' is_type_parameter='yes' type_id='8'/>
+    <type_name id='10' pos='105' line='6' column='29' ident_name='BDesc' ident_pos='105' ident_line='6' ident_column='29'/>
+    <type_name id='11' pos='111' line='6' column='35' ident_name='Base' ident_pos='111' ident_line='6' ident_column='35'/>
+    <qual_type id='12' pos='105' line='6' column='29' base_type_id='10'/>
+    <pointer_type id='13' pos='94' line='6' column='18' type_pars_id='6' base_type_id='12'/>
+  </type_pars>
+  <type_decl id='14' name='B' pos='78' line='6' column='2' visible_from='116' export='yes' type_id='13'/>
+  <type_pars id='15'>
+    <type_name id='16' pos='133' line='7' column='15' ident_name='Obj' ident_pos='133' ident_line='7' ident_column='15'/>
+    <type_var id='17' pos='133' line='7' column='15' bound_id='16'/>
+    <type_decl id='18' name='Base' pos='127' line='7' column='9' visible_from='136' export='no' is_type_parameter='yes' type_id='17'/>
+    <record_type id='19' pos='140' line='7' column='22' type_pars_id='15' base_type='#none' tb_proc_count='-1'/>
+  </type_pars>
+  <type_decl id='20' name='BDesc' pos='120' line='7' column='2' visible_from='153' export='yes' type_id='19'/>
+</module>

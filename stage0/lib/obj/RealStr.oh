@@ -1,0 +1,35 @@
+#ifndef _MODULE_RealStr_
+#define _MODULE_RealStr_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ConvTypes.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 RealStr__ConvResults;
+#define RealStr__strAllRight 0
+#define RealStr__strOutOfRange 1
+#define RealStr__strWrongFormat 2
+#define RealStr__strEmpty 3
+extern void RealStr__StrToReal(const OOC_CHAR8 str__ref[], OOC_LEN str_0d, OOC_REAL32 *real, OOC_INT8 *res);
+extern void RealStr__RealToFloat(OOC_REAL32 real, OOC_INT16 sigFigs, OOC_CHAR8 str[], OOC_LEN str_0d);
+extern void RealStr__RealToEng(OOC_REAL32 real, OOC_INT16 sigFigs, OOC_CHAR8 str[], OOC_LEN str_0d);
+extern void RealStr__RealToFixed(OOC_REAL32 real, OOC_INT16 place, OOC_CHAR8 str[], OOC_LEN str_0d);
+extern void RealStr__RealToStr(OOC_REAL32 real, OOC_CHAR8 str[], OOC_LEN str_0d);
+extern void OOC_RealStr_init(void);
+extern void OOC_RealStr_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_RealStr__1563;
+extern RT0__StructDesc _td_RealStr__1888;
+extern RT0__StructDesc _td_RealStr__2755;
+extern RT0__StructDesc _td_RealStr__3050;
+extern RT0__StructDesc _td_RealStr__3625;
+extern RT0__StructDesc _td_RealStr__3916;
+extern RT0__StructDesc _td_RealStr__4775;
+extern RT0__StructDesc _td_RealStr__5081;
+extern RT0__StructDesc _td_RealStr__5670;
+#endif /* _MODULE_RealStr_ */
+
+/* --- */

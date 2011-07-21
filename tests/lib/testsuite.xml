@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
+<!ENTITY libadt-testcases SYSTEM "adt/testcases.xml">
+<!ENTITY libos-testcases SYSTEM "os/testcases.xml">
+<!ENTITY libio-testcases SYSTEM "io/testcases.xml">
+<!ENTITY liburi-testcases SYSTEM "uri/testcases.xml">
+<!ENTITY libxml-testcases SYSTEM "xml/testcases.xml">
+]>
+
+<testsuite-ext
+  profile="Test Suite for OOC Core Library">
+
+<!--<testsuite-ext
+  profile="Test Suite for OOC Core Library"
+  select ="prepare_out_module lib_rt1 lib_Exception34 lib_Exception35 lib_Exception36 lib_Exception37">-->
+  
+<!--<testsuite-ext
+  profile="Test Suite for OOC Core Library"
+  select ="prepare_out_module lib_Finalize1 lib_Finalize2 lib_WeakRef1">-->
+
+  &TestSetupWithOut;
+  
+  <testcases profile="OOC Core Library" default-lang="O2">
+    <test id="lib_rt1" type="run" file="LibRT1.Mod">
+    </test>
+  </testcases>
+  
+  <testcases profile="OOC Core Library" default-lang="O2">
+    <test id="lib_Ascii" type="run" file="LibAscii.Mod">
+      Imports the module <code>Ascii</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
+    <test id="lib_CharClass" type="run" file="LibCharClass.Mod">
+      Imports the module <code>CharClass</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
+    <test id="lib_C" type="run" file="LibC1.Mod">
+      Imports the module <code>C</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
+    <test id="lib_RandomNumbers" type="run"
+          file="LibRandomNumbers.Mod" output="LibRandomNumbers.Ref">
+      Calls <code>RND</code> to produce some numbers.  Use the default
+      seed, and two other seed values from the edges of the allowed
+      range of seed values.
+    </test>
+    
+    <test id="lib_Strings_Length1" type="run"
+      file="LibStringsLength1.Mod" output="LibStringsLength1.Ref">
+      Tests the <code>Length</code> function with <code>0X</code>
+      terminated character arrays.
+    </test>
+    
+    <test id="lib_Strings_Assign1" type="run"
+      file="LibStringsAssign1.Mod" output="LibStringsAssign1.Ref">
+      Tests the <code>Assign</code> function with <code>0X</code>
+      terminated source character arrays.  Truncation happens if the
+      destination array is not large enough.
+    </test>
+
+    <test id="lib_Strings_Extract1" type="run"
+      file="LibStringsExtract1.Mod" output="LibStringsExtract1.Ref">
+      Tests the <code>Extract</code> function with range parameters
+      that are within the limits of the input and output string.
+    </test>
+    
+    <test id="lib_Strings_Extract2" type="run"
+      file="LibStringsExtract2.Mod" output="LibStringsExtract2.Ref">
+      Tests the <code>Extract</code> function with range parameters
+      that exceed the length of the source string.
+    </test>
+    
+    <test id="lib_Strings_Extract3" type="run"
+      file="LibStringsExtract3.Mod" output="LibStringsExtract3.Ref">
+      Tests the <code>Extract</code> function with a result 
+      that must be truncated to fit into the destination string.
+    </test>
+    
+    <test id="lib_Strings_Delete1" type="run"
+      file="LibStringsDelete1.Mod" output="LibStringsDelete1.Ref">
+      Tests the <code>Delete</code> function with range parameters
+      that are within the limits of the input string.
+    </test>
+    
+    <test id="lib_Strings_Delete2" type="run"
+      file="LibStringsDelete2.Mod" output="LibStringsDelete2.Ref">
+      Call delete on string ranges <code>Delete</code> beyond the
+      end of the input string, and after the end of the string.
+    </test>
+
+    <test id="lib_Strings_Insert1" type="run"
+      file="LibStringsInsert1.Mod" output="LibStringsInsert1.Ref">
+      Calls the <code>Insert</code> function to insert substrings
+      before, after, and into another string.  The results fit into
+      the destination array.
+    </test>
+    
+    <test id="lib_Strings_Insert2" type="run"
+      file="LibStringsInsert2.Mod" output="LibStringsInsert2.Ref">
+      <code>Insert</code> is a noop if <code>startPos</code> is 
+      larger than the string's length.
+    </test>
+    
+    <test id="lib_Strings_Insert3" type="run"
+      file="LibStringsInsert3.Mod" output="LibStringsInsert3.Ref">
+      Output string must be truncated by <code>Insert</code> if the
+      result is too long.
+    </test>
+
+    <test id="lib_Strings_Replace1" type="run"
+      file="LibStringsReplace1.Mod" output="LibStringsReplace1.Ref">
+      Calls the <code>Replace</code> function to replace parts
+      within a string.  No truncation.
+    </test>
+    
+    <test id="lib_Strings_Replace2" type="run"
+      file="LibStringsReplace2.Mod" output="LibStringsReplace2.Ref">
+      <code>Replace</code> is a noop if <code>startPos</code> is 
+      larger or equal to the string's length.
+    </test>
+    
+    <test id="lib_Strings_Replace3" type="run"
+      file="LibStringsReplace3.Mod" output="LibStringsReplace3.Ref">
+      <code>Replace</code> never increased the length of th output string.
+    </test>
+    
+    <test id="lib_Strings_Append1" type="run"
+      file="LibStringsAppend1.Mod" output="LibStringsAppend1.Ref">
+      Some calls to <code>Append</code>.
+    </test>
+
+    <test id="lib_Strings_Concat1" type="run"
+      file="LibStringsConcat1.Mod" output="LibStringsConcat1.Ref">
+      Some calls to <code>Concat</code>.
+    </test>
+    
+    <test id="lib_Strings_Compare1" type="run"
+      file="LibStringsCompare1.Mod" output="LibStringsCompare1.Ref">
+      Some calls to <code>Compare</code>.
+    </test>
+
+    <test id="lib_Strings_Equal1" type="run"
+      file="LibStringsEqual1.Mod" output="LibStringsEqual1.Ref">
+      Some calls to <code>Equal</code>.
+    </test>
+    
+    <test id="lib_Strings_FindNext1" type="run"
+      file="LibStringsFindNext1.Mod" output="LibStringsFindNext1.Ref">
+      Some calls to <code>FindNext</code>.
+    </test>
+    
+    <test id="lib_Strings_FindNext2" type="run"
+      file="LibStringsFindNext2.Mod" output="LibStringsFindNext2.Ref">
+      Some calls to <code>FindNext</code>, with mismatch, pattern
+      longer than string, and partial match before full match.
+    </test>
+
+    <test id="lib_Strings_FindPrev1" type="run"
+      file="LibStringsFindPrev1.Mod" output="LibStringsFindPrev1.Ref">
+      Some calls to <code>FindPrev</code>.
+    </test>
+    
+    <test id="lib_Strings_FindPrev2" type="run"
+      file="LibStringsFindPrev2.Mod" output="LibStringsFindPrev2.Ref">
+      Some calls to <code>FindPrev</code>, with mismatch, pattern
+      longer than string, and partial match before full match.
+    </test>
+
+    <test id="lib_Strings_FindDiff1" type="run"
+      file="LibStringsFindDiff1.Mod" output="LibStringsFindDiff1.Ref">
+      Some calls to <code>FindDiff</code>.
+    </test>
+    
+    <test id="lib_Strings_Capitalize1" type="run"
+      file="LibStringsCapitalize1.Mod" output="LibStringsCapitalize1.Ref">
+      Some calls to <code>Capitalize</code>.
+    </test>
+
+    <test id="lib_ConvTypes" type="run" file="LibConvTypes.Mod">
+      Imports the module <code>ConvTypes</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
+    <test id="lib_IntConv_ScanInt1" type="run"
+          file="LibIntConvScanInt1.Mod" output="LibIntConvScanInt1.Ref">
+      List the character classes of a few traces through the
+      <code>ScanInt</code> state machine.
+    </test>
+    
+    <test id="lib_IntConv_FormatInt1" type="run"
+          file="LibIntConvFormatInt1.Mod" output="LibIntConvFormatInt1.Ref">
+      Use <code>FormatInt</code> to classify a number of strings.
+    </test>
+    
+    <test id="lib_IntConv_ValueInt1" type="run"
+          file="LibIntConvValueInt1.Mod" output="LibIntConvValueInt1.Ref">
+      Use <code>ValueInt</code> to convert strings to integers.
+    </test>
+ 
+    <test id="lib_IntConv_LengthInt1" type="run"
+          file="LibIntConvLengthInt1.Mod" output="LibIntConvLengthInt1.Ref">
+      Use <code>LengthInt</code> to get the length of the decimal
+      representation of integers.
+    </test>
+
+    <test id="lib_IntStr_StrToInt1" type="run"
+          file="LibIntStrStrToInt1.Mod" output="LibIntStrStrToInt1.Ref">
+      Use <code>StrToInt</code> to convert strings to integers.
+    </test>
+ 
+    <test id="lib_IntStr_IntToStr1" type="run"
+          file="LibIntStrIntToStr1.Mod" output="LibIntStrIntToStr1.Ref">
+      Use <code>IntToStr</code> to convert integers to strings.
+    </test>
+
+    <test id="lib_LRealConv_ScanReal1" type="run"
+          file="LibLRealConvScanReal1.Mod" output="LibLRealConvScanReal1.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers without 
+      fractional part or exponent.
+    </test>
+     
+    <test id="lib_LRealConv_ScanReal2" type="run"
+          file="LibLRealConvScanReal2.Mod" output="LibLRealConvScanReal2.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with
+      fractional parts.
+    </test>
+     
+    <test id="lib_LRealConv_ScanReal3" type="run"
+          file="LibLRealConvScanReal3.Mod" output="LibLRealConvScanReal3.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with exponents.
+    </test>
+
+    <test id="lib_LRealConv_FormatReal1" type="run"
+          file="LibLRealConvFormatReal1.Mod"
+	  output="LibLRealConvFormatReal1.Ref">
+      Use <code>FormatReal</code> to classify a number of strings.
+      Only syntax is tested, not overflow errors.
+    </test>
+
+    <test id="lib_LRealConv_FormatReal2" type="run"
+          file="LibLRealConvFormatReal2.Mod"
+	  output="LibLRealConvFormatReal2.Ref">
+      Use <code>FormatReal</code> to classify a number of strings.
+      The tests check that out of range numbers are classified correctly.
+    </test>    
+    
+    <test id="lib_LRealConv_ValueReal1" type="run"
+          file="LibLRealConvValueReal1.Mod"
+	  output="LibLRealConvValueReal1.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>LONGREAL</code>.  Only values that can be represented as
+      normalized numbers.
+    </test>
+    <test id="lib_LRealConv_ValueReal2" type="run"
+          file="LibLRealConvValueReal2.Mod"
+	  output="LibLRealConvValueReal2.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>LONGREAL</code>.  Only values that can be represented as
+      denormalized numbers.
+    </test>
+    <test id="lib_LRealConv_ValueReal3" type="run" relevance="informal"
+          file="LibLRealConvValueReal3.Mod"
+          output="LibLRealConvValueReal3.Ref">
+      A special case of <code>lib_LRealConv_ValueReal1</code>: Test if
+      the value <code>-0.0</code> is indeed written with a minus
+      sign.  Because some C libraries omit the sign, this test is 
+      informal.
+    </test>
+
+
+    <test id="lib_LRealStr_StrToReal1" type="run" relevance="informal"
+          file="LibLRealStrStrToReal1.Mod"
+	  output="LibLRealStrStrToReal1.Ref">
+      Use <code>StrToReal</code> to convert strings to floating point
+      numbers.
+    </test>
+ 
+    <test id="lib_LRealStr_RealToFloat1" type="run"
+          file="LibLRealStrRealToFloat1.Mod"
+	  output="LibLRealStrRealToFloat1.Ref">
+      Use <code>RealToFloat</code> to convert <code>LONGREAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+      
+    <test id="lib_LRealStr_RealToEng1" type="run"
+          file="LibLRealStrRealToEng1.Mod"
+	  output="LibLRealStrRealToEng1.Ref">
+      Use <code>RealToEng</code> to convert <code>LONGREAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_LRealStr_RealToFixed1" type="run" relevance="informal"
+          file="LibLRealStrRealToFixed1.Mod"
+	  output="LibLRealStrRealToFixed1.Ref">
+      Use <code>RealToFixed</code> to convert <code>LONGREAL</code>
+      values to strings.  <code>place</code> is a non-negative number.
+      Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_LRealStr_RealToFixed2" type="run"
+          file="LibLRealStrRealToFixed2.Mod"
+	  output="LibLRealStrRealToFixed2.Ref">
+      Use <code>RealToFixed</code> to convert <code>LONGREAL</code>
+      values to strings.  <code>place</code> is a negative number.
+      Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_LRealStr_RealToStr1" type="run"
+          file="LibLRealStrRealToStr1.Mod"
+	  output="LibLRealStrRealToStr1.Ref">
+      Use <code>RealToStr</code> to convert <code>LONGREAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_LRealMath" type="run" file="LibLRealMath.Mod">
+      Imports the module <code>LRealMath</code>.  This module is a
+      wrapper around the equivalent functions from the C math library.
+      The test module checks that the names of the math functions
+      can be resolved by the linker.
+    </test>
+
+    <test id="lib_RealConv_ScanReal1" type="run"
+          file="LibRealConvScanReal1.Mod" output="LibRealConvScanReal1.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers without 
+      fractional part or exponent.
+    </test>
+     
+    <test id="lib_RealConv_ScanReal2" type="run"
+          file="LibRealConvScanReal2.Mod" output="LibRealConvScanReal2.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with
+      fractional parts.
+    </test>
+     
+    <test id="lib_RealConv_ScanReal3" type="run"
+          file="LibRealConvScanReal3.Mod" output="LibRealConvScanReal3.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with exponents.
+    </test>
+
+    <test id="lib_RealConv_FormatReal1" type="run"
+          file="LibRealConvFormatReal1.Mod"
+	  output="LibRealConvFormatReal1.Ref">
+      Use <code>FormatReal</code> to classify a number of strings.
+      Only syntax is tested, not overflow errors.
+    </test>
+
+    <test id="lib_RealConv_FormatReal2" type="run"
+          file="LibRealConvFormatReal2.Mod"
+	  output="LibRealConvFormatReal2.Ref">
+      Use <code>FormatReal</code> to classify a number of strings.
+      The tests check that out of range numbers are classified correctly.
+    </test>    
+    
+    <test id="lib_RealConv_ValueReal1" type="run"
+          file="LibRealConvValueReal1.Mod"
+	  output="LibRealConvValueReal1.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>REAL</code>.  Only values that can be represented as
+      normalized numbers.
+    </test>
+    <test id="lib_RealConv_ValueReal2" type="run"
+          file="LibRealConvValueReal2.Mod"
+	  output="LibRealConvValueReal2.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>REAL</code>.  Only values that can be represented as
+      denormalized numbers.
+    </test>
+    <test id="lib_RealConv_ValueReal3" type="run" relevance="informal"
+          file="LibRealConvValueReal3.Mod"
+          output="LibRealConvValueReal3.Ref">
+      A special case of <code>lib_RealConv_ValueReal1</code>: Test if
+      the value <code>-0.0</code> is indeed written with a minus
+      sign.  Because some C libraries omit the sign, this test is 
+      informal.
+    </test>
+    
+
+    <test id="lib_RealStr_StrToReal1" type="run" relevance="informal"
+          file="LibRealStrStrToReal1.Mod"
+	  output="LibRealStrStrToReal1.Ref">
+      Use <code>StrToReal</code> to convert strings to floating point
+      numbers.
+    </test>
+ 
+    <test id="lib_RealStr_RealToFloat1" type="run"
+          file="LibRealStrRealToFloat1.Mod"
+	  output="LibRealStrRealToFloat1.Ref">
+      Use <code>RealToFloat</code> to convert <code>REAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+      
+    <test id="lib_RealStr_RealToEng1" type="run"
+          file="LibRealStrRealToEng1.Mod"
+	  output="LibRealStrRealToEng1.Ref">
+      Use <code>RealToEng</code> to convert <code>REAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_RealStr_RealToFixed1" type="run" relevance="informal"
+          file="LibRealStrRealToFixed1.Mod"
+	  output="LibRealStrRealToFixed1.Ref">
+      Use <code>RealToFixed</code> to convert <code>REAL</code>
+      values to strings.  <code>place</code> is a non-negative number.
+      Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_RealStr_RealToFixed2" type="run"
+          file="LibRealStrRealToFixed2.Mod"
+	  output="LibRealStrRealToFixed2.Ref">
+      Use <code>RealToFixed</code> to convert <code>REAL</code>
+      values to strings.  <code>place</code> is a negative number.
+      Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_RealStr_RealToStr1" type="run"
+          file="LibRealStrRealToStr1.Mod"
+	  output="LibRealStrRealToStr1.Ref">
+      Use <code>RealToStr</code> to convert <code>REAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+    
+    <test id="lib_RealMath" type="run" file="LibRealMath.Mod">
+      Imports the module <code>LRealMath</code>.  This module is a
+      wrapper around the equivalent functions from the C math library.
+      The test module checks that the names of the math functions
+      can be resolved by the linker.
+    </test>
+
+
+    <test id="lib_SysClock" type="run" file="LibSysClock.Mod">
+      Imports the module <code>SysClock</code>.  This checks if the
+      module compiles and can be linked.
+    </test>
+
+    <test id="lib_Termination" type="run"
+          file="LibTermination.Mod" output="LibTermination.Ref">
+      Uses <code>Termination</code> to print out a message on program
+      exit.
+    </test>
+
+    <test id="lib_Time" type="run" file="LibTime.Mod">
+      Imports the module <code>Time</code>.  No further tests.
+    </test>
+    
+    <test id="lib_LongStrings_Short1" type="run"
+          file="LibLongStringsShort1.Mod" output="LibLongStringsShort1.Ref">
+      Use <code>Short</code> to convert array of <code>LONGCHAR</code> 
+      to <code>CHAR</code>.
+    </test>
+    
+    <test id="lib_LongStrings_Long1" type="run"
+          file="LibLongStringsLong1.Mod" output="LibLongStringsLong1.Ref">
+      Use <code>Long</code> to convert array of <code>CHAR</code> 
+      to <code>LONGCHAR</code>.
+    </test>
+    
+    <test id="lib_Msg1" type="run" file="LibMsg1.Mod" output="LibMsg1.Ref">
+      Imports the module <code>Msg</code>.  Instanciate some messages
+      and message attributes, and write them out.
+    </test>
+    
+    <test id="lib_Channel" type="run" file="LibChannel.Mod">
+      Imports the module <code>Channel</code>.  No further tests.
+    </test>
+    
+    <test id="lib_PosixFileDescr" type="run" file="LibPosixFileDescr.Mod">
+      Imports the module <code>PosixFileDescr</code>.  No further tests.
+    </test>
+    
+    <test id="lib_StdChannels" type="run" file="LibStdChannels.Mod">
+      Imports the module <code>StdChannels</code>.  No further tests.
+    </test>
+    
+    <test id="lib_TextRider" type="run" file="LibTextRider.Mod">
+      Imports the module <code>TextRider</code>.  No further tests.
+    </test>
+    
+    <test id="lib_Out" type="run" file="LibOut.Mod" output="LibOut.Ref">
+      Imports the module <code>Out</code>.  Minimal output tests.
+    </test>
+    
+    <test id="lib_Err" type="run" file="LibErr.Mod">
+      Imports the module <code>Err</code>.  No further tests.
+    </test>
+    
+    <test id="lib_Log" type="run" file="LibLog.Mod">
+      Imports the module <code>Log</code>.  No further tests.
+    </test>
+    
+    <test id="lib_In" type="run" file="LibIn.Mod">
+      Imports the module <code>In</code>.  No further tests.
+    </test>
+    
+    <test id="lib_Files" type="run" file="LibFiles.Mod">
+      Imports the module <code>Files</code>.  No further tests.
+    </test>
+    
+    <test id="lib_ProgramArgs" type="run" file="LibProgramArgs.Mod">
+      Imports the module <code>ProgramArgs</code>.  No further tests.
+    </test>
+    
+    <test id="lib_BinaryRider" type="run" file="LibBinaryRider.Mod">
+      Imports the module <code>BinaryRider</code>.  No further tests.
+    </test>
+    
+
+    <test id="lib_STRING" type="run"
+          file="LibSTRING.Mod" output="LibSTRING.Ref">
+      Tests integration of the string module with the predefined
+      type <code>STRING</code>.
+    </test>
+    <test id="lib_STRING2" type="reject" file="LibSTRING2.Mod">
+      Cannot pass a constant to a <code>VAR</code> parameter of type
+      <code>STRING</code>.
+    </test>
+    <test id="lib_STRING3" type="run"
+          file="LibSTRING3.Mod" output="LibSTRING3.Ref">
+      Check that conversion of <code>LONGCHAR</code> character
+      constants and strings to <code>STRING</code> works.
+    </test>
+    <test id="lib_STRING4" type="run"
+          file="LibSTRING4.Mod" output="LibSTRING4.Ref">
+      Tests concatenation of <code>STRING</code> values.
+    </test>
+    <test id="lib_STRING5" type="run"
+          file="LibSTRING5.Mod" output="LibSTRING5.Ref">
+      Character constant <code>0X</code> is converted to a string of
+      length 1, holding the character <code>0X</code>.
+    </test>
+    <test id="lib_STRING6" type="run"
+          file="LibSTRING6.Mod" output="LibSTRING6.Ref">
+      Conversion of string constant to <code>STRING</code> also works
+      with <code>RETURN</code>.
+    </test>
+    <test id="lib_STRING7" type="run"
+          file="LibSTRING7.Mod" output="LibSTRING7.Ref">
+      Conversion is done if source is a string constant, and target
+      an instance of <code>Object.Object</code>.
+    </test>
+    
+    <test id="lib_Exception1" type="run"
+          file="LibException1.Mod" output="LibException1.Ref">
+      Minimal <code>TRY-CATCH</code> statement, calling
+      <code>Exception.Raise</code> to raise an exception.
+    </test>
+    <test id="lib_Exception2" type="run"
+          file="LibException2.Mod" output="LibException2.Ref">
+      <code>TRY-CATCH</code> statement with three catch clauses.
+    </test>
+    <test id="lib_Exception3" type="run"
+          file="LibException3.Mod" output="LibException3.Ref">
+      Borderline case: <code>TRY</code> statement without any
+      <code>CATCH</code> clause.
+    </test>
+    <test id="lib_Exception4" type="error" file="LibException4.Mod">
+      Exception being raised outside a <code>TRY</code> statement.
+    </test>
+    <test id="lib_Exception5" type="error" file="LibException5.Mod">
+      Exception being raised in a <code>TRY</code> statement without
+      a matching catch clause.
+    </test>
+    <test id="lib_Exception6" type="reject" file="LibException6.Mod">
+      Type of catch clause is not an extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception7" type="reject" file="LibException7.Mod">
+      Qualident of catch clause is not a type name.
+    </test>
+    <test id="lib_Exception8" type="run" file="LibException8.Mod"
+      output="LibException8.Ref">
+      <code>EXIT</code> needs to clean up enclosing <code>TRY</code>.
+    </test>
+    <test id="lib_Exception9" type="run" file="LibException9.Mod"
+      output="LibException9.Ref">
+      <code>RETURN</code> needs to clean up enclosing <code>TRY</code>.
+    </test>
+    <test id="lib_Exception10" type="run" file="LibException10.Mod"
+      output="LibException10.Ref">
+      Assignments to local variables within a <code>TRY</code> are
+      visible in the catch clauses and after the statement.
+    </test>
+    <test id="lib_Exception11" type="run" file="LibException11.Mod"
+      output="LibException11.Ref">
+      Assignments to local variables within a <code>TRY</code> are
+      visible in the catch clauses.
+    </test>
+    <test id="lib_Exception12" type="run" file="LibException12.Mod"
+      output="LibException12.Ref">
+      Assignments to local variables within a <code>TRY</code> are
+      visible after the statement.
+    </test>
+    <test id="lib_Exception13" type="run" file="LibException13.Mod"
+      output="LibException13.Ref">
+      Similar to <code>lib_Exception10</code>, but the
+      <code>TRY</code> is part of a nested procedure.
+    </test>
+    <test id="lib_Exception14" type="accept" file="LibException14.Mod">
+      Procedure declaration with <code>RAISES</code> clause.
+    </test>
+    <test id="lib_Exception15" type="reject" file="LibException15.Mod">
+      Type referenced in <code>RAISES</code> clause does not exist.
+    </test>
+    <test id="lib_Exception16" type="reject" file="LibException16.Mod">
+      Name referenced in <code>RAISES</code> clause is not a type.
+    </test>
+    <test id="lib_Exception17" type="reject" file="LibException17.Mod">
+      Type in <code>RAISES</code> clause is not an extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception18" type="accept" file="LibException18.Mod">
+      Tests redefinition of methods with exception declarations.
+      Three cases are covered: same set of exceptions, smaller set,
+      and using an exception that is an extension of one of the base
+      exceptions.
+    </test>
+    <test id="lib_Exception19" type="reject" file="LibException19.Mod">
+      Redefinition cannot raise more exceptions than the base method.
+    </test>
+    <test id="lib_Exception20" type="reject" file="LibException20.Mod">
+      Redefinition's exception must be extension of one of the base
+      method. 
+    </test>
+    <test id="lib_Exception21" type="reject" file="LibException21.Mod">
+      It is an error if an exception is not caught in a procedure or
+      explicitly passed upward.
+    </test>
+    <test id="lib_Exception22" type="accept" file="LibException22.Mod">
+      It is only a warning if an exception is not caught within a
+      module body.
+    </test>
+    <test id="lib_Exception23" type="run" file="LibException23.Mod"
+      output="LibException23.Ref">
+      Like <code>lib_Exception1</code>, but use the predefined
+      procedure <code>RAISE</code> to raise an exception.
+    </test>
+    <test id="lib_Exception24" type="accept" file="LibException24.Mod"
+      output="LibException24.Ref">
+      Use <code>RAISE</code> with an extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception25" type="reject" file="LibException25.Mod">
+      Calling <code>RAISE</code> with a value that is no extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception26" type="accept" file="LibException26.Mod">
+      Two variants of unreachable <code>CATCH</code> clauses.
+    </test>
+    <test id="lib_Exception27" type="accept" file="LibException27.Mod">
+      In the C output, both variables should be flagged
+      <code>volatile</code>.  This test should be in
+      <code>tests/ssa-c-output/</code>.
+    </test>
+    <test id="lib_Exception28" type="run" file="LibException28.Mod"
+      output="LibException28.Ref">
+      Re-raising an exception with a <code>CATCH</code> block.
+    </test>
+    <test id="lib_Exception29" type="run" file="LibException29.Mod"
+      output="LibException29.Ref">
+      Within a <code>CATCH</code> block, the name given in the clause
+      refers to the value of <code>Exception.Current()</code>.
+    </test>
+    <test id="lib_Exception30" type="run" file="LibException30.Mod"
+      output="LibException30.Ref">
+      The type of an exception variable is the one from the guard of
+      the <code>CATCH</code> block.
+    </test>
+    <test id="lib_Exception31" type="reject" file="LibException31.Mod">
+      The special variable <code>EXCEPTION</code> is read-only.
+    </test>
+    <test id="lib_Exception32" type="reject" file="LibException32.Mod">
+      The special variable <code>EXCEPTION</code> does not exist
+      outside a <code>CATCH</code> block.
+    </test>
+    <test id="lib_Exception33" type="run" file="LibException33.Mod"
+      output="LibException33.Ref">
+      If a @code{TRY} is used within a @code{CATCH} block, than
+      restore the current exception after the nested @code{TRY}.
+    </test>
+    <test id="lib_Exception34" type="accept" file="LibException34.Mod">
+      Raising an unchecked exception is possible without a
+      surrounding <code>TRY</code> or a <code>RAISES</code>
+      declaration.
+    </test>
+    <test id="lib_Exception35" type="accept" file="LibException35.Mod">
+      Unchecked exceptions in a procedure's <code>RAISES</code> list
+      are ignored when calling the procedure.
+    </test>
+    <test id="lib_Exception36" type="accept" file="LibException36.Mod">
+      There is no warning for <code>CATCH</code> clauses on
+      unchecked exceptions if the <code>TRY</code> block contains no
+      code that may raise it.
+    </test>
+    <test id="lib_Exception37" type="reject" file="LibException37.Mod">
+      All exceptions derived from <code>Exception.Checked</code>
+      inherit the "checked" property.
+    </test>
+    
+    <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">
+      Tests most of the functions of the <code>BigInt</code>
+      implementation.
+    </test>
+
+    <test id="lib_Finalize1" type="run" relevance="informal"
+          file="LibFinalize1.Mod" output="LibFinalize1.Ref">
+      A type that implements RT0:ObjectDesc.Finalize is finalized. This test
+      may fail if the GC does not always free all collectable objects.
+    </test>
+   
+    <test id="lib_Finalize2" type="run" relevance="informal"
+          file="LibFinalize2.Mod" output="LibFinalize2.Ref">
+	  A type that does not extend RT0:ObjectDesc is not finalized.
+    </test>
+
+    <test id="lib_WeakRef1" type="run" relevance="informal"
+          file="LibWeakRef1.Mod" output="LibWeakRef1.Ref">
+      Weak references do not prevent a record from being freed, and are cleared
+      when the referenced record is reclaimed by the GC. This test may fail if
+      the GC does not always free all collectable objects.
+    </test>
+    </testcases>
+
+  &libadt-testcases;
+  &libos-testcases;
+  &libio-testcases;
+  &liburi-testcases;
+  &libxml-testcases;
+
+  <processor-info processor-name="oo2c">
+    <reject-info id="lib_STRING2" pos="Write(%&quot;abc"
+      msg="This must be a variable"/>
+
+    <reject-info id="lib_Exception6" pos="CATCH Exception.%CheckedDesc:"
+      msg="Type is not an extension of `Exception.Exception'"/>
+    <reject-info id="lib_Exception7" pos="CATCH %e:"
+      msg="Type name expected"/>
+    <reject-info id="lib_Exception15" pos="Exception.%Foo"
+      msg="Undeclared identifier"/>
+    <reject-info id="lib_Exception16" pos="%Exception.Clear"
+      msg="Data type expected"/>
+    <reject-info id="lib_Exception17" pos="RAISES %Exception"
+      msg="Type is not an extension of `Exception.Exception'"/>
+    <reject-info id="lib_Exception19" pos=" %P1()"
+      msg="Formal parameters don't match inherited declaration"/>
+    <reject-info id="lib_Exception20" pos=" %P1()"
+      msg="Formal parameters don't match inherited declaration"/>
+    <reject-info id="lib_Exception21" pos="Exception.%Raise"
+      msg="Exception `Exception.Exception' neither caught nor passed up"/>
+    <reject-info id="lib_Exception25" pos="RAISE(%NewException"
+      msg="Type is not an extension of `Exception.Exception'"/>
+    <reject-info id="lib_Exception31" pos="%e := "
+      msg="This must be a variable"/>
+    <reject-info id="lib_Exception32" pos="e := %EXCEPTION"
+      msg="Undeclared identifier"/>
+    <reject-info id="lib_Exception37" pos="%RAISE"
+      msg="Exception `LibException37.E' neither caught nor passed up"/>
+  </processor-info>
+</testsuite-ext>

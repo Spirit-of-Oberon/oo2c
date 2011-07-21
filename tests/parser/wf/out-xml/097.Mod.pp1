@@ -1,0 +1,5 @@
+MODULE M;
+
+CONST
+  x = 1;
+END M.

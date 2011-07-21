@@ -1,0 +1,121 @@
+#ifndef _MODULE_Config_Parser_
+#define _MODULE_Config_Parser_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <XML/EntityResolver.oh>
+#include <XML/Builder.oh>
+#include <XML/DTD.oh>
+#include <XML/Error.oh>
+#include <XML/Locator.oh>
+#include <XML/Parser.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_CHAR16 Config_Parser__Char;
+typedef OOC_CHAR16 Config_Parser__String[];
+typedef XML_UnicodeBuffer__CharArray Config_Parser__StringPtr;
+typedef struct Config_Parser__ElementDesc *Config_Parser__Element;
+typedef struct Config_Parser__NodeDesc *Config_Parser__Node;
+typedef struct Config_Parser__NodeDesc {
+  Config_Parser__Node nextNode;
+  struct XML_Locator__Position pos;
+  Config_Parser__Element parent;
+} Config_Parser__NodeDesc;
+typedef struct Config_Parser__CharDataDesc *Config_Parser__CharData;
+typedef struct Config_Parser__CharDataDesc {
+  Config_Parser__Node nextNode;
+  struct XML_Locator__Position pos;
+  Config_Parser__Element parent;
+  XML_UnicodeBuffer__CharArray string;
+} Config_Parser__CharDataDesc;
+typedef struct Config_Parser__ElementDesc {
+  Config_Parser__Node nextNode;
+  struct XML_Locator__Position pos;
+  Config_Parser__Element parent;
+  XML_UnicodeBuffer__CharArray name;
+  XML_Builder__AttributeList attrList;
+  Config_Parser__Node content;
+  Config_Parser__Node contentTail;
+} Config_Parser__ElementDesc;
+typedef struct Config_Parser__BuilderDesc *Config_Parser__Builder;
+typedef struct Config_Parser__BuilderDesc {
+  XML_Locator__Locator l;
+  XML_Locator__ErrorListener errorListener;
+  Config_Parser__Element root;
+  Config_Parser__Element stack;
+  XML_UnicodeBuffer__CharArray currElement;
+  struct XML_Locator__Position currPos;
+  XML_Builder__AttributeList currAttrList;
+} Config_Parser__BuilderDesc;
+typedef struct Config_Parser__ParserDesc *Config_Parser__Parser;
+typedef struct Config_Parser__ParserDesc {
+  XML_Parser__Parser xmlParser;
+  Config_Parser__Builder builder;
+  XML_Error__List errList;
+  Config_Parser__Element root;
+  XML_Locator__ErrorListener errorListener;
+} Config_Parser__ParserDesc;
+typedef struct Config_Parser__ResolverDesc *Config_Parser__Resolver;
+typedef struct Config_Parser__ResolverDesc {
+  char __dummy;
+} Config_Parser__ResolverDesc;
+extern void Config_Parser__BuilderDesc_SetLocator(Config_Parser__Builder b, XML_Locator__Locator l);
+#define _TBN_Config_Parser__BuilderDesc_SetLocator 0
+typedef void (*_TBP_Config_Parser__BuilderDesc_SetLocator)(Config_Parser__Builder b, XML_Locator__Locator l);
+extern void Config_Parser__BuilderDesc_SetErrorListener(Config_Parser__Builder b, XML_Locator__ErrorListener errorListener);
+#define _TBN_Config_Parser__BuilderDesc_SetErrorListener 1
+typedef void (*_TBP_Config_Parser__BuilderDesc_SetErrorListener)(Config_Parser__Builder b, XML_Locator__ErrorListener errorListener);
+extern void Config_Parser__BuilderDesc_StartElement(Config_Parser__Builder b, XML_DTD__NamespaceDeclaration namespaceURI, XML_UnicodeBuffer__CharArray localName);
+#define _TBN_Config_Parser__BuilderDesc_StartElement 6
+typedef void (*_TBP_Config_Parser__BuilderDesc_StartElement)(Config_Parser__Builder b, XML_DTD__NamespaceDeclaration namespaceURI, XML_UnicodeBuffer__CharArray localName);
+extern void Config_Parser__BuilderDesc_Attribute(Config_Parser__Builder b, XML_DTD__NamespaceDeclaration namespaceURI, XML_UnicodeBuffer__CharArray localName, XML_DTD__AttrDecl attrDecl, XML_DTD__AttValue value, OOC_CHAR8 specified);
+#define _TBN_Config_Parser__BuilderDesc_Attribute 8
+typedef void (*_TBP_Config_Parser__BuilderDesc_Attribute)(Config_Parser__Builder b, XML_DTD__NamespaceDeclaration namespaceURI, XML_UnicodeBuffer__CharArray localName, XML_DTD__AttrDecl attrDecl, XML_DTD__AttValue value, OOC_CHAR8 specified);
+extern void Config_Parser__BuilderDesc_AttributesDone(Config_Parser__Builder b);
+#define _TBN_Config_Parser__BuilderDesc_AttributesDone 10
+typedef void (*_TBP_Config_Parser__BuilderDesc_AttributesDone)(Config_Parser__Builder b);
+extern void Config_Parser__BuilderDesc_EndElement(Config_Parser__Builder b, XML_DTD__NamespaceDeclaration namespaceURI, XML_UnicodeBuffer__CharArray localName);
+#define _TBN_Config_Parser__BuilderDesc_EndElement 7
+typedef void (*_TBP_Config_Parser__BuilderDesc_EndElement)(Config_Parser__Builder b, XML_DTD__NamespaceDeclaration namespaceURI, XML_UnicodeBuffer__CharArray localName);
+extern void Config_Parser__BuilderDesc_Characters(Config_Parser__Builder b, XML_DTD__StringVar chars, OOC_LEN chars_0d, OOC_INT32 charsStart, OOC_INT32 charsEnd, OOC_INT8 elementWhitespace);
+#define _TBN_Config_Parser__BuilderDesc_Characters 12
+typedef void (*_TBP_Config_Parser__BuilderDesc_Characters)(Config_Parser__Builder b, XML_DTD__StringVar chars, OOC_LEN chars_0d, OOC_INT32 charsStart, OOC_INT32 charsEnd, OOC_INT8 elementWhitespace);
+extern Config_Parser__Parser Config_Parser__NewFile(Object__String filePath);
+extern Config_Parser__Parser Config_Parser__NewChannel(IO__ByteChannel ch);
+extern void Config_Parser__ParserDesc_ParseDocument(Config_Parser__Parser p);
+#define _TBN_Config_Parser__ParserDesc_ParseDocument 0
+typedef void (*_TBP_Config_Parser__ParserDesc_ParseDocument)(Config_Parser__Parser p);
+extern OOC_CHAR8 Config_Parser__NodeDesc_IsWhitespace(Config_Parser__Node node);
+#define _TBN_Config_Parser__NodeDesc_IsWhitespace 0
+typedef OOC_CHAR8 (*_TBP_Config_Parser__NodeDesc_IsWhitespace)(Config_Parser__Node node);
+extern OOC_CHAR8 Config_Parser__NodeDesc_HasNoElementContent(Config_Parser__Node node);
+#define _TBN_Config_Parser__NodeDesc_HasNoElementContent 1
+typedef OOC_CHAR8 (*_TBP_Config_Parser__NodeDesc_HasNoElementContent)(Config_Parser__Node node);
+extern OOC_CHAR8 Config_Parser__NodeDesc_IsEmpty(Config_Parser__Node node);
+#define _TBN_Config_Parser__NodeDesc_IsEmpty 2
+typedef OOC_CHAR8 (*_TBP_Config_Parser__NodeDesc_IsEmpty)(Config_Parser__Node node);
+extern XML_UnicodeBuffer__CharArray Config_Parser__NodeDesc_GetCharDataContent(Config_Parser__Node node);
+#define _TBN_Config_Parser__NodeDesc_GetCharDataContent 3
+typedef XML_UnicodeBuffer__CharArray (*_TBP_Config_Parser__NodeDesc_GetCharDataContent)(Config_Parser__Node node);
+extern void OOC_Config_Parser_init(void);
+extern void OOC_Config_Parser_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Config_Parser__String;
+extern RT0__StructDesc _td_Config_Parser__Element;
+extern RT0__StructDesc _td_Config_Parser__Node;
+extern RT0__StructDesc _td_Config_Parser__NodeDesc;
+extern RT0__StructDesc _td_Config_Parser__CharData;
+extern RT0__StructDesc _td_Config_Parser__CharDataDesc;
+extern RT0__StructDesc _td_Config_Parser__ElementDesc;
+extern RT0__StructDesc _td_Config_Parser__Builder;
+extern RT0__StructDesc _td_Config_Parser__BuilderDesc;
+extern RT0__StructDesc _td_Config_Parser__Parser;
+extern RT0__StructDesc _td_Config_Parser__ParserDesc;
+extern RT0__StructDesc _td_Config_Parser__Resolver;
+extern RT0__StructDesc _td_Config_Parser__ResolverDesc;
+#endif /* _MODULE_Config_Parser_ */
+
+/* --- */

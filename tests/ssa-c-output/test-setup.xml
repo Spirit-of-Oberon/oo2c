@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE test-setup SYSTEM "../../rsrc/OOC/TestFramework/test-setup.dtd">
+
+<test-setup lang="O2">
+  &test-env;
+  
+  <processor name="TestCompile"
+	     version="devel"
+	     command="../../bin/TestCompile"
+	     config-file=""
+	     working-dir="wd" 
+	     flags="--config $OOC_DEV_ROOT/oo2crc-install.xml --error-style char-pos -r ../lib-TestCompile -r wd --use-ssa"
+	     filter-command="&OOEF;" 
+	     diff-command="&DIFF;" 
+	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"
+	     />
+
+  <test-suite uri="testsuite.xml" />
+</test-setup>

@@ -1,0 +1,46 @@
+#ifndef _MODULE_OOC_Doc_Decoration_
+#define _MODULE_OOC_Doc_Decoration_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/Scanner/InputBuffer.oh>
+#include <OOC/Scanner/SymList.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_Scanner_InputBuffer__CharArray OOC_Doc_Decoration__String;
+#define OOC_Doc_Decoration__removedSpace (OOC_CHAR8)'\002'
+#define OOC_Doc_Decoration__removedTab (OOC_CHAR8)'\003'
+typedef struct OOC_Doc_Decoration__DecorationDesc *OOC_Doc_Decoration__Decoration;
+typedef struct OOC_Doc_Decoration__DecorationDesc {
+  OOC_INT32 indent;
+  OOC_INT32 scrWidth;
+} OOC_Doc_Decoration__DecorationDesc;
+typedef struct OOC_Doc_Decoration__PlainIndentDesc *OOC_Doc_Decoration__PlainIndent;
+typedef struct OOC_Doc_Decoration__PlainIndentDesc {
+  OOC_INT32 indent;
+  OOC_INT32 scrWidth;
+  OOC_INT32 startOffset;
+} OOC_Doc_Decoration__PlainIndentDesc;
+extern OOC_Scanner_InputBuffer__CharArray OOC_Doc_Decoration__Remove(OOC_Scanner_SymList__Symbol sym, OOC_Doc_Decoration__Decoration *deco);
+extern OOC_Scanner_InputBuffer__CharArray OOC_Doc_Decoration__DecorationDesc_Decorate(OOC_Doc_Decoration__Decoration d, OOC_Scanner_InputBuffer__CharArray s);
+#define _TBN_OOC_Doc_Decoration__DecorationDesc_Decorate 0
+typedef OOC_Scanner_InputBuffer__CharArray (*_TBP_OOC_Doc_Decoration__DecorationDesc_Decorate)(OOC_Doc_Decoration__Decoration d, OOC_Scanner_InputBuffer__CharArray s);
+extern OOC_Scanner_InputBuffer__CharArray OOC_Doc_Decoration__PlainIndentDesc_Decorate(OOC_Doc_Decoration__PlainIndent d, OOC_Scanner_InputBuffer__CharArray s);
+#define _TBN_OOC_Doc_Decoration__PlainIndentDesc_Decorate 0
+typedef OOC_Scanner_InputBuffer__CharArray (*_TBP_OOC_Doc_Decoration__PlainIndentDesc_Decorate)(OOC_Doc_Decoration__PlainIndent d, OOC_Scanner_InputBuffer__CharArray s);
+extern void OOC_OOC_Doc_Decoration_init(void);
+extern void OOC_OOC_Doc_Decoration_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Doc_Decoration__Decoration;
+extern RT0__StructDesc _td_OOC_Doc_Decoration__DecorationDesc;
+extern RT0__StructDesc _td_OOC_Doc_Decoration__PlainIndent;
+extern RT0__StructDesc _td_OOC_Doc_Decoration__PlainIndentDesc;
+extern RT0__StructDesc _td_OOC_Doc_Decoration__DotLineIndent;
+extern RT0__StructDesc _td_OOC_Doc_Decoration__DotLineIndentDesc;
+extern RT0__StructDesc _td_OOC_Doc_Decoration__1937;
+extern RT0__StructDesc _td_OOC_Doc_Decoration__7687;
+#endif /* _MODULE_OOC_Doc_Decoration_ */
+
+/* --- */

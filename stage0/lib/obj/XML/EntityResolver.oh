@@ -1,0 +1,31 @@
+#ifndef _MODULE_XML_EntityResolver_
+#define _MODULE_XML_EntityResolver_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <URI.oh>
+#include <XML/DTD.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct XML_EntityResolver__ResolverDesc *XML_EntityResolver__Resolver;
+typedef struct XML_EntityResolver__ResolverDesc {
+  char __dummy;
+} XML_EntityResolver__ResolverDesc;
+extern XML_DTD__StringURI XML_EntityResolver__NormalizeURI(XML_UnicodeBuffer__CharArray uri);
+extern void XML_EntityResolver__ResolverDesc_GetURI(volatile XML_EntityResolver__Resolver r, volatile XML_UnicodeBuffer__CharArray _public, volatile XML_UnicodeBuffer__CharArray system, volatile URI__URI baseURI, volatile URI__URI *uri, volatile Msg__Msg *res);
+#define _TBN_XML_EntityResolver__ResolverDesc_GetURI 0
+typedef void (*_TBP_XML_EntityResolver__ResolverDesc_GetURI)(XML_EntityResolver__Resolver r, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, URI__URI baseURI, URI__URI *uri, Msg__Msg *res);
+extern XML_EntityResolver__Resolver XML_EntityResolver__New(void);
+extern void OOC_XML_EntityResolver_init(void);
+extern void OOC_XML_EntityResolver_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_EntityResolver__Resolver;
+extern RT0__StructDesc _td_XML_EntityResolver__ResolverDesc;
+extern RT0__StructDesc _td_XML_EntityResolver__1709;
+extern RT0__StructDesc _td_XML_EntityResolver__1741;
+#endif /* _MODULE_XML_EntityResolver_ */
+
+/* --- */

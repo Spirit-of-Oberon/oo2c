@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<testcases profile="OOC Core Library" default-lang="O2">
+  <test id="libos_Path" type="run" file="LibOsPath.Mod">
+    Checks the functions of module <code>OS:Path</code>.
+  </test>
+  <test id="libos_ProcessParameters" type="run"
+        file="LibOsProcessParameters.Mod">
+    Imports module <code>OS:ProcessParameters</code>.
+  </test>
+  <test id="libos_ProcessManagement" type="run"
+        file="LibOsProcessManagement.Mod">
+    Imports module <code>OS:ProcessManagement</code>.
+  </test>
+  <test id="libos_Files" type="run" file="LibOsFiles.Mod">
+    Imports module <code>OS:Files</code>.
+  </test>
+</testcases>

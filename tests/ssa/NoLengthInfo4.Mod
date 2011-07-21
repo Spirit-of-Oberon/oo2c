@@ -1,0 +1,8 @@
+MODULE NoLengthInfo4;
+
+VAR
+  a*: POINTER TO ARRAY [NO_LENGTH_INFO] OF CHAR;
+  x: LONGINT;
+BEGIN
+  x := LEN(a^);
+END NoLengthInfo4.

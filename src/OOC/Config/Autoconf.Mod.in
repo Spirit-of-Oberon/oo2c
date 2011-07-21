@@ -1,0 +1,32 @@
+MODULE OOC:Config:Autoconf;
+
+(**This module provides all constants that are defined by running
+   @code{./configure} in the top-level directory.  *)
+
+CONST
+  configFile* = "@prefix@/lib/oo2c/oo2crc.xml";
+  (**Default configuration file to be used if no --config is given and
+     OO2CRC is not set.  *)
+  nameTargetOS* = "@TARGET_OS@";
+  (**Target operating system.  Currently either Unix or Win32.
+     Note: Cygwin is classified as "Unix".  *)
+  bitsTargetInteger* = @ooc_target_integer@;
+  (**Number of bits of the largest supported integer type for the target.  *)
+  bitsTargetAddress* = @ooc_target_address@;
+  (**Number of bits of address type for the target.  *)
+
+  (* Version numbers, taken from configure.ac: *)
+  compilerVersion* = "@COMPILER_VERSION@";
+  compilerMajor* = @COMPILER_MAJOR@;
+  compilerMinor* = @COMPILER_MINOR@;
+  
+  (* Define address type for OOC:SymbolTable:Predef: *)
+  longint* = 6;
+  hugeint* = 7;
+  address* = @ooc_target_address_type@;
+
+  haveLibM* = @ooc_have_lib_m@;  (* used by TestCompile *)
+  haveLibDL* = @ooc_have_lib_dl@;  (* used by TestCompile *)
+  haveLibGC* = @ooc_have_lib_gc@;  (* used by TestCompile *)
+
+END OOC:Config:Autoconf.

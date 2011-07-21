@@ -1,0 +1,1 @@
+env $TEST_PROG foo -- bar

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- include data provided by configure: -->
+<!ENTITY % config SYSTEM "config.xml">
+%config;
+
+<!-- define entity that describes the test environment: -->
+<!ENTITY test-env SYSTEM "test-env.xml">
+
+
+
+<!ENTITY % URI "CDATA" >
+
+<!ELEMENT test-setup
+  (machine,
+   operating-system,
+   processor,
+   test-suite) >
+<!ATTLIST test-setup
+          lang NMTOKEN #REQUIRED>
+
+<!ELEMENT machine EMPTY>
+<!ATTLIST machine
+          model CDATA #REQUIRED
+          cpu CDATA #REQUIRED
+          ram CDATA #REQUIRED>
+
+<!ELEMENT operating-system (os-component*) >
+<!ATTLIST operating-system
+          name CDATA #REQUIRED 
+          version CDATA #REQUIRED >
+
+<!ELEMENT os-component (#PCDATA) >
+<!ATTLIST os-component
+          name CDATA #REQUIRED >
+
+<!ELEMENT processor EMPTY >
+<!ATTLIST processor
+          name CDATA #REQUIRED
+          version CDATA #REQUIRED
+          command CDATA #REQUIRED
+          config-file %URI; #IMPLIED
+          flags CDATA #REQUIRED 
+          working-dir CDATA #REQUIRED
+          filter-command CDATA #IMPLIED
+          diff-command CDATA #IMPLIED 
+          check-reject-command CDATA #IMPLIED >
+
+<!ELEMENT test-suite EMPTY >
+<!ATTLIST test-suite
+          uri %URI; #REQUIRED >

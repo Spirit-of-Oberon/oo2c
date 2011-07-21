@@ -1,0 +1,45 @@
+#ifndef _MODULE_XML_InputBuffer_
+#define _MODULE_XML_InputBuffer_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <IO.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_CHAR8 XML_InputBuffer__Char;
+typedef OOC_CHAR8 *XML_InputBuffer__CharArray;
+typedef OOC_INT32 XML_InputBuffer__CharPos;
+#define XML_InputBuffer__markerEOB (OOC_CHAR8)'\000'
+typedef struct XML_InputBuffer__BufferDesc *XML_InputBuffer__Buffer;
+typedef struct XML_InputBuffer__BufferDesc {
+  IO__ByteChannel r;
+  XML_InputBuffer__CharArray chars;
+  OOC_INT32 offsetFromPos0;
+  OOC_INT32 endOfBuffer;
+  OOC_INT32 discardable;
+  Msg__MsgList errList;
+} XML_InputBuffer__BufferDesc;
+#define XML_InputBuffer__sizeOfBuffer 16352
+extern OOC_CHAR8 XML_InputBuffer__BufferDesc_NextBlock(XML_InputBuffer__Buffer b);
+#define _TBN_XML_InputBuffer__BufferDesc_NextBlock 0
+typedef OOC_CHAR8 (*_TBP_XML_InputBuffer__BufferDesc_NextBlock)(XML_InputBuffer__Buffer b);
+extern OOC_CHAR8 XML_InputBuffer__BufferDesc_EndOfBuffer(XML_InputBuffer__Buffer b, OOC_INT32 cpos);
+#define _TBN_XML_InputBuffer__BufferDesc_EndOfBuffer 1
+typedef OOC_CHAR8 (*_TBP_XML_InputBuffer__BufferDesc_EndOfBuffer)(XML_InputBuffer__Buffer b, OOC_INT32 cpos);
+extern void XML_InputBuffer__BufferDesc_Close(XML_InputBuffer__Buffer b);
+#define _TBN_XML_InputBuffer__BufferDesc_Close 2
+typedef void (*_TBP_XML_InputBuffer__BufferDesc_Close)(XML_InputBuffer__Buffer b);
+extern XML_InputBuffer__Buffer XML_InputBuffer__New(IO__ByteChannel reader, Msg__MsgList errList);
+extern void OOC_XML_InputBuffer_init(void);
+extern void OOC_XML_InputBuffer_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_InputBuffer__317;
+extern RT0__StructDesc _td_XML_InputBuffer__CharArray;
+extern RT0__StructDesc _td_XML_InputBuffer__Buffer;
+extern RT0__StructDesc _td_XML_InputBuffer__BufferDesc;
+#endif /* _MODULE_XML_InputBuffer_ */
+
+/* --- */

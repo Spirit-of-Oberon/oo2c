@@ -1,0 +1,11 @@
+In file not-wf/024.txt: 
+Pragma not closed
+column=16
+line=0
+pos=16
+
+`ELSE' part already defined
+column=26
+line=0
+pos=26
+

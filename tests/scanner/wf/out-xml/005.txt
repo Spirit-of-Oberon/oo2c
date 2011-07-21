@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='module' pos='0' line='0' column='0'>MODULE</symbol>
+<symbol id='whitespace' pos='6' line='0' column='6'> </symbol>
+<symbol id='ident' pos='7' line='0' column='7'>Simple</symbol>
+<symbol id='semicolon' pos='13' line='0' column='13'>;</symbol>
+<symbol id='whitespace' pos='14' line='0' column='14'>&#10;</symbol>
+<symbol id='end' pos='15' line='1' column='0'>END</symbol>
+<symbol id='whitespace' pos='18' line='1' column='3'> </symbol>
+<symbol id='ident' pos='19' line='1' column='4'>Simple</symbol>
+<symbol id='period' pos='25' line='1' column='10'>.</symbol>
+<symbol id='whitespace' pos='26' line='1' column='11'>&#10;</symbol>
+<symbol id='endOfFile' pos='27' line='2' column='0'></symbol>
+</document>

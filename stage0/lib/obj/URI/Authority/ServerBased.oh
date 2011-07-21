@@ -1,0 +1,49 @@
+#ifndef _MODULE_URI_Authority_ServerBased_
+#define _MODULE_URI_Authority_ServerBased_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#include <ADT/StringBuffer.oh>
+#include <URI.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT32 URI_Authority_ServerBased__Port;
+typedef struct URI_Authority_ServerBased__AuthorityDesc *URI_Authority_ServerBased__Authority;
+typedef struct URI_Authority_ServerBased__AuthorityDesc {
+  Object__String userinfo;
+  Object__String host;
+  OOC_INT32 port;
+  OOC_INT32 defaultPort;
+} URI_Authority_ServerBased__AuthorityDesc;
+extern void URI_Authority_ServerBased__Init(URI_Authority_ServerBased__Authority auth, Object__String userinfo, Object__String host, OOC_INT32 port, OOC_INT32 defaultPort);
+extern URI_Authority_ServerBased__Authority URI_Authority_ServerBased__New(Object__String userinfo, Object__String host, OOC_INT32 port, OOC_INT32 defaultPort);
+extern URI_Authority_ServerBased__Authority URI_Authority_ServerBased__AuthorityDesc_Clone(URI_Authority_ServerBased__Authority auth);
+#define _TBN_URI_Authority_ServerBased__AuthorityDesc_Clone 0
+typedef URI_Authority_ServerBased__Authority (*_TBP_URI_Authority_ServerBased__AuthorityDesc_Clone)(URI_Authority_ServerBased__Authority auth);
+extern void URI_Authority_ServerBased__AuthorityDesc_Copy(URI_Authority_ServerBased__Authority auth, URI__Authority dest);
+#define _TBN_URI_Authority_ServerBased__AuthorityDesc_Copy 1
+typedef void (*_TBP_URI_Authority_ServerBased__AuthorityDesc_Copy)(URI_Authority_ServerBased__Authority auth, URI__Authority dest);
+extern void URI_Authority_ServerBased__AuthorityDesc_ParseAuthority(URI_Authority_ServerBased__Authority auth, Object__CharsLatin1 str, OOC_INT16 offset);
+#define _TBN_URI_Authority_ServerBased__AuthorityDesc_ParseAuthority 2
+typedef void (*_TBP_URI_Authority_ServerBased__AuthorityDesc_ParseAuthority)(URI_Authority_ServerBased__Authority auth, Object__CharsLatin1 str, OOC_INT16 offset);
+extern void URI_Authority_ServerBased__AuthorityDesc_WriteXML(URI_Authority_ServerBased__Authority auth, TextRider__Writer w);
+#define _TBN_URI_Authority_ServerBased__AuthorityDesc_WriteXML 3
+typedef void (*_TBP_URI_Authority_ServerBased__AuthorityDesc_WriteXML)(URI_Authority_ServerBased__Authority auth, TextRider__Writer w);
+extern void URI_Authority_ServerBased__AuthorityDesc_Append(URI_Authority_ServerBased__Authority auth, ADT_StringBuffer__StringBuffer sb);
+#define _TBN_URI_Authority_ServerBased__AuthorityDesc_Append 4
+typedef void (*_TBP_URI_Authority_ServerBased__AuthorityDesc_Append)(URI_Authority_ServerBased__Authority auth, ADT_StringBuffer__StringBuffer sb);
+extern void OOC_URI_Authority_ServerBased_init(void);
+extern void OOC_URI_Authority_ServerBased_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_URI_Authority_ServerBased__Authority;
+extern RT0__StructDesc _td_URI_Authority_ServerBased__AuthorityDesc;
+extern RT0__StructDesc _td_URI_Authority_ServerBased__8110;
+extern RT0__StructDesc _td_URI_Authority_ServerBased__8798;
+#endif /* _MODULE_URI_Authority_ServerBased_ */
+
+/* --- */

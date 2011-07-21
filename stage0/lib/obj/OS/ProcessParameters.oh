@@ -1,0 +1,21 @@
+#ifndef _MODULE_OS_ProcessParameters_
+#define _MODULE_OS_ProcessParameters_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <OS/Path.oh>
+#include <IO.oh>
+#include <IO/StdChannels.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern Object__String OS_ProcessParameters__GetCwd(void);
+extern Object__String OS_ProcessParameters__GetEnv(Object__String name);
+extern void OOC_OS_ProcessParameters_init(void);
+extern void OOC_OS_ProcessParameters_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OS_ProcessParameters_ */
+
+/* --- */

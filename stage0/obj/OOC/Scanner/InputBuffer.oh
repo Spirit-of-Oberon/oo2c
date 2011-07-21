@@ -1,0 +1,45 @@
+#ifndef _MODULE_OOC_Scanner_InputBuffer_
+#define _MODULE_OOC_Scanner_InputBuffer_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <IO.oh>
+#include <OOC/Error.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_CHAR8 OOC_Scanner_InputBuffer__Char;
+typedef OOC_CHAR8 *OOC_Scanner_InputBuffer__CharArray;
+typedef OOC_INT32 OOC_Scanner_InputBuffer__CharPos;
+#define OOC_Scanner_InputBuffer__markerEOB (OOC_CHAR8)'\000'
+typedef struct OOC_Scanner_InputBuffer__BufferDesc *OOC_Scanner_InputBuffer__Buffer;
+typedef struct OOC_Scanner_InputBuffer__BufferDesc {
+  IO__ByteChannel r;
+  OOC_Scanner_InputBuffer__CharArray chars;
+  OOC_INT32 offsetFromPos0;
+  OOC_INT32 endOfBuffer;
+  OOC_INT32 discardable;
+  OOC_Error__List errList;
+} OOC_Scanner_InputBuffer__BufferDesc;
+#define OOC_Scanner_InputBuffer__sizeOfBuffer 16352
+extern OOC_CHAR8 OOC_Scanner_InputBuffer__BufferDesc_NextBlock(OOC_Scanner_InputBuffer__Buffer b);
+#define _TBN_OOC_Scanner_InputBuffer__BufferDesc_NextBlock 0
+typedef OOC_CHAR8 (*_TBP_OOC_Scanner_InputBuffer__BufferDesc_NextBlock)(OOC_Scanner_InputBuffer__Buffer b);
+extern OOC_CHAR8 OOC_Scanner_InputBuffer__BufferDesc_EndOfBuffer(OOC_Scanner_InputBuffer__Buffer b, OOC_INT32 cpos);
+#define _TBN_OOC_Scanner_InputBuffer__BufferDesc_EndOfBuffer 1
+typedef OOC_CHAR8 (*_TBP_OOC_Scanner_InputBuffer__BufferDesc_EndOfBuffer)(OOC_Scanner_InputBuffer__Buffer b, OOC_INT32 cpos);
+extern void OOC_Scanner_InputBuffer__BufferDesc_Close(OOC_Scanner_InputBuffer__Buffer b);
+#define _TBN_OOC_Scanner_InputBuffer__BufferDesc_Close 2
+typedef void (*_TBP_OOC_Scanner_InputBuffer__BufferDesc_Close)(OOC_Scanner_InputBuffer__Buffer b);
+extern OOC_Scanner_InputBuffer__Buffer OOC_Scanner_InputBuffer__New(IO__ByteChannel ch, OOC_Error__List errList);
+extern void OOC_OOC_Scanner_InputBuffer_init(void);
+extern void OOC_OOC_Scanner_InputBuffer_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Scanner_InputBuffer__1296;
+extern RT0__StructDesc _td_OOC_Scanner_InputBuffer__CharArray;
+extern RT0__StructDesc _td_OOC_Scanner_InputBuffer__Buffer;
+extern RT0__StructDesc _td_OOC_Scanner_InputBuffer__BufferDesc;
+#endif /* _MODULE_OOC_Scanner_InputBuffer_ */
+
+/* --- */

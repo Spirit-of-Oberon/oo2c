@@ -1,0 +1,6 @@
+A @@noindent command can be followed by an empty line.
+
+@noindent
+
+
+The empty lines do not cancel its effect on the following paragraph.

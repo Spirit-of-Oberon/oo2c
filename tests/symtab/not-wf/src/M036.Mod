@@ -1,0 +1,7 @@
+MODULE M;
+
+VAR P: INTEGER;
+
+PROCEDURE ^ P;
+
+END M.

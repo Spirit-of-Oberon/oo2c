@@ -1,0 +1,17 @@
+In file not-wf/016.txt: 
+Pragma not closed
+column=0
+line=0
+pos=0
+
+Expected identifier
+column=30
+line=0
+pos=30
+
+Expected symbol `*>'
+column=30
+line=0
+pos=30
+sym_name=*>
+

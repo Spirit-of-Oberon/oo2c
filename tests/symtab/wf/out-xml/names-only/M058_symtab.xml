@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M058' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='20' line='1' column='7' ident_name='INTEGER' ident_pos='20' ident_line='1' ident_column='7'/>
+  <type_decl id='2' name='x' pos='18' line='1' column='5' visible_from='27' export='no' type_id='1'/>
+  <procedure_decl id='3' name='P' pos='39' line='2' column='10' visible_from='47' export='no' is_type_bound='no' is_forward_decl='no'>
+    <procedure_type id='4' pos='29' line='2' column='0' resultType='#none'>
+      <type_name id='5' pos='45' line='2' column='16' ident_name='x' ident_pos='45' ident_line='2' ident_column='16'/>
+      <var_decl id='6' name='x' pos='42' line='2' column='13' visible_from='46' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='no' type_id='5'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

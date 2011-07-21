@@ -1,0 +1,72 @@
+.TH ooef 1
+.UC 5
+.SH NAME
+ooef \- OOC error filter
+.SH SYNOPSIS
+.B oo2c
+.I --error-style char-pos
+.I ... 
+|
+.B ooef
+.RI [ options ]
+.br
+.B ooef
+.RI [ options ]
+.I <file-name>
+.I <pos>
+.SH DESCRIPTION
+The filter program 
+.B ooef
+can be used to transform error messages, as emitted by
+.BR oo2c ,
+into a more convenient format.  If no module name is given,
+.B ooef
+reads the output of 
+.B oo2c
+from 
+.IR stdin ,
+and writes a modified version to 
+.IR stdout .
+Error messages are rewritten, and the rest of the input is echoed.
+
+If a file name and a character position are passed as arguments,
+appropriate output is generated to designate the given position
+in the module's source text.
+
+.B NOTE:
+This tool has not been updated to work with
+.BR oo2c 's 
+default error style.  It only parses the old v1 style error format,
+which can be selected with
+.I --error-style
+.IR char-pos .
+.SH OPTIONS
+.TP
+.B --context, -c
+Write an extract of the source text and insert additional lines to
+point to the error position.  This is the default setting.  Lines
+are numbered starting at 1.
+.TP
+.B --line, -l
+Rewrite error message to
+.IR file:line:error .
+This will only give an approximation of the exact error position.  The
+first line has the index 1.
+.TP
+.B --linecol, -L
+Rewrite error message to
+.IR file:line,column:error .
+The first line has the number 1, likewise the first column.
+.TP
+.B --config <file>
+Use given file as configuration file.
+.TP
+.B --help, -h
+Write short usage summary and exit.
+.SH ENVIRONMENT
+.I OO2CRC
+holds the name of the configuration file.
+.SH SEE ALSO
+oo2c(1), OOC2 Reference Manual
+.SH AUTHOR
+Michael van Acken <mva@users.sf.net>

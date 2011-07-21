@@ -1,0 +1,2 @@
+MODULE M;
+END M.

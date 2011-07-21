@@ -1,0 +1,31 @@
+#ifndef _MODULE_ConvTypes_
+#define _MODULE_ConvTypes_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 ConvTypes__ConvResults;
+#define ConvTypes__strAllRight 0
+#define ConvTypes__strOutOfRange 1
+#define ConvTypes__strWrongFormat 2
+#define ConvTypes__strEmpty 3
+typedef OOC_INT8 ConvTypes__ScanClass;
+#define ConvTypes__padding 0
+#define ConvTypes__valid 1
+#define ConvTypes__invalid 2
+#define ConvTypes__terminator 3
+typedef struct ConvTypes__ScanDesc *ConvTypes__ScanState;
+typedef struct ConvTypes__ScanDesc {
+  void (*p)(OOC_CHAR8 ch, OOC_INT8 *cl, ConvTypes__ScanState *st);
+} ConvTypes__ScanDesc;
+extern void OOC_ConvTypes_init(void);
+extern void OOC_ConvTypes_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_ConvTypes__ScanState;
+extern RT0__StructDesc _td_ConvTypes__ScanDesc;
+#endif /* _MODULE_ConvTypes_ */
+
+/* --- */

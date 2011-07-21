@@ -1,0 +1,20 @@
+#ifndef _MODULE_libc_
+#define _MODULE_libc_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <C.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern OOC_REAL64 strtod(OOC_INT32 string, C__charPtr1d *tailptr);
+extern OOC_REAL32 strtof(OOC_INT32 string, C__charPtr1d *tailptr);
+extern OOC_INT32 sscanf(OOC_INT32 s, const OOC_CHAR8 _template__ref[], ...);
+extern void sprintf(OOC_CHAR8 s[], const OOC_CHAR8 _template__ref[], ...);
+extern void OOC_libc_init(void);
+extern void OOC_libc_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_libc_ */
+
+/* --- */

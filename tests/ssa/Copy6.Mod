@@ -1,0 +1,7 @@
+MODULE Copy6;
+
+VAR
+  x: ARRAY 128 OF SHORTINT; y: ARRAY 128 OF CHAR;
+BEGIN
+  COPY(x, y);
+END Copy6.

@@ -1,0 +1,213 @@
+#ifndef _MODULE_Object_
+#define _MODULE_Object_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <RT0.oh>
+typedef OOC_INT32 Object__Hash;
+typedef struct Object__ObjectDesc *Object__Object;
+typedef Object__Object Object__ObjectArray[];
+typedef Object__ObjectArray *Object__ObjectArrayPtr;
+typedef struct Object__ObjectDesc {
+  char __dummy;
+} Object__ObjectDesc;
+#define Object__surrogateLow (OOC_CHAR16)55296
+#define Object__surrogateHigh (OOC_CHAR16)56320
+#define Object__surrogateEnd (OOC_CHAR16)57344
+#define Object__surrogateLimit (OOC_CHAR32)65536
+typedef struct Object__StringDesc *Object__String;
+typedef Object__String Object__StringArray[];
+typedef Object__String *Object__StringArrayPtr;
+typedef struct Object__StringDesc {
+  OOC_INT32 length;
+} Object__StringDesc;
+typedef OOC_CHAR8 *Object__CharsLatin1;
+typedef OOC_CHAR16 *Object__CharsUTF16;
+typedef struct Object__String8Desc *Object__String8;
+typedef struct Object__String8Desc {
+  OOC_INT32 length;
+  Object__CharsLatin1 data;
+} Object__String8Desc;
+typedef struct Object__String16Desc *Object__String16;
+typedef struct Object__String16Desc {
+  OOC_INT32 length;
+  Object__CharsUTF16 data;
+} Object__String16Desc;
+extern Object__String Object__emptyString;
+extern Object__String Object__ObjectDesc_ToString(Object__Object x);
+#define _TBN_Object__ObjectDesc_ToString 1
+typedef Object__String (*_TBP_Object__ObjectDesc_ToString)(Object__Object x);
+extern OOC_CHAR8 Object__ObjectDesc_Equals(Object__Object x, Object__Object y);
+#define _TBN_Object__ObjectDesc_Equals 2
+typedef OOC_CHAR8 (*_TBP_Object__ObjectDesc_Equals)(Object__Object x, Object__Object y);
+extern OOC_INT32 Object__ObjectDesc_HashCode(Object__Object x);
+#define _TBN_Object__ObjectDesc_HashCode 3
+typedef OOC_INT32 (*_TBP_Object__ObjectDesc_HashCode)(Object__Object x);
+extern Object__String8 Object__NewLatin1(const OOC_CHAR8 str[], OOC_LEN str_0d);
+extern Object__String8 Object__NewLatin1Region(const OOC_CHAR8 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
+extern Object__String8 Object__NewLatin1Char(OOC_CHAR8 ch);
+extern Object__String Object__NewUTF16(const OOC_CHAR16 str[], OOC_LEN str_0d);
+extern Object__String Object__NewUTF16Region(const OOC_CHAR16 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
+extern Object__String Object__NewUTF16Char(OOC_CHAR16 ch);
+extern Object__String Object__NewUCS4Char(OOC_CHAR32 ch);
+extern Object__String Object__NewUCS4Region(const OOC_CHAR32 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
+extern Object__String Object__NewUCS4(const OOC_CHAR32 str[], OOC_LEN str_0d);
+extern Object__String Object__Concat2(Object__String s1, Object__String s2);
+extern Object__String Object__StringDesc_Concat(Object__String s, Object__String t);
+#define _TBN_Object__StringDesc_Concat 4
+typedef Object__String (*_TBP_Object__StringDesc_Concat)(Object__String s, Object__String t);
+extern Object__CharsLatin1 Object__String8Desc_CharsLatin1(Object__String8 s);
+#define _TBN_Object__String8Desc_CharsLatin1 17
+typedef Object__CharsLatin1 (*_TBP_Object__String8Desc_CharsLatin1)(Object__String8 s);
+extern Object__CharsUTF16 Object__String16Desc_CharsUTF16(Object__String16 s);
+#define _TBN_Object__String16Desc_CharsUTF16 17
+typedef Object__CharsUTF16 (*_TBP_Object__String16Desc_CharsUTF16)(Object__String16 s);
+extern Object__String Object__StringDesc_ToString(Object__String s);
+#define _TBN_Object__StringDesc_ToString 1
+typedef Object__String (*_TBP_Object__StringDesc_ToString)(Object__String s);
+extern Object__String8 Object__StringDesc_ToString8(Object__String s, OOC_CHAR8 replace);
+#define _TBN_Object__StringDesc_ToString8 5
+typedef Object__String8 (*_TBP_Object__StringDesc_ToString8)(Object__String s, OOC_CHAR8 replace);
+extern Object__String8 Object__String8Desc_ToString8(Object__String8 s, OOC_CHAR8 replace);
+#define _TBN_Object__String8Desc_ToString8 5
+typedef Object__String8 (*_TBP_Object__String8Desc_ToString8)(Object__String8 s, OOC_CHAR8 replace);
+extern Object__String8 Object__String16Desc_ToString8(Object__String16 s, OOC_CHAR8 replace);
+#define _TBN_Object__String16Desc_ToString8 5
+typedef Object__String8 (*_TBP_Object__String16Desc_ToString8)(Object__String16 s, OOC_CHAR8 replace);
+extern Object__String16 Object__StringDesc_ToString16(Object__String s);
+#define _TBN_Object__StringDesc_ToString16 6
+typedef Object__String16 (*_TBP_Object__StringDesc_ToString16)(Object__String s);
+extern Object__String16 Object__String8Desc_ToString16(Object__String8 s);
+#define _TBN_Object__String8Desc_ToString16 6
+typedef Object__String16 (*_TBP_Object__String8Desc_ToString16)(Object__String8 s);
+extern Object__String16 Object__String16Desc_ToString16(Object__String16 s);
+#define _TBN_Object__String16Desc_ToString16 6
+typedef Object__String16 (*_TBP_Object__String16Desc_ToString16)(Object__String16 s);
+extern OOC_CHAR8 Object__StringDesc_Equals(Object__String s, Object__Object y);
+#define _TBN_Object__StringDesc_Equals 2
+typedef OOC_CHAR8 (*_TBP_Object__StringDesc_Equals)(Object__String s, Object__Object y);
+extern OOC_CHAR8 Object__String8Desc_Equals(Object__String8 s, Object__Object y);
+#define _TBN_Object__String8Desc_Equals 2
+typedef OOC_CHAR8 (*_TBP_Object__String8Desc_Equals)(Object__String8 s, Object__Object y);
+extern OOC_CHAR8 Object__String16Desc_Equals(Object__String16 s, Object__Object y);
+#define _TBN_Object__String16Desc_Equals 2
+typedef OOC_CHAR8 (*_TBP_Object__String16Desc_Equals)(Object__String16 s, Object__Object y);
+extern OOC_CHAR8 Object__StringDesc_EqualsIgnoreCase(Object__String s, Object__Object y);
+#define _TBN_Object__StringDesc_EqualsIgnoreCase 7
+typedef OOC_CHAR8 (*_TBP_Object__StringDesc_EqualsIgnoreCase)(Object__String s, Object__Object y);
+extern OOC_CHAR8 Object__String8Desc_EqualsIgnoreCase(Object__String8 s, Object__Object y);
+#define _TBN_Object__String8Desc_EqualsIgnoreCase 7
+typedef OOC_CHAR8 (*_TBP_Object__String8Desc_EqualsIgnoreCase)(Object__String8 s, Object__Object y);
+extern OOC_CHAR8 Object__String16Desc_EqualsIgnoreCase(Object__String16 s, Object__Object y);
+#define _TBN_Object__String16Desc_EqualsIgnoreCase 7
+typedef OOC_CHAR8 (*_TBP_Object__String16Desc_EqualsIgnoreCase)(Object__String16 s, Object__Object y);
+extern OOC_INT32 Object__StringDesc_Compare(Object__String s, Object__Object y);
+#define _TBN_Object__StringDesc_Compare 8
+typedef OOC_INT32 (*_TBP_Object__StringDesc_Compare)(Object__String s, Object__Object y);
+extern OOC_INT32 Object__String8Desc_Compare(Object__String8 s, Object__Object y);
+#define _TBN_Object__String8Desc_Compare 8
+typedef OOC_INT32 (*_TBP_Object__String8Desc_Compare)(Object__String8 s, Object__Object y);
+extern OOC_INT32 Object__String16Desc_Compare(Object__String16 s, Object__Object y);
+#define _TBN_Object__String16Desc_Compare 8
+typedef OOC_INT32 (*_TBP_Object__String16Desc_Compare)(Object__String16 s, Object__Object y);
+extern OOC_INT32 Object__StringDesc_HashCode(Object__String s);
+#define _TBN_Object__StringDesc_HashCode 3
+typedef OOC_INT32 (*_TBP_Object__StringDesc_HashCode)(Object__String s);
+extern OOC_INT32 Object__String8Desc_HashCode(Object__String8 s);
+#define _TBN_Object__String8Desc_HashCode 3
+typedef OOC_INT32 (*_TBP_Object__String8Desc_HashCode)(Object__String8 s);
+extern OOC_INT32 Object__String16Desc_HashCode(Object__String16 s);
+#define _TBN_Object__String16Desc_HashCode 3
+typedef OOC_INT32 (*_TBP_Object__String16Desc_HashCode)(Object__String16 s);
+extern OOC_CHAR32 Object__StringDesc_CharAt(Object__String s, OOC_INT32 index);
+#define _TBN_Object__StringDesc_CharAt 9
+typedef OOC_CHAR32 (*_TBP_Object__StringDesc_CharAt)(Object__String s, OOC_INT32 index);
+extern OOC_CHAR32 Object__String8Desc_CharAt(Object__String8 s, OOC_INT32 index);
+#define _TBN_Object__String8Desc_CharAt 9
+typedef OOC_CHAR32 (*_TBP_Object__String8Desc_CharAt)(Object__String8 s, OOC_INT32 index);
+extern OOC_CHAR32 Object__String16Desc_CharAt(Object__String16 s, OOC_INT32 index);
+#define _TBN_Object__String16Desc_CharAt 9
+typedef OOC_CHAR32 (*_TBP_Object__String16Desc_CharAt)(Object__String16 s, OOC_INT32 index);
+extern OOC_CHAR32 Object__StringDesc_NextChar(Object__String s, OOC_INT32 *index);
+#define _TBN_Object__StringDesc_NextChar 10
+typedef OOC_CHAR32 (*_TBP_Object__StringDesc_NextChar)(Object__String s, OOC_INT32 *index);
+extern OOC_CHAR32 Object__String8Desc_NextChar(Object__String8 s, OOC_INT32 *index);
+#define _TBN_Object__String8Desc_NextChar 10
+typedef OOC_CHAR32 (*_TBP_Object__String8Desc_NextChar)(Object__String8 s, OOC_INT32 *index);
+extern OOC_CHAR32 Object__String16Desc_NextChar(Object__String16 s, OOC_INT32 *index);
+#define _TBN_Object__String16Desc_NextChar 10
+typedef OOC_CHAR32 (*_TBP_Object__String16Desc_NextChar)(Object__String16 s, OOC_INT32 *index);
+extern Object__String Object__StringDesc_Substring(Object__String s, OOC_INT32 start, OOC_INT32 end);
+#define _TBN_Object__StringDesc_Substring 11
+typedef Object__String (*_TBP_Object__StringDesc_Substring)(Object__String s, OOC_INT32 start, OOC_INT32 end);
+extern Object__String8 Object__String8Desc_Substring(Object__String8 s, OOC_INT32 start, OOC_INT32 end);
+#define _TBN_Object__String8Desc_Substring 11
+typedef Object__String8 (*_TBP_Object__String8Desc_Substring)(Object__String8 s, OOC_INT32 start, OOC_INT32 end);
+extern Object__String16 Object__String16Desc_Substring(Object__String16 s, OOC_INT32 start, OOC_INT32 end);
+#define _TBN_Object__String16Desc_Substring 11
+typedef Object__String16 (*_TBP_Object__String16Desc_Substring)(Object__String16 s, OOC_INT32 start, OOC_INT32 end);
+extern Object__String Object__StringDesc_Trim(Object__String s);
+#define _TBN_Object__StringDesc_Trim 12
+typedef Object__String (*_TBP_Object__StringDesc_Trim)(Object__String s);
+extern Object__String8 Object__String8Desc_Trim(Object__String8 s);
+#define _TBN_Object__String8Desc_Trim 12
+typedef Object__String8 (*_TBP_Object__String8Desc_Trim)(Object__String8 s);
+extern Object__String16 Object__String16Desc_Trim(Object__String16 s);
+#define _TBN_Object__String16Desc_Trim 12
+typedef Object__String16 (*_TBP_Object__String16Desc_Trim)(Object__String16 s);
+extern OOC_INT32 Object__StringDesc_IndexOf(Object__String s, OOC_CHAR32 _char, OOC_INT32 pos);
+#define _TBN_Object__StringDesc_IndexOf 13
+typedef OOC_INT32 (*_TBP_Object__StringDesc_IndexOf)(Object__String s, OOC_CHAR32 _char, OOC_INT32 pos);
+extern OOC_INT32 Object__String8Desc_IndexOf(Object__String8 s, OOC_CHAR32 _char, OOC_INT32 pos);
+#define _TBN_Object__String8Desc_IndexOf 13
+typedef OOC_INT32 (*_TBP_Object__String8Desc_IndexOf)(Object__String8 s, OOC_CHAR32 _char, OOC_INT32 pos);
+extern OOC_INT32 Object__String16Desc_IndexOf(Object__String16 s, OOC_CHAR32 _char, OOC_INT32 pos);
+#define _TBN_Object__String16Desc_IndexOf 13
+typedef OOC_INT32 (*_TBP_Object__String16Desc_IndexOf)(Object__String16 s, OOC_CHAR32 _char, OOC_INT32 pos);
+extern OOC_INT32 Object__StringDesc_LastIndexOf(Object__String s, OOC_CHAR32 _char, OOC_INT32 pos);
+#define _TBN_Object__StringDesc_LastIndexOf 14
+typedef OOC_INT32 (*_TBP_Object__StringDesc_LastIndexOf)(Object__String s, OOC_CHAR32 _char, OOC_INT32 pos);
+extern OOC_INT32 Object__String8Desc_LastIndexOf(Object__String8 s, OOC_CHAR32 _char, OOC_INT32 pos);
+#define _TBN_Object__String8Desc_LastIndexOf 14
+typedef OOC_INT32 (*_TBP_Object__String8Desc_LastIndexOf)(Object__String8 s, OOC_CHAR32 _char, OOC_INT32 pos);
+extern OOC_INT32 Object__String16Desc_LastIndexOf(Object__String16 s, OOC_CHAR32 _char, OOC_INT32 pos);
+#define _TBN_Object__String16Desc_LastIndexOf 14
+typedef OOC_INT32 (*_TBP_Object__String16Desc_LastIndexOf)(Object__String16 s, OOC_CHAR32 _char, OOC_INT32 pos);
+extern OOC_CHAR8 Object__StringDesc_EndsWith(Object__String s, Object__String suffix);
+#define _TBN_Object__StringDesc_EndsWith 15
+typedef OOC_CHAR8 (*_TBP_Object__StringDesc_EndsWith)(Object__String s, Object__String suffix);
+extern OOC_CHAR8 Object__StringDesc_StartsWith(Object__String s, Object__String prefix);
+#define _TBN_Object__StringDesc_StartsWith 16
+typedef OOC_CHAR8 (*_TBP_Object__StringDesc_StartsWith)(Object__String s, Object__String prefix);
+extern void OOC_Object_init(void);
+extern void OOC_Object_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Object__Object;
+extern RT0__StructDesc _td_Object__ObjectArray;
+extern RT0__StructDesc _td_Object__ObjectArrayPtr;
+extern RT0__StructDesc _td_Object__ObjectDesc;
+extern RT0__StructDesc _td_Object__String;
+extern RT0__StructDesc _td_Object__StringArray;
+extern RT0__StructDesc _td_Object__StringArrayPtr;
+extern RT0__StructDesc _td_Object__StringDesc;
+extern RT0__StructDesc _td_Object__4312;
+extern RT0__StructDesc _td_Object__CharsLatin1;
+extern RT0__StructDesc _td_Object__4509;
+extern RT0__StructDesc _td_Object__CharsUTF16;
+extern RT0__StructDesc _td_Object__String8;
+extern RT0__StructDesc _td_Object__String8Desc;
+extern RT0__StructDesc _td_Object__String16;
+extern RT0__StructDesc _td_Object__String16Desc;
+extern RT0__StructDesc _td_Object__5755;
+extern RT0__StructDesc _td_Object__6221;
+extern RT0__StructDesc _td_Object__11226;
+extern RT0__StructDesc _td_Object__11599;
+extern RT0__StructDesc _td_Object__12265;
+extern RT0__StructDesc _td_Object__12815;
+extern RT0__StructDesc _td_Object__14579;
+extern RT0__StructDesc _td_Object__15657;
+#endif /* _MODULE_Object_ */
+
+/* --- */

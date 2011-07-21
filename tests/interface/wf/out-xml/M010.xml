@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M010' id=''>
+  <type-decl name='R' id='R' export='yes'>
+    <oberon-doc>
+      <summary><oberon-field href='#R.a'>a</oberon-field></summary>
+      <p pad-after='yes' no-indent='yes'><oberon-field href='#R.a'>a</oberon-field></p>
+    </oberon-doc>
+    <type>
+      <record>
+        <field-decl name='a' id='R.a' export='read-only'>
+          <type>
+            <type-name module='#predef' name='INTEGER'/>
+          </type>
+        </field-decl>
+      </record>
+    </type>
+  </type-decl>
+</interface-description>

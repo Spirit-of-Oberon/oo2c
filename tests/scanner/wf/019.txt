@@ -1,0 +1,1 @@
+a<*predef_true:=FALSE; IF predef_true THEN*>b<*END*>c

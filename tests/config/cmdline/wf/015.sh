@@ -1,0 +1,1 @@
+$TEST_PROG -12 foo

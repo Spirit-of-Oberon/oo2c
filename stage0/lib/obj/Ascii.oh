@@ -1,0 +1,51 @@
+#ifndef _MODULE_Ascii_
+#define _MODULE_Ascii_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define Ascii__nul (OOC_CHAR8)'\000'
+#define Ascii__soh (OOC_CHAR8)'\001'
+#define Ascii__stx (OOC_CHAR8)'\002'
+#define Ascii__etx (OOC_CHAR8)'\003'
+#define Ascii__eot (OOC_CHAR8)'\004'
+#define Ascii__enq (OOC_CHAR8)'\005'
+#define Ascii__ack (OOC_CHAR8)'\006'
+#define Ascii__bel (OOC_CHAR8)'\007'
+#define Ascii__bs (OOC_CHAR8)'\010'
+#define Ascii__ht (OOC_CHAR8)'\011'
+#define Ascii__lf (OOC_CHAR8)'\012'
+#define Ascii__vt (OOC_CHAR8)'\013'
+#define Ascii__ff (OOC_CHAR8)'\014'
+#define Ascii__cr (OOC_CHAR8)'\015'
+#define Ascii__so (OOC_CHAR8)'\016'
+#define Ascii__si (OOC_CHAR8)'\017'
+#define Ascii__dle (OOC_CHAR8)'\020'
+#define Ascii__dc1 (OOC_CHAR8)'\021'
+#define Ascii__dc2 (OOC_CHAR8)'\022'
+#define Ascii__dc3 (OOC_CHAR8)'\023'
+#define Ascii__dc4 (OOC_CHAR8)'\024'
+#define Ascii__nak (OOC_CHAR8)'\025'
+#define Ascii__syn (OOC_CHAR8)'\026'
+#define Ascii__etb (OOC_CHAR8)'\027'
+#define Ascii__can (OOC_CHAR8)'\030'
+#define Ascii__em (OOC_CHAR8)'\031'
+#define Ascii__sub (OOC_CHAR8)'\032'
+#define Ascii__esc (OOC_CHAR8)'\033'
+#define Ascii__fs (OOC_CHAR8)'\034'
+#define Ascii__gs (OOC_CHAR8)'\035'
+#define Ascii__rs (OOC_CHAR8)'\036'
+#define Ascii__us (OOC_CHAR8)'\037'
+#define Ascii__del (OOC_CHAR8)'\177'
+#define Ascii__sp (OOC_CHAR8)' '
+#define Ascii__xon (OOC_CHAR8)'\021'
+#define Ascii__xoff (OOC_CHAR8)'\023'
+extern void OOC_Ascii_init(void);
+extern void OOC_Ascii_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_Ascii_ */
+
+/* --- */

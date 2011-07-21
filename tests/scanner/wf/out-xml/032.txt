@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='docComment' pos='0' line='0' column='0'>(**this is a doc comment*)</symbol>
+<symbol id='whitespace' pos='26' line='0' column='26'>&#10;</symbol>
+<symbol id='endOfFile' pos='27' line='1' column='0'></symbol>
+</document>

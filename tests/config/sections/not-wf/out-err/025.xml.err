@@ -1,0 +1,3 @@
+In file not-wf/025.xml: 
+line=3, column=5
+96: Attribute `attrib' is not defined for this element

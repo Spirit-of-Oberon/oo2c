@@ -1,0 +1,28 @@
+#ifndef _MODULE_OOC_Config_Autoconf_
+#define _MODULE_OOC_Config_Autoconf_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define OOC_Config_Autoconf__configFile "/usr/home/ooc-devel/local-ooc2/lib/oo2c/oo2crc.xml"
+#define OOC_Config_Autoconf__nameTargetOS "Unix"
+#define OOC_Config_Autoconf__bitsTargetInteger 64
+#define OOC_Config_Autoconf__bitsTargetAddress 32
+#define OOC_Config_Autoconf__compilerVersion "2.0.18"
+#define OOC_Config_Autoconf__compilerMajor 2
+#define OOC_Config_Autoconf__compilerMinor 0
+#define OOC_Config_Autoconf__longint 6
+#define OOC_Config_Autoconf__hugeint 7
+#define OOC_Config_Autoconf__address 6
+#define OOC_Config_Autoconf__haveLibM OOC_TRUE
+#define OOC_Config_Autoconf__haveLibDL OOC_TRUE
+#define OOC_Config_Autoconf__haveLibGC OOC_TRUE
+extern void OOC_OOC_Config_Autoconf_init(void);
+extern void OOC_OOC_Config_Autoconf_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_Config_Autoconf_ */
+
+/* --- */

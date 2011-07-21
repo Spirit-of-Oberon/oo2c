@@ -1,0 +1,40 @@
+#ifndef _MODULE_OOC_Config_StdPragmas_
+#define _MODULE_OOC_Config_StdPragmas_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/Config/Pragmas.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+#define OOC_Config_StdPragmas__defaultCompilerVersion "2.0.18"
+#define OOC_Config_StdPragmas__defaultTargetArch "gcc"
+extern Config_Section_Options__Option OOC_Config_StdPragmas__warnings;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__assertions;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__stackCheck;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__conformantMode;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__indexCheck;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__derefCheck;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__overflowCheck;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__caseSelectCheck;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__functionResultCheck;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__typeGuard;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__rangeCheck;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__compiler;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__compilerVersion;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__compilerMajor;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__compilerMinor;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__targetOS;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__targetArch;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__targetArchMinor;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__targetInteger;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__targetAddress;
+extern Config_Section_Options__Option OOC_Config_StdPragmas__targetByteOrder;
+extern void OOC_Config_StdPragmas__CreateVariables(OOC_Config_Pragmas__Section s);
+extern void OOC_OOC_Config_StdPragmas_init(void);
+extern void OOC_OOC_Config_StdPragmas_init0(void);
+
+/* run-time meta data */
+#endif /* _MODULE_OOC_Config_StdPragmas_ */
+
+/* --- */

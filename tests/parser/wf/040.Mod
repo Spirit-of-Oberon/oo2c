@@ -1,0 +1,4 @@
+MODULE M;
+BEGIN
+  x := SET{}
+END M.

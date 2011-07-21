@@ -1,0 +1,200 @@
+Syntax:
+
+  TPSection  = ident {"," ident} ":" Qualident.
+  TypePars   = "(" [TPSection {";" TPSection} ] ")".
+  TypeDecl   = IdentDef [TypePars] "=" Type ";".
+
+  QualType   = Qualident ["(" [QualType {"," QualType}] ")"].
+  Type       = QualType|ArrayType|RecordType|PointerType|ProcType.
+  RecordType = "RECORD" ["("QualType")"] ... "END".  
+  FormalPars = [ "(" [FPSection {";" FPSection}] ")" [":" QualType] ].
+
+  AliasList = "(" [ident {"," ident}] ")".
+  Receiver = "(" ["VAR"] ident ":" ident  [AliasList] ")".
+         
+A type declared with a type parameter list like
+`T(t1:B1,t2:B2,...,tn:Bn)' is called a `parametric type'.  The formal
+type Bi of a type parameter declaration is called a type bound.  The
+type bound must be a record pointer.  A type name ti is visible to the
+end of the type declaration.
+
+For a qualified type expression of the form `T(A1,A2,...,An)',
+
+  a) the type T must be a parametric type,
+
+  b) it must have the same number of type arguments as there are type
+     parameters, and
+
+  c) each actual type parameter Ai is either an extension of the
+     corresponding type bound Bi, or Ai is a type variable whose bound
+     is an extension of Bi.
+
+If T is a parametric type as defined above, then the type expression
+`T' is equivalent to the qualified type `T(B1,B2,...,Bn)', where each
+type argument equals the corresponding type bound.  Bi and Ai can be
+forward references to types that are defined later.
+
+
+A type-bound procedure of a parametric type must define a list of type
+names after its receiver type, for example `r: P(T1,T2,...)'.  Each
+name is a type alias for the corresponding type parameter of the
+procedure's base record type.  Within a type-bound procedure, a
+variable `v:Ti', with Ti declarared with a type bound `Ti:Bi', can for
+the most part be used like it had been declared as `v:Bi'.  The
+exceptions are that it can only be assigned values of type `Ti' (or
+NIL), and that NEW is not applicable to such a variable.
+
+A type variable cannot be used on the right hand side of a type test
+or type guard.
+
+Two qualified types are considered to be the same type, if they have
+the same base type and if their corresponding type arguments are of
+the same type.
+
+`NIL' is assignment compatible with a parametric type if it is
+assignment compatible with the type's base type.
+
+`NEW()' is applicable to a variable of parametric type if its base
+type is a pointer.
+
+
+
+Constructors:
+
+A class may provide a type-bound procedure `INIT'.  Such a procedure
+has the special property that a call to it always binds to the
+procedure bound to the _static_ type of the receiver, _not_ the
+dynamic one.  The procedure must not return a result, and it must be
+exported.  Its formal parameters do not need to match the inherited
+parameter list, if one exists.
+
+As a shortcut to create new objects, `v := NEW(T,a1,a2,...)' is
+equivalent to
+
+  VAR temp: T;
+  ...
+  NEW(temp);
+  temp.INIT(a1,a2,...)
+  v := temp;
+
+The second statement is omitted if `T' does not define an `INIT'
+procedure.  (Right now, `T' must be a record pointer.  This might be
+relaxed to any pointer type in the future.)
+
+
+
+
+Type Declarations
+=================
+
+TYPE T(...) = ...;
+
+ACCEPT
+
+  1) T(A: Object) = ARRAY OF A  [Generic2]
+  2) T(A, B: Object) = RECORD a: A; b: B END  [Generic3]
+  3) T(A: Object; B: AnotherObject) = RECORD a: A; b: B END  [Generic3]
+  4) T() = RECORD END  [Generic3]
+  5) Extension of a parametric record type.  [Generic4]
+  6) Receiver type alias visible in type-bound procedure.  [Generic1]
+  7) Base type of the declaration is one of the type variables.  [Generic21]
+
+REJECT
+
+  1) Type bound is not a record pointer.  [Generic5]
+  2) Reference to type variable after declaration.  [Generic6]
+  3) Reference to type variable in extended type.  [Generic7]
+  4) Reference to type var of pointer base in type-bound proc.  [Generic14]
+  5) Reference to type var in type-bound proc of extension.  [Generic15]
+
+Qualified Types
+===============
+
+VAR x: T(...);
+
+ACCEPT
+
+  1) Instance of record and types with arguments.  [Generic2 Generic3]
+  2) Instance of parametric type without arguments.  [Generic3]
+  3) Argument is a type variable with matching bound.  [Generic1]
+  4) Base type is a type variable.  [Generic21]
+  5) Formals parameters of a type-bound procedure may refer to type
+     variables of the base record.  [Generic24]
+  6) A receiver is implicitly quailified by the type parameters of the
+     base record.  [Generic24 Generic39]
+  7) NIL is assignment compatbile with `x', if it is compatible with 
+     (unqualified) T.  [Generic24]
+  8) T without (...) implies bounds as default arguments.  [Generic36]
+  9) NEW with parametric pointer type.  [Generic37]
+  10) Argument of a qualified type may be a qualified type.
+      [Generic38]
+
+REJECT
+
+  1) T is not a parametric type.  [Generic8]
+  2) Too few or too many type arguments.  [Generic9 Generic10]
+  3) Type argument is not an extension of the type bound.  [Generic11]
+  4) Type argument's bound is not extension of parameter bound.  [Generic12]
+
+Type Variables
+==============
+
+VAR v, w: Ti;
+
+ACCEPT
+
+  1) v := NIL  [Generic16]
+  2) v := w  [Generic16]
+  3) P(v,w)  [Generic16]
+  4) w := F(v) & RETURN v  [Generic16]
+  5) x := v if bound of `v' is extension of type of `x'
+  6) y := v(S) where S is an extension of the bound of `v'
+  7) v.TBProc()
+  8) v.f
+  9) v=w, x=v, v=NIL
+
+REJECT
+
+  1) Assigning v a value of its type bound.  [Generic17]
+  2) Type test or guard using a type variable.  [Generic18 Generic19]
+  3) NEW(v)  [Generic20]
+
+Designators
+===========
+
+ACCEPT/REJECT
+
+  1) Type argument is type of variable.  [Generic21 Generic22
+     Generic23]
+  2) Type argument is passed through field selector.  [Generic25
+     Generic26 Generic27 Generic28]
+  3) Type argument is passed through array index.  [Generic25
+     Generic26 Generic27 Generic28]
+  4) Type argument is passed through pointer deref.  [Generic25
+     Generic26 Generic27 Generic28]
+  5) Calling type-bound procedure on parametric type.  [Generic29 to
+     Generic34]
+  6) Same base and same arguments mean same qualified type.  [Generic24]
+
+Type Tests & Guards
+===================
+
+ACCEPT
+
+  1) Tests and guards use the standard definition of `is extension
+     of'.  [Generic40]
+
+Constructors
+============
+
+ACCEPT
+
+  1) Formal parameters of INIT don't need to match base definition.
+     [Generic41]
+  2) NEW(T(...)) is a valid function call.  [Generic42]
+  3) NEW(T(...),a1,a2,...) with matching arguments.  [Generic45]
+
+REJECT
+
+  1) Calling NEW(T,...) without an INIT procedure.  [Generic43]
+  2) Calling NEW(T) with T not being a record pointer.  [Generic44]

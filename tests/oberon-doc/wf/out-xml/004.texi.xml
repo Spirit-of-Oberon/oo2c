@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Whitespace at the beginning of a paragraph is stripped away.</summary>
+  <p pad-after='yes' no-indent='yes'>Whitespace at the beginning of a paragraph is stripped away.</p>
+  <p pad-after='yes' no-indent='no'>Whitespace within a paragraph is normalized like this: Control characters (this includes newline) are converted to spaces.  Multiple spaces are collapsed into a single space character.  Two spaces are kept after a dot.  A dot, followed by a newline, is converted to "dot&lt;SPACE&gt;&lt;SPACE&gt;".</p>
+  <p pad-after='yes' no-indent='no'>Whitespace at the end of a paragraph is stripped.</p>
+</oberon-doc>

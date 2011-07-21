@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='19' line='2' column='8' ident_name='INTEGER' ident_pos='19' ident_line='2' ident_column='8'/>
+  <var_decl id='2' name='t' pos='15' line='2' column='4' visible_from='26' export='yes' is_parameter='no' is_receiver='no' is_var_parameter='no' type_id='1'/>
+</module>

@@ -1,0 +1,582 @@
+#ifndef _MODULE_OOC_Doc_
+#define _MODULE_OOC_Doc_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/Storable.oh>
+#include <ADT/ArrayList.oh>
+#include <IO.oh>
+#include <OOC/Doc/Decoration.oh>
+#include <OOC/Scanner/InputBuffer.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_Doc__Position {
+  OOC_INT32 _char;
+  OOC_INT32 line;
+  OOC_INT32 column;
+} OOC_Doc__Position;
+typedef struct OOC_Doc__ElementDesc *OOC_Doc__Element;
+typedef struct OOC_Doc__ElementDesc {
+  struct OOC_Doc__Position pos;
+} OOC_Doc__ElementDesc;
+typedef struct OOC_Doc__InlineElementDesc *OOC_Doc__InlineElement;
+typedef struct OOC_Doc__InlineElementDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__InlineElement nextInline;
+} OOC_Doc__InlineElementDesc;
+typedef struct OOC_Doc__BlockElementDesc *OOC_Doc__BlockElement;
+typedef struct OOC_Doc__BlockElementDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+} OOC_Doc__BlockElementDesc;
+typedef struct OOC_Doc__DocumentDesc *OOC_Doc__Document;
+typedef struct OOC_Doc__DocumentDesc {
+  OOC_Doc__BlockElement blockList;
+  OOC_Doc__InlineElement summary;
+  OOC_Doc_Decoration__Decoration decoration;
+  OOC_INT32 firstColumn;
+  ADT_ArrayList__ArrayList usedImportsList;
+} OOC_Doc__DocumentDesc;
+typedef struct OOC_Doc__InlineListDesc *OOC_Doc__InlineList;
+typedef struct OOC_Doc__InlineListDesc {
+  OOC_Doc__InlineElement head;
+  OOC_Doc__InlineElement tail;
+} OOC_Doc__InlineListDesc;
+typedef struct OOC_Doc__BlockListDesc *OOC_Doc__BlockList;
+typedef struct OOC_Doc__BlockListDesc {
+  OOC_Doc__BlockElement head;
+  OOC_Doc__BlockElement tail;
+} OOC_Doc__BlockListDesc;
+#define OOC_Doc__glyphBullet 0
+#define OOC_Doc__glyphDots 1
+#define OOC_Doc__glyphMinus 2
+#define OOC_Doc__glyphEmDash 3
+#define OOC_Doc__glyphResult 4
+#define OOC_Doc__glyphLeftQuot 5
+#define OOC_Doc__glyphRightQuot 6
+typedef struct OOC_Doc__GlyphDesc *OOC_Doc__Glyph;
+typedef struct OOC_Doc__GlyphDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__InlineElement nextInline;
+  OOC_INT32 code;
+} OOC_Doc__GlyphDesc;
+typedef OOC_Scanner_InputBuffer__CharArray OOC_Doc__String;
+typedef struct OOC_Doc__TextDesc *OOC_Doc__Text;
+typedef struct OOC_Doc__TextDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__InlineElement nextInline;
+  OOC_Scanner_InputBuffer__CharArray string;
+} OOC_Doc__TextDesc;
+#define OOC_Doc__markAsIs 0
+#define OOC_Doc__markCite 1
+#define OOC_Doc__markCode 2
+#define OOC_Doc__markCommand 3
+#define OOC_Doc__markDfn 4
+#define OOC_Doc__markEmph 5
+#define OOC_Doc__markFile 6
+#define OOC_Doc__markKbd 7
+#define OOC_Doc__markSamp 8
+#define OOC_Doc__markStrong 9
+#define OOC_Doc__markVar 10
+#define OOC_Doc__markUrl 11
+#define OOC_Doc__markOberonModule 12
+#define OOC_Doc__markOberonConst 13
+#define OOC_Doc__markOberonField 14
+#define OOC_Doc__markOberonParam 15
+#define OOC_Doc__markOberonProc 16
+#define OOC_Doc__markOberonType 17
+#define OOC_Doc__markOberonVar 18
+typedef struct OOC_Doc__MarkedInlineDesc *OOC_Doc__MarkedInline;
+typedef struct OOC_Doc__MarkedInlineDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__InlineElement nextInline;
+  OOC_INT32 mark;
+  OOC_Doc__InlineElement inlineText;
+} OOC_Doc__MarkedInlineDesc;
+typedef struct OOC_Doc__OberonRefDesc *OOC_Doc__OberonRef;
+typedef struct OOC_Doc__OberonRefDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__InlineElement nextInline;
+  OOC_INT32 mark;
+  OOC_Doc__InlineElement inlineText;
+  ADT_Storable__Object target;
+  OOC_Scanner_InputBuffer__CharArray externalModule;
+  OOC_Scanner_InputBuffer__CharArray externalId;
+} OOC_Doc__OberonRefDesc;
+typedef struct OOC_Doc__EmailDesc *OOC_Doc__Email;
+typedef struct OOC_Doc__EmailDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__InlineElement nextInline;
+  OOC_Doc__InlineElement address;
+  OOC_Doc__InlineElement displayed;
+} OOC_Doc__EmailDesc;
+typedef struct OOC_Doc__UrefDesc *OOC_Doc__Uref;
+typedef struct OOC_Doc__UrefDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__InlineElement nextInline;
+  OOC_Doc__InlineElement url;
+  OOC_Doc__InlineElement text;
+  OOC_Doc__InlineElement replacement;
+} OOC_Doc__UrefDesc;
+typedef struct OOC_Doc__ParagraphDesc *OOC_Doc__Paragraph;
+typedef struct OOC_Doc__ParagraphDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__InlineElement inlineText;
+  OOC_CHAR8 noIndent;
+} OOC_Doc__ParagraphDesc;
+typedef struct OOC_Doc__ExampleDesc *OOC_Doc__Example;
+typedef struct OOC_Doc__ExampleDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__InlineElement inlineText;
+} OOC_Doc__ExampleDesc;
+typedef struct OOC_Doc__PreCondDesc *OOC_Doc__PreCond;
+typedef struct OOC_Doc__PreCondDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__BlockElement blockList;
+} OOC_Doc__PreCondDesc;
+typedef struct OOC_Doc__PostCondDesc *OOC_Doc__PostCond;
+typedef struct OOC_Doc__PostCondDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__BlockElement blockList;
+} OOC_Doc__PostCondDesc;
+typedef struct OOC_Doc__ItemDesc *OOC_Doc__Item;
+typedef struct OOC_Doc__ItemDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__BlockElement blockList;
+} OOC_Doc__ItemDesc;
+typedef struct OOC_Doc__ItemizeDesc *OOC_Doc__Itemize;
+typedef struct OOC_Doc__ItemizeDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__InlineElement mark;
+  OOC_Doc__Item text;
+  OOC_Doc__BlockElement itemList;
+} OOC_Doc__ItemizeDesc;
+#define OOC_Doc__enumNumber 0
+#define OOC_Doc__enumLowercase 1
+#define OOC_Doc__enumUppercase 2
+typedef struct OOC_Doc__EnumerateDesc *OOC_Doc__Enumerate;
+typedef struct OOC_Doc__EnumerateDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_INT8 mode;
+  OOC_CHAR8 __pad21;
+  OOC_CHAR8 __pad22;
+  OOC_CHAR8 __pad23;
+  OOC_INT32 start;
+  OOC_Doc__Item text;
+  OOC_Doc__BlockElement itemList;
+} OOC_Doc__EnumerateDesc;
+typedef struct OOC_Doc__FirstColumnDesc *OOC_Doc__FirstColumn;
+typedef struct OOC_Doc__FirstColumnDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__InlineElement inlineText;
+} OOC_Doc__FirstColumnDesc;
+typedef struct OOC_Doc__TableRowDesc *OOC_Doc__TableRow;
+typedef struct OOC_Doc__TableRowDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__BlockElement firstColumnList;
+  OOC_Doc__Item item;
+} OOC_Doc__TableRowDesc;
+typedef struct OOC_Doc__TableDesc *OOC_Doc__Table;
+typedef struct OOC_Doc__TableDesc {
+  struct OOC_Doc__Position pos;
+  OOC_Doc__BlockElement nextBlock;
+  OOC_CHAR8 padAfter;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  OOC_Doc__BlockElement rowList;
+} OOC_Doc__TableDesc;
+extern void OOC_Doc__SetPosition(struct OOC_Doc__Position *pos, RT0__Struct pos__tag, OOC_INT32 _char, OOC_INT32 line, OOC_INT32 column);
+extern void OOC_Doc__ElementDesc_NodeName(OOC_Doc__Element e, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__ElementDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__ElementDesc_NodeName)(OOC_Doc__Element e, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__ElementDesc_Normalize(OOC_Doc__Element e);
+#define _TBN_OOC_Doc__ElementDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__ElementDesc_Normalize)(OOC_Doc__Element e);
+extern void OOC_Doc__ElementDesc_Store(OOC_Doc__Element e, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__ElementDesc_Store 4
+typedef void (*_TBP_OOC_Doc__ElementDesc_Store)(OOC_Doc__Element e, ADT_Storable__Writer w);
+extern void OOC_Doc__ElementDesc_Load(OOC_Doc__Element e, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__ElementDesc_Load 5
+typedef void (*_TBP_OOC_Doc__ElementDesc_Load)(OOC_Doc__Element e, ADT_Storable__Reader r);
+extern void OOC_Doc__MergeInline(OOC_Doc__InlineElement *dest, OOC_Doc__InlineElement src);
+extern void OOC_Doc__InlineElementDesc_StripHeadWS(OOC_Doc__InlineElement e);
+#define _TBN_OOC_Doc__InlineElementDesc_StripHeadWS 8
+typedef void (*_TBP_OOC_Doc__InlineElementDesc_StripHeadWS)(OOC_Doc__InlineElement e);
+extern void OOC_Doc__InlineElementDesc_StripTailWS(OOC_Doc__InlineElement e);
+#define _TBN_OOC_Doc__InlineElementDesc_StripTailWS 9
+typedef void (*_TBP_OOC_Doc__InlineElementDesc_StripTailWS)(OOC_Doc__InlineElement e);
+extern void OOC_Doc__InlineElementDesc_Store(OOC_Doc__InlineElement e, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__InlineElementDesc_Store 4
+typedef void (*_TBP_OOC_Doc__InlineElementDesc_Store)(OOC_Doc__InlineElement e, ADT_Storable__Writer w);
+extern void OOC_Doc__InlineElementDesc_Load(OOC_Doc__InlineElement e, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__InlineElementDesc_Load 5
+typedef void (*_TBP_OOC_Doc__InlineElementDesc_Load)(OOC_Doc__InlineElement e, ADT_Storable__Reader r);
+extern void OOC_Doc__BlockElementDesc_Store(OOC_Doc__BlockElement e, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__BlockElementDesc_Store 4
+typedef void (*_TBP_OOC_Doc__BlockElementDesc_Store)(OOC_Doc__BlockElement e, ADT_Storable__Writer w);
+extern void OOC_Doc__BlockElementDesc_Load(OOC_Doc__BlockElement e, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__BlockElementDesc_Load 5
+typedef void (*_TBP_OOC_Doc__BlockElementDesc_Load)(OOC_Doc__BlockElement e, ADT_Storable__Reader r);
+extern OOC_Doc__InlineList OOC_Doc__NewInlineList(void);
+extern void OOC_Doc__InlineListDesc_Append(OOC_Doc__InlineList il, OOC_Doc__InlineElement inlineElement);
+#define _TBN_OOC_Doc__InlineListDesc_Append 0
+typedef void (*_TBP_OOC_Doc__InlineListDesc_Append)(OOC_Doc__InlineList il, OOC_Doc__InlineElement inlineElement);
+extern OOC_Doc__BlockList OOC_Doc__NewBlockList(void);
+extern void OOC_Doc__BlockListDesc_Append(OOC_Doc__BlockList bl, OOC_Doc__BlockElement inlineElement);
+#define _TBN_OOC_Doc__BlockListDesc_Append 0
+typedef void (*_TBP_OOC_Doc__BlockListDesc_Append)(OOC_Doc__BlockList bl, OOC_Doc__BlockElement inlineElement);
+extern OOC_Doc__Glyph OOC_Doc__NewGlyph(OOC_INT32 glyphCode);
+extern void OOC_Doc__GlyphDesc_NodeName(OOC_Doc__Glyph glyph, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__GlyphDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__GlyphDesc_NodeName)(OOC_Doc__Glyph glyph, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__GlyphDesc_Normalize(OOC_Doc__Glyph glyph);
+#define _TBN_OOC_Doc__GlyphDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__GlyphDesc_Normalize)(OOC_Doc__Glyph glyph);
+extern void OOC_Doc__GlyphDesc_Store(OOC_Doc__Glyph glyph, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__GlyphDesc_Store 4
+typedef void (*_TBP_OOC_Doc__GlyphDesc_Store)(OOC_Doc__Glyph glyph, ADT_Storable__Writer w);
+extern void OOC_Doc__GlyphDesc_Load(OOC_Doc__Glyph glyph, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__GlyphDesc_Load 5
+typedef void (*_TBP_OOC_Doc__GlyphDesc_Load)(OOC_Doc__Glyph glyph, ADT_Storable__Reader r);
+extern OOC_Doc__Text OOC_Doc__NewText(OOC_CHAR8 string[], OOC_LEN string_0d, struct OOC_Doc__Position *pos, RT0__Struct pos__tag);
+extern void OOC_Doc__TextDesc_NodeName(OOC_Doc__Text text, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__TextDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__TextDesc_NodeName)(OOC_Doc__Text text, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__TextDesc_Normalize(OOC_Doc__Text text);
+#define _TBN_OOC_Doc__TextDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__TextDesc_Normalize)(OOC_Doc__Text text);
+extern void OOC_Doc__TextDesc_StripHeadWS(OOC_Doc__Text text);
+#define _TBN_OOC_Doc__TextDesc_StripHeadWS 8
+typedef void (*_TBP_OOC_Doc__TextDesc_StripHeadWS)(OOC_Doc__Text text);
+extern void OOC_Doc__TextDesc_StripTailWS(OOC_Doc__Text text);
+#define _TBN_OOC_Doc__TextDesc_StripTailWS 9
+typedef void (*_TBP_OOC_Doc__TextDesc_StripTailWS)(OOC_Doc__Text text);
+extern void OOC_Doc__TextDesc_Store(OOC_Doc__Text text, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__TextDesc_Store 4
+typedef void (*_TBP_OOC_Doc__TextDesc_Store)(OOC_Doc__Text text, ADT_Storable__Writer w);
+extern void OOC_Doc__TextDesc_Load(OOC_Doc__Text text, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__TextDesc_Load 5
+typedef void (*_TBP_OOC_Doc__TextDesc_Load)(OOC_Doc__Text text, ADT_Storable__Reader r);
+extern OOC_Doc__MarkedInline OOC_Doc__NewMarkedInline(OOC_INT32 mark, OOC_Doc__InlineElement inlineText);
+extern void OOC_Doc__MarkedInlineDesc_NodeName(OOC_Doc__MarkedInline mi, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__MarkedInlineDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__MarkedInlineDesc_NodeName)(OOC_Doc__MarkedInline mi, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__MarkedInlineDesc_Normalize(OOC_Doc__MarkedInline mi);
+#define _TBN_OOC_Doc__MarkedInlineDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__MarkedInlineDesc_Normalize)(OOC_Doc__MarkedInline mi);
+extern void OOC_Doc__MarkedInlineDesc_StripHeadWS(OOC_Doc__MarkedInline mi);
+#define _TBN_OOC_Doc__MarkedInlineDesc_StripHeadWS 8
+typedef void (*_TBP_OOC_Doc__MarkedInlineDesc_StripHeadWS)(OOC_Doc__MarkedInline mi);
+extern void OOC_Doc__MarkedInlineDesc_StripTailWS(OOC_Doc__MarkedInline mi);
+#define _TBN_OOC_Doc__MarkedInlineDesc_StripTailWS 9
+typedef void (*_TBP_OOC_Doc__MarkedInlineDesc_StripTailWS)(OOC_Doc__MarkedInline mi);
+extern void OOC_Doc__MarkedInlineDesc_Store(OOC_Doc__MarkedInline mi, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__MarkedInlineDesc_Store 4
+typedef void (*_TBP_OOC_Doc__MarkedInlineDesc_Store)(OOC_Doc__MarkedInline mi, ADT_Storable__Writer w);
+extern void OOC_Doc__MarkedInlineDesc_Load(OOC_Doc__MarkedInline mi, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__MarkedInlineDesc_Load 5
+typedef void (*_TBP_OOC_Doc__MarkedInlineDesc_Load)(OOC_Doc__MarkedInline mi, ADT_Storable__Reader r);
+extern OOC_Doc__MarkedInline OOC_Doc__NewOberonRef(OOC_INT32 mark, OOC_Doc__InlineElement inlineText, ADT_Storable__Object target);
+extern void OOC_Doc__OberonRefDesc_SetTarget(OOC_Doc__OberonRef or, ADT_Storable__Object targetDecl);
+#define _TBN_OOC_Doc__OberonRefDesc_SetTarget 10
+typedef void (*_TBP_OOC_Doc__OberonRefDesc_SetTarget)(OOC_Doc__OberonRef or, ADT_Storable__Object targetDecl);
+extern void OOC_Doc__OberonRefDesc_SetExternalTarget(OOC_Doc__OberonRef or, OOC_Scanner_InputBuffer__CharArray module, OOC_Scanner_InputBuffer__CharArray id);
+#define _TBN_OOC_Doc__OberonRefDesc_SetExternalTarget 11
+typedef void (*_TBP_OOC_Doc__OberonRefDesc_SetExternalTarget)(OOC_Doc__OberonRef or, OOC_Scanner_InputBuffer__CharArray module, OOC_Scanner_InputBuffer__CharArray id);
+extern void OOC_Doc__OberonRefDesc_Store(OOC_Doc__OberonRef or, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__OberonRefDesc_Store 4
+typedef void (*_TBP_OOC_Doc__OberonRefDesc_Store)(OOC_Doc__OberonRef or, ADT_Storable__Writer w);
+extern void OOC_Doc__OberonRefDesc_Load(OOC_Doc__OberonRef or, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__OberonRefDesc_Load 5
+typedef void (*_TBP_OOC_Doc__OberonRefDesc_Load)(OOC_Doc__OberonRef or, ADT_Storable__Reader r);
+extern OOC_Doc__Email OOC_Doc__NewEmail(OOC_Doc__InlineElement address, OOC_Doc__InlineElement displayed);
+extern void OOC_Doc__EmailDesc_NodeName(OOC_Doc__Email email, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__EmailDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__EmailDesc_NodeName)(OOC_Doc__Email email, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__EmailDesc_Normalize(OOC_Doc__Email email);
+#define _TBN_OOC_Doc__EmailDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__EmailDesc_Normalize)(OOC_Doc__Email email);
+extern void OOC_Doc__EmailDesc_Store(OOC_Doc__Email email, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__EmailDesc_Store 4
+typedef void (*_TBP_OOC_Doc__EmailDesc_Store)(OOC_Doc__Email email, ADT_Storable__Writer w);
+extern void OOC_Doc__EmailDesc_Load(OOC_Doc__Email email, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__EmailDesc_Load 5
+typedef void (*_TBP_OOC_Doc__EmailDesc_Load)(OOC_Doc__Email email, ADT_Storable__Reader r);
+extern OOC_Doc__Uref OOC_Doc__NewUref(OOC_Doc__InlineElement url, OOC_Doc__InlineElement text, OOC_Doc__InlineElement replacement);
+extern void OOC_Doc__UrefDesc_NodeName(OOC_Doc__Uref uref, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__UrefDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__UrefDesc_NodeName)(OOC_Doc__Uref uref, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__UrefDesc_Normalize(OOC_Doc__Uref uref);
+#define _TBN_OOC_Doc__UrefDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__UrefDesc_Normalize)(OOC_Doc__Uref uref);
+extern void OOC_Doc__UrefDesc_Store(OOC_Doc__Uref uref, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__UrefDesc_Store 4
+typedef void (*_TBP_OOC_Doc__UrefDesc_Store)(OOC_Doc__Uref uref, ADT_Storable__Writer w);
+extern void OOC_Doc__UrefDesc_Load(OOC_Doc__Uref uref, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__UrefDesc_Load 5
+typedef void (*_TBP_OOC_Doc__UrefDesc_Load)(OOC_Doc__Uref uref, ADT_Storable__Reader r);
+extern OOC_Doc__Paragraph OOC_Doc__NewParagraph(OOC_CHAR8 padAfter, OOC_Doc__InlineElement inlineText, OOC_CHAR8 noIndent);
+extern void OOC_Doc__ParagraphDesc_NodeName(OOC_Doc__Paragraph p, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__ParagraphDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__ParagraphDesc_NodeName)(OOC_Doc__Paragraph p, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__ParagraphDesc_Normalize(OOC_Doc__Paragraph p);
+#define _TBN_OOC_Doc__ParagraphDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__ParagraphDesc_Normalize)(OOC_Doc__Paragraph p);
+extern void OOC_Doc__ParagraphDesc_Store(OOC_Doc__Paragraph p, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__ParagraphDesc_Store 4
+typedef void (*_TBP_OOC_Doc__ParagraphDesc_Store)(OOC_Doc__Paragraph p, ADT_Storable__Writer w);
+extern void OOC_Doc__ParagraphDesc_Load(OOC_Doc__Paragraph p, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__ParagraphDesc_Load 5
+typedef void (*_TBP_OOC_Doc__ParagraphDesc_Load)(OOC_Doc__Paragraph p, ADT_Storable__Reader r);
+extern OOC_Doc__Example OOC_Doc__NewExample(OOC_CHAR8 padAfter, OOC_Doc__InlineElement inlineText);
+extern void OOC_Doc__ExampleDesc_NodeName(OOC_Doc__Example ex, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__ExampleDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__ExampleDesc_NodeName)(OOC_Doc__Example ex, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__ExampleDesc_Normalize(OOC_Doc__Example ex);
+#define _TBN_OOC_Doc__ExampleDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__ExampleDesc_Normalize)(OOC_Doc__Example ex);
+extern void OOC_Doc__ExampleDesc_Store(OOC_Doc__Example ex, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__ExampleDesc_Store 4
+typedef void (*_TBP_OOC_Doc__ExampleDesc_Store)(OOC_Doc__Example ex, ADT_Storable__Writer w);
+extern void OOC_Doc__ExampleDesc_Load(OOC_Doc__Example ex, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__ExampleDesc_Load 5
+typedef void (*_TBP_OOC_Doc__ExampleDesc_Load)(OOC_Doc__Example ex, ADT_Storable__Reader r);
+extern OOC_Doc__PreCond OOC_Doc__NewPreCond(OOC_CHAR8 padAfter, OOC_Doc__BlockElement blockList);
+extern void OOC_Doc__PreCondDesc_NodeName(OOC_Doc__PreCond pc, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__PreCondDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__PreCondDesc_NodeName)(OOC_Doc__PreCond pc, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__PreCondDesc_Normalize(OOC_Doc__PreCond pc);
+#define _TBN_OOC_Doc__PreCondDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__PreCondDesc_Normalize)(OOC_Doc__PreCond pc);
+extern void OOC_Doc__PreCondDesc_Store(OOC_Doc__PreCond pc, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__PreCondDesc_Store 4
+typedef void (*_TBP_OOC_Doc__PreCondDesc_Store)(OOC_Doc__PreCond pc, ADT_Storable__Writer w);
+extern void OOC_Doc__PreCondDesc_Load(OOC_Doc__PreCond pc, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__PreCondDesc_Load 5
+typedef void (*_TBP_OOC_Doc__PreCondDesc_Load)(OOC_Doc__PreCond pc, ADT_Storable__Reader r);
+extern OOC_Doc__PostCond OOC_Doc__NewPostCond(OOC_CHAR8 padAfter, OOC_Doc__BlockElement blockList);
+extern void OOC_Doc__PostCondDesc_NodeName(OOC_Doc__PostCond pc, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__PostCondDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__PostCondDesc_NodeName)(OOC_Doc__PostCond pc, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__PostCondDesc_Normalize(OOC_Doc__PostCond pc);
+#define _TBN_OOC_Doc__PostCondDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__PostCondDesc_Normalize)(OOC_Doc__PostCond pc);
+extern void OOC_Doc__PostCondDesc_Store(OOC_Doc__PostCond pc, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__PostCondDesc_Store 4
+typedef void (*_TBP_OOC_Doc__PostCondDesc_Store)(OOC_Doc__PostCond pc, ADT_Storable__Writer w);
+extern void OOC_Doc__PostCondDesc_Load(OOC_Doc__PostCond pc, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__PostCondDesc_Load 5
+typedef void (*_TBP_OOC_Doc__PostCondDesc_Load)(OOC_Doc__PostCond pc, ADT_Storable__Reader r);
+extern OOC_Doc__Item OOC_Doc__NewItem(OOC_CHAR8 padAfter, OOC_Doc__BlockElement blockList);
+extern void OOC_Doc__ItemDesc_NodeName(OOC_Doc__Item item, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__ItemDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__ItemDesc_NodeName)(OOC_Doc__Item item, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__ItemDesc_Normalize(OOC_Doc__Item item);
+#define _TBN_OOC_Doc__ItemDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__ItemDesc_Normalize)(OOC_Doc__Item item);
+extern void OOC_Doc__ItemDesc_Store(OOC_Doc__Item item, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__ItemDesc_Store 4
+typedef void (*_TBP_OOC_Doc__ItemDesc_Store)(OOC_Doc__Item item, ADT_Storable__Writer w);
+extern void OOC_Doc__ItemDesc_Load(OOC_Doc__Item item, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__ItemDesc_Load 5
+typedef void (*_TBP_OOC_Doc__ItemDesc_Load)(OOC_Doc__Item item, ADT_Storable__Reader r);
+extern OOC_Doc__Itemize OOC_Doc__NewItemize(OOC_CHAR8 padAfter, OOC_Doc__InlineElement mark, OOC_Doc__Item text, OOC_Doc__BlockElement itemList);
+extern void OOC_Doc__ItemizeDesc_NodeName(OOC_Doc__Itemize i, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__ItemizeDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__ItemizeDesc_NodeName)(OOC_Doc__Itemize i, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__ItemizeDesc_Normalize(OOC_Doc__Itemize i);
+#define _TBN_OOC_Doc__ItemizeDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__ItemizeDesc_Normalize)(OOC_Doc__Itemize i);
+extern void OOC_Doc__ItemizeDesc_Store(OOC_Doc__Itemize i, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__ItemizeDesc_Store 4
+typedef void (*_TBP_OOC_Doc__ItemizeDesc_Store)(OOC_Doc__Itemize i, ADT_Storable__Writer w);
+extern void OOC_Doc__ItemizeDesc_Load(OOC_Doc__Itemize i, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__ItemizeDesc_Load 5
+typedef void (*_TBP_OOC_Doc__ItemizeDesc_Load)(OOC_Doc__Itemize i, ADT_Storable__Reader r);
+extern OOC_Doc__Enumerate OOC_Doc__NewEnumerate(OOC_CHAR8 padAfter, OOC_INT8 mode, OOC_INT32 start, OOC_Doc__Item text, OOC_Doc__BlockElement itemList);
+extern void OOC_Doc__EnumerateDesc_NodeName(OOC_Doc__Enumerate e, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__EnumerateDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__EnumerateDesc_NodeName)(OOC_Doc__Enumerate e, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__EnumerateDesc_Normalize(OOC_Doc__Enumerate e);
+#define _TBN_OOC_Doc__EnumerateDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__EnumerateDesc_Normalize)(OOC_Doc__Enumerate e);
+extern void OOC_Doc__EnumerateDesc_Store(OOC_Doc__Enumerate e, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__EnumerateDesc_Store 4
+typedef void (*_TBP_OOC_Doc__EnumerateDesc_Store)(OOC_Doc__Enumerate e, ADT_Storable__Writer w);
+extern void OOC_Doc__EnumerateDesc_Load(OOC_Doc__Enumerate e, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__EnumerateDesc_Load 5
+typedef void (*_TBP_OOC_Doc__EnumerateDesc_Load)(OOC_Doc__Enumerate e, ADT_Storable__Reader r);
+extern OOC_Doc__FirstColumn OOC_Doc__NewFirstColumn(OOC_CHAR8 padAfter, OOC_Doc__InlineElement inlineText);
+extern void OOC_Doc__FirstColumnDesc_NodeName(OOC_Doc__FirstColumn fc, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__FirstColumnDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__FirstColumnDesc_NodeName)(OOC_Doc__FirstColumn fc, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__FirstColumnDesc_Normalize(OOC_Doc__FirstColumn fc);
+#define _TBN_OOC_Doc__FirstColumnDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__FirstColumnDesc_Normalize)(OOC_Doc__FirstColumn fc);
+extern void OOC_Doc__FirstColumnDesc_Store(OOC_Doc__FirstColumn fc, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__FirstColumnDesc_Store 4
+typedef void (*_TBP_OOC_Doc__FirstColumnDesc_Store)(OOC_Doc__FirstColumn fc, ADT_Storable__Writer w);
+extern void OOC_Doc__FirstColumnDesc_Load(OOC_Doc__FirstColumn fc, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__FirstColumnDesc_Load 5
+typedef void (*_TBP_OOC_Doc__FirstColumnDesc_Load)(OOC_Doc__FirstColumn fc, ADT_Storable__Reader r);
+extern OOC_Doc__TableRow OOC_Doc__NewTableRow(OOC_CHAR8 padAfter, OOC_Doc__BlockElement firstColumnList, OOC_Doc__Item item);
+extern void OOC_Doc__TableRowDesc_NodeName(OOC_Doc__TableRow tr, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__TableRowDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__TableRowDesc_NodeName)(OOC_Doc__TableRow tr, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__TableRowDesc_Normalize(OOC_Doc__TableRow tr);
+#define _TBN_OOC_Doc__TableRowDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__TableRowDesc_Normalize)(OOC_Doc__TableRow tr);
+extern void OOC_Doc__TableRowDesc_Store(OOC_Doc__TableRow tr, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__TableRowDesc_Store 4
+typedef void (*_TBP_OOC_Doc__TableRowDesc_Store)(OOC_Doc__TableRow tr, ADT_Storable__Writer w);
+extern void OOC_Doc__TableRowDesc_Load(OOC_Doc__TableRow tr, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__TableRowDesc_Load 5
+typedef void (*_TBP_OOC_Doc__TableRowDesc_Load)(OOC_Doc__TableRow tr, ADT_Storable__Reader r);
+extern OOC_Doc__Table OOC_Doc__NewTable(OOC_CHAR8 padAfter, OOC_Doc__BlockElement rowList);
+extern void OOC_Doc__TableDesc_NodeName(OOC_Doc__Table t, OOC_CHAR8 name[], OOC_LEN name_0d);
+#define _TBN_OOC_Doc__TableDesc_NodeName 6
+typedef void (*_TBP_OOC_Doc__TableDesc_NodeName)(OOC_Doc__Table t, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_Doc__TableDesc_Normalize(OOC_Doc__Table t);
+#define _TBN_OOC_Doc__TableDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__TableDesc_Normalize)(OOC_Doc__Table t);
+extern void OOC_Doc__TableDesc_Store(OOC_Doc__Table t, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__TableDesc_Store 4
+typedef void (*_TBP_OOC_Doc__TableDesc_Store)(OOC_Doc__Table t, ADT_Storable__Writer w);
+extern void OOC_Doc__TableDesc_Load(OOC_Doc__Table t, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__TableDesc_Load 5
+typedef void (*_TBP_OOC_Doc__TableDesc_Load)(OOC_Doc__Table t, ADT_Storable__Reader r);
+extern OOC_Doc__Document OOC_Doc__NewDocument(OOC_Doc__BlockElement blockList, OOC_Doc_Decoration__Decoration decoration, OOC_INT32 firstColumn);
+extern void OOC_Doc__DocumentDesc_AddUsedImport(OOC_Doc__Document d, ADT_Storable__Object importDecl);
+#define _TBN_OOC_Doc__DocumentDesc_AddUsedImport 6
+typedef void (*_TBP_OOC_Doc__DocumentDesc_AddUsedImport)(OOC_Doc__Document d, ADT_Storable__Object importDecl);
+extern void OOC_Doc__DocumentDesc_Store(OOC_Doc__Document d, ADT_Storable__Writer w);
+#define _TBN_OOC_Doc__DocumentDesc_Store 4
+typedef void (*_TBP_OOC_Doc__DocumentDesc_Store)(OOC_Doc__Document d, ADT_Storable__Writer w);
+extern void OOC_Doc__DocumentDesc_Load(OOC_Doc__Document d, ADT_Storable__Reader r);
+#define _TBN_OOC_Doc__DocumentDesc_Load 5
+typedef void (*_TBP_OOC_Doc__DocumentDesc_Load)(OOC_Doc__Document d, ADT_Storable__Reader r);
+extern void OOC_Doc__DocumentDesc_Normalize(OOC_Doc__Document doc);
+#define _TBN_OOC_Doc__DocumentDesc_Normalize 7
+typedef void (*_TBP_OOC_Doc__DocumentDesc_Normalize)(OOC_Doc__Document doc);
+extern void OOC_Doc__DocumentDesc_Merge(OOC_Doc__Document doc, OOC_Doc__Document source);
+#define _TBN_OOC_Doc__DocumentDesc_Merge 8
+typedef void (*_TBP_OOC_Doc__DocumentDesc_Merge)(OOC_Doc__Document doc, OOC_Doc__Document source);
+extern void OOC_OOC_Doc_init(void);
+extern void OOC_OOC_Doc_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Doc__Position;
+extern RT0__StructDesc _td_OOC_Doc__Element;
+extern RT0__StructDesc _td_OOC_Doc__ElementDesc;
+extern RT0__StructDesc _td_OOC_Doc__InlineElement;
+extern RT0__StructDesc _td_OOC_Doc__InlineElementDesc;
+extern RT0__StructDesc _td_OOC_Doc__BlockElement;
+extern RT0__StructDesc _td_OOC_Doc__BlockElementDesc;
+extern RT0__StructDesc _td_OOC_Doc__Document;
+extern RT0__StructDesc _td_OOC_Doc__DocumentDesc;
+extern RT0__StructDesc _td_OOC_Doc__InlineList;
+extern RT0__StructDesc _td_OOC_Doc__InlineListDesc;
+extern RT0__StructDesc _td_OOC_Doc__BlockList;
+extern RT0__StructDesc _td_OOC_Doc__BlockListDesc;
+extern RT0__StructDesc _td_OOC_Doc__Glyph;
+extern RT0__StructDesc _td_OOC_Doc__GlyphDesc;
+extern RT0__StructDesc _td_OOC_Doc__Text;
+extern RT0__StructDesc _td_OOC_Doc__TextDesc;
+extern RT0__StructDesc _td_OOC_Doc__MarkedInline;
+extern RT0__StructDesc _td_OOC_Doc__MarkedInlineDesc;
+extern RT0__StructDesc _td_OOC_Doc__OberonRef;
+extern RT0__StructDesc _td_OOC_Doc__OberonRefDesc;
+extern RT0__StructDesc _td_OOC_Doc__Email;
+extern RT0__StructDesc _td_OOC_Doc__EmailDesc;
+extern RT0__StructDesc _td_OOC_Doc__Uref;
+extern RT0__StructDesc _td_OOC_Doc__UrefDesc;
+extern RT0__StructDesc _td_OOC_Doc__Paragraph;
+extern RT0__StructDesc _td_OOC_Doc__ParagraphDesc;
+extern RT0__StructDesc _td_OOC_Doc__Example;
+extern RT0__StructDesc _td_OOC_Doc__ExampleDesc;
+extern RT0__StructDesc _td_OOC_Doc__PreCond;
+extern RT0__StructDesc _td_OOC_Doc__PreCondDesc;
+extern RT0__StructDesc _td_OOC_Doc__PostCond;
+extern RT0__StructDesc _td_OOC_Doc__PostCondDesc;
+extern RT0__StructDesc _td_OOC_Doc__Item;
+extern RT0__StructDesc _td_OOC_Doc__ItemDesc;
+extern RT0__StructDesc _td_OOC_Doc__Itemize;
+extern RT0__StructDesc _td_OOC_Doc__ItemizeDesc;
+extern RT0__StructDesc _td_OOC_Doc__Enumerate;
+extern RT0__StructDesc _td_OOC_Doc__EnumerateDesc;
+extern RT0__StructDesc _td_OOC_Doc__FirstColumn;
+extern RT0__StructDesc _td_OOC_Doc__FirstColumnDesc;
+extern RT0__StructDesc _td_OOC_Doc__TableRow;
+extern RT0__StructDesc _td_OOC_Doc__TableRowDesc;
+extern RT0__StructDesc _td_OOC_Doc__Table;
+extern RT0__StructDesc _td_OOC_Doc__TableDesc;
+extern RT0__StructDesc _td_OOC_Doc__6915;
+extern RT0__StructDesc _td_OOC_Doc__12633;
+extern RT0__StructDesc _td_OOC_Doc__13407;
+extern RT0__StructDesc _td_OOC_Doc__13616;
+extern RT0__StructDesc _td_OOC_Doc__13813;
+extern RT0__StructDesc _td_OOC_Doc__16777;
+extern RT0__StructDesc _td_OOC_Doc__20173;
+extern RT0__StructDesc _td_OOC_Doc__21428;
+extern RT0__StructDesc _td_OOC_Doc__22925;
+extern RT0__StructDesc _td_OOC_Doc__24039;
+extern RT0__StructDesc _td_OOC_Doc__25004;
+extern RT0__StructDesc _td_OOC_Doc__26022;
+extern RT0__StructDesc _td_OOC_Doc__27025;
+extern RT0__StructDesc _td_OOC_Doc__28261;
+extern RT0__StructDesc _td_OOC_Doc__29976;
+extern RT0__StructDesc _td_OOC_Doc__31376;
+extern RT0__StructDesc _td_OOC_Doc__32621;
+extern RT0__StructDesc _td_OOC_Doc__33856;
+extern RT0__StructDesc _td_OOC_Doc__34757;
+#endif /* _MODULE_OOC_Doc_ */
+
+/* --- */

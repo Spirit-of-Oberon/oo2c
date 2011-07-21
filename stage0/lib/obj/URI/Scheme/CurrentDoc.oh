@@ -1,0 +1,38 @@
+#ifndef _MODULE_URI_Scheme_CurrentDoc_
+#define _MODULE_URI_Scheme_CurrentDoc_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <URI.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct URI_Scheme_CurrentDoc__CurrentDocDesc *URI_Scheme_CurrentDoc__CurrentDoc;
+typedef struct URI_Scheme_CurrentDoc__CurrentDocDesc {
+  Object__String schemeId;
+} URI_Scheme_CurrentDoc__CurrentDocDesc;
+extern void URI_Scheme_CurrentDoc__Init(URI_Scheme_CurrentDoc__CurrentDoc uri);
+extern URI_Scheme_CurrentDoc__CurrentDoc URI_Scheme_CurrentDoc__New(void);
+extern URI__URI URI_Scheme_CurrentDoc__CurrentDocDesc_Clone(URI_Scheme_CurrentDoc__CurrentDoc uri);
+#define _TBN_URI_Scheme_CurrentDoc__CurrentDocDesc_Clone 4
+typedef URI__URI (*_TBP_URI_Scheme_CurrentDoc__CurrentDocDesc_Clone)(URI_Scheme_CurrentDoc__CurrentDoc uri);
+extern void URI_Scheme_CurrentDoc__CurrentDocDesc_Copy(URI_Scheme_CurrentDoc__CurrentDoc uri, URI__URI dest);
+#define _TBN_URI_Scheme_CurrentDoc__CurrentDocDesc_Copy 5
+typedef void (*_TBP_URI_Scheme_CurrentDoc__CurrentDocDesc_Copy)(URI_Scheme_CurrentDoc__CurrentDoc uri, URI__URI dest);
+extern void URI_Scheme_CurrentDoc__CurrentDocDesc_WriteXML(URI_Scheme_CurrentDoc__CurrentDoc uri, TextRider__Writer w);
+#define _TBN_URI_Scheme_CurrentDoc__CurrentDocDesc_WriteXML 7
+typedef void (*_TBP_URI_Scheme_CurrentDoc__CurrentDocDesc_WriteXML)(URI_Scheme_CurrentDoc__CurrentDoc uri, TextRider__Writer w);
+extern Object__String8 URI_Scheme_CurrentDoc__CurrentDocDesc_ToString(URI_Scheme_CurrentDoc__CurrentDoc uri);
+#define _TBN_URI_Scheme_CurrentDoc__CurrentDocDesc_ToString 1
+typedef Object__String8 (*_TBP_URI_Scheme_CurrentDoc__CurrentDocDesc_ToString)(URI_Scheme_CurrentDoc__CurrentDoc uri);
+extern void OOC_URI_Scheme_CurrentDoc_init(void);
+extern void OOC_URI_Scheme_CurrentDoc_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_URI_Scheme_CurrentDoc__CurrentDoc;
+extern RT0__StructDesc _td_URI_Scheme_CurrentDoc__CurrentDocDesc;
+#endif /* _MODULE_URI_Scheme_CurrentDoc_ */
+
+/* --- */

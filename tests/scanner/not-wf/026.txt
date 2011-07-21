@@ -1,0 +1,1 @@
+<*DEFINE a:=FALSE; DEFINE a:=TRUE*>

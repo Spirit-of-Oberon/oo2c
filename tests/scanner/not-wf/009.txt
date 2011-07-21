@@ -1,0 +1,1 @@
+has a hex digit, but is intended as decimal: 1A

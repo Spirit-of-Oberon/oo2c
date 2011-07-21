@@ -1,0 +1,1 @@
+<*DEFINE a:=1; DEFINE b:="1"; IF a=b THEN END*>

@@ -1,0 +1,140 @@
+#ifndef _MODULE_OOC_Package_
+#define _MODULE_OOC_Package_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Msg.oh>
+#include <IO.oh>
+#include <Object.oh>
+#include <ADT/ArrayList.oh>
+#include <XML/Error.oh>
+#include <Config.oh>
+#include <Config/Section/Options.oh>
+#include <OOC/Error.oh>
+#include <OOC/Repository.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct OOC_Package__VersionDesc *OOC_Package__Version;
+typedef struct OOC_Package__VersionDesc {
+  OOC_INT32 current;
+  OOC_INT32 age;
+  OOC_INT32 revision;
+  OOC_CHAR8 tuple[32];
+} OOC_Package__VersionDesc;
+typedef struct OOC_Package__ExecutableDesc *OOC_Package__Executable;
+typedef struct OOC_Package__ExecutableDesc {
+  Object__String mainModule;
+} OOC_Package__ExecutableDesc;
+typedef struct OOC_Package__LibraryDesc *OOC_Package__Library;
+typedef struct OOC_Package__LibraryDesc {
+  Object__String name;
+  Object__String mainModule;
+  OOC_Package__Version version;
+} OOC_Package__LibraryDesc;
+typedef struct OOC_Package__FileDataDesc *OOC_Package__FileData;
+typedef struct OOC_Package__FileDataDesc {
+  OOC_Package__FileData nextFileData;
+} OOC_Package__FileDataDesc;
+typedef struct OOC_Package__FileDesc *OOC_Package__File;
+typedef struct OOC_Package__FileDesc {
+  OOC_Package__FileData nextFileData;
+  Object__String name;
+  Object__String destName;
+} OOC_Package__FileDesc;
+typedef struct OOC_Package__FileSetDesc *OOC_Package__FileSet;
+typedef struct OOC_Package__FileSetDesc {
+  OOC_Package__FileData nextFileData;
+  Object__String sourceDir;
+  Object__String destDir;
+  OOC_Package__FileData head;
+  OOC_Package__FileData tail;
+} OOC_Package__FileSetDesc;
+typedef struct OOC_Package__KeyValueDesc *OOC_Package__KeyValue;
+typedef struct OOC_Package__KeyValueDesc {
+  Object__String key;
+  Config__Variable value;
+} OOC_Package__KeyValueDesc;
+typedef struct OOC_Package__PackageDesc *OOC_Package__Package;
+typedef struct OOC_Package__PackageDesc {
+  ADT_ArrayList__ArrayList options;
+  ADT_ArrayList__ArrayList pragmas;
+  Object__String name;
+  OOC_Package__Version version;
+  ADT_ArrayList__ArrayList library;
+  ADT_ArrayList__ArrayList executable;
+  OOC_Package__FileSet fileSet;
+} OOC_Package__PackageDesc;
+typedef struct OOC_Package__RepositoryDesc *OOC_Package__Repository;
+typedef struct OOC_Package__RepositoryDesc {
+  ADT_ArrayList__ArrayList options;
+  ADT_ArrayList__ArrayList pragmas;
+  ADT_ArrayList__ArrayList installedPkgs;
+} OOC_Package__RepositoryDesc;
+typedef struct OOC_Package__ErrorContextDesc *OOC_Package__ErrorContext;
+typedef struct OOC_Package__ErrorContextDesc {
+  Msg__StringPtr id;
+  XML_Error__Mapping mapping;
+} OOC_Package__ErrorContextDesc;
+extern void OOC_Package__ErrorContextDesc_GetTemplate(OOC_Package__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_Package__ErrorContextDesc_GetTemplate 0
+typedef void (*_TBP_OOC_Package__ErrorContextDesc_GetTemplate)(OOC_Package__ErrorContext context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void OOC_Package__FileSetDesc_Append(OOC_Package__FileSet fileSet, OOC_Package__FileData fdata);
+#define _TBN_OOC_Package__FileSetDesc_Append 0
+typedef void (*_TBP_OOC_Package__FileSetDesc_Append)(OOC_Package__FileSet fileSet, OOC_Package__FileData fdata);
+extern OOC_Package__File OOC_Package__NewFile(Object__String name, Object__String destName);
+extern OOC_Package__KeyValue OOC_Package__NewKeyValue(Object__String key, Config__Variable value);
+extern void OOC_Package__RepositoryDesc_MergePackage(OOC_Package__Repository r, OOC_Package__Package pkg);
+#define _TBN_OOC_Package__RepositoryDesc_MergePackage 0
+typedef void (*_TBP_OOC_Package__RepositoryDesc_MergePackage)(OOC_Package__Repository r, OOC_Package__Package pkg);
+extern OOC_CHAR8 OOC_Package__RepositoryDesc_PackageInstalled(OOC_Package__Repository r, Object__String pkgName);
+#define _TBN_OOC_Package__RepositoryDesc_PackageInstalled 1
+typedef OOC_CHAR8 (*_TBP_OOC_Package__RepositoryDesc_PackageInstalled)(OOC_Package__Repository r, Object__String pkgName);
+extern OOC_Package__FileSet OOC_Package__Normalize(OOC_Package__FileSet fileSet);
+extern OOC_Package__Package OOC_Package__GetPackage(Object__String pkgName, OOC_Repository__Repository *rep);
+extern OOC_CHAR8 OOC_Package__ParseMetaData(Config_Section_Options__Section options, Config_Section_Options__Section pragmas);
+extern void OOC_Package__WritePackage(OOC_Package__Package pkg, Object__String targetDir);
+extern void OOC_Package__WriteRepository(OOC_Package__Repository rep, Object__String targetDir);
+extern Object__String OOC_Package__RemovePkgInfoCmd(OOC_Package__Package pkg, Object__String targetDir, Object__String uninstall);
+extern OOC_Package__Package OOC_Package__GetPkgInfo(Object__String targetDir, Object__String pkgName, OOC_Error__List *errList);
+extern OOC_Package__Repository OOC_Package__GetRepository(Object__String targetDir, OOC_Error__List *errList);
+extern OOC_CHAR8 OOC_Package__UpdateRepository(Object__String targetDir);
+extern void OOC_OOC_Package_init(void);
+extern void OOC_OOC_Package_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Package__Version;
+extern RT0__StructDesc _td_OOC_Package__VersionDesc;
+extern RT0__StructDesc _td_OOC_Package__715;
+extern RT0__StructDesc _td_OOC_Package__Executable;
+extern RT0__StructDesc _td_OOC_Package__ExecutableDesc;
+extern RT0__StructDesc _td_OOC_Package__Library;
+extern RT0__StructDesc _td_OOC_Package__LibraryDesc;
+extern RT0__StructDesc _td_OOC_Package__FileData;
+extern RT0__StructDesc _td_OOC_Package__FileDataDesc;
+extern RT0__StructDesc _td_OOC_Package__File;
+extern RT0__StructDesc _td_OOC_Package__FileDesc;
+extern RT0__StructDesc _td_OOC_Package__FileSet;
+extern RT0__StructDesc _td_OOC_Package__FileSetDesc;
+extern RT0__StructDesc _td_OOC_Package__KeyValue;
+extern RT0__StructDesc _td_OOC_Package__KeyValueDesc;
+extern RT0__StructDesc _td_OOC_Package__Package;
+extern RT0__StructDesc _td_OOC_Package__PackageDesc;
+extern RT0__StructDesc _td_OOC_Package__Repository;
+extern RT0__StructDesc _td_OOC_Package__RepositoryDesc;
+extern RT0__StructDesc _td_OOC_Package__ErrorContext;
+extern RT0__StructDesc _td_OOC_Package__ErrorContextDesc;
+extern RT0__StructDesc _td_OOC_Package__2921;
+extern RT0__StructDesc _td_OOC_Package__8593;
+extern RT0__StructDesc _td_OOC_Package__8582;
+extern RT0__StructDesc _td_OOC_Package__13969;
+extern RT0__StructDesc _td_OOC_Package__13958;
+extern RT0__StructDesc _td_OOC_Package__14236;
+extern RT0__StructDesc _td_OOC_Package__15799;
+extern RT0__StructDesc _td_OOC_Package__18934;
+extern RT0__StructDesc _td_OOC_Package__19136;
+extern RT0__StructDesc _td_OOC_Package__32044;
+extern RT0__StructDesc _td_OOC_Package__32162;
+#endif /* _MODULE_OOC_Package_ */
+
+/* --- */

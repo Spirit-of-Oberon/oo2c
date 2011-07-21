@@ -1,0 +1,75 @@
+#ifndef _MODULE_XML_Error_
+#define _MODULE_XML_Error_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Channel.oh>
+#include <Msg.oh>
+#include <URI.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef Msg__Msg XML_Error__Msg;
+typedef OOC_INT32 XML_Error__Code;
+typedef OOC_CHAR8 XML_Error__Char;
+typedef OOC_CHAR16 XML_Error__LChar;
+typedef Msg__String XML_Error__String;
+typedef Msg__StringPtr XML_Error__StringPtr;
+typedef Msg__LString XML_Error__LString;
+typedef Msg__LStringPtr XML_Error__LStringPtr;
+typedef struct XML_Error__MappingDesc *XML_Error__Mapping;
+typedef struct XML_Error__MappingDesc {
+  XML_Error__Mapping next;
+  OOC_INT32 code;
+  Msg__LStringPtr text;
+} XML_Error__MappingDesc;
+typedef struct XML_Error__ContextDesc *XML_Error__Context;
+typedef struct XML_Error__ContextDesc {
+  Msg__StringPtr id;
+  XML_Error__Mapping mapping;
+} XML_Error__ContextDesc;
+typedef struct XML_Error__ListDesc *XML_Error__List;
+typedef struct XML_Error__ListDesc {
+  OOC_INT32 msgCount;
+  Msg__Msg msgList;
+  Msg__Msg lastMsg;
+  URI__HierarchicalURI cwdURI;
+} XML_Error__ListDesc;
+extern OOC_INT32 XML_Error__errMsgLineBase;
+extern OOC_INT32 XML_Error__errMsgColumnBase;
+extern OOC_INT32 XML_Error__errMsgCharPosBase;
+extern void XML_Error__InitContext(XML_Error__Context c, const Msg__String id__ref, OOC_LEN id_0d);
+extern XML_Error__Context XML_Error__NewContext(const Msg__String id__ref, OOC_LEN id_0d);
+extern void XML_Error__ContextDesc_WriteTemplate(XML_Error__Context context, Msg__Msg msg, const Msg__LString msgText__ref, OOC_LEN msgText_0d, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_XML_Error__ContextDesc_WriteTemplate 1
+typedef void (*_TBP_XML_Error__ContextDesc_WriteTemplate)(XML_Error__Context context, Msg__Msg msg, const Msg__LString msgText__ref, OOC_LEN msgText_0d, Msg__LString templ, OOC_LEN templ_0d);
+extern void XML_Error__ContextDesc_GetTemplate(XML_Error__Context context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_XML_Error__ContextDesc_GetTemplate 0
+typedef void (*_TBP_XML_Error__ContextDesc_GetTemplate)(XML_Error__Context context, Msg__Msg msg, Msg__LString templ, OOC_LEN templ_0d);
+extern void XML_Error__ContextDesc_SetString(XML_Error__Context context, OOC_INT32 code, const Msg__String str__ref, OOC_LEN str_0d);
+#define _TBN_XML_Error__ContextDesc_SetString 2
+typedef void (*_TBP_XML_Error__ContextDesc_SetString)(XML_Error__Context context, OOC_INT32 code, const Msg__String str__ref, OOC_LEN str_0d);
+extern Msg__Msg XML_Error__New(XML_Error__Context context, OOC_INT32 code);
+extern XML_Error__List XML_Error__NewList(void);
+extern void XML_Error__ListDesc_Write(volatile XML_Error__List errList, volatile Channel__Channel ch);
+#define _TBN_XML_Error__ListDesc_Write 2
+typedef void (*_TBP_XML_Error__ListDesc_Write)(XML_Error__List errList, Channel__Channel ch);
+extern void OOC_XML_Error_init(void);
+extern void OOC_XML_Error_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_Error__Mapping;
+extern RT0__StructDesc _td_XML_Error__MappingDesc;
+extern RT0__StructDesc _td_XML_Error__Context;
+extern RT0__StructDesc _td_XML_Error__ContextDesc;
+extern RT0__StructDesc _td_XML_Error__List;
+extern RT0__StructDesc _td_XML_Error__ListDesc;
+extern RT0__StructDesc _td_XML_Error__3911;
+extern RT0__StructDesc _td_XML_Error__5115;
+extern RT0__StructDesc _td_XML_Error__5212;
+extern RT0__StructDesc _td_XML_Error__5299;
+extern RT0__StructDesc _td_XML_Error__5329;
+extern RT0__StructDesc _td_XML_Error__6273;
+#endif /* _MODULE_XML_Error_ */
+
+/* --- */

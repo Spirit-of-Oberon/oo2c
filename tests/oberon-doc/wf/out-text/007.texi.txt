@@ -1,0 +1,18 @@
+Lists are a very convenient feature of any type-setting system.  OOC
+supports a subset of the available Texinfo commands, and lists are of
+course supported.  The @itemize command is the most simple list around:
+
+   * First item.  The list items are indented and marked with a bullet.
+     In the ASCII representation the bullet is a simple `*'.  This
+     looks nicer in the paper version, thanks to TeX.
+
+   * This second item follows the first without any line break in
+     between.
+
+   * But the third has three hard line breaks in front of it, and it is
+     also closed with two hard line breaks.
+
+   * This is the last item.  Bye.
+
+   THE END
+

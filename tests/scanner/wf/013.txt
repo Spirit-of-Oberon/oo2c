@@ -1,0 +1,9 @@
+a
+<*IF FALSE THEN*>
+b
+<*ELSIF TRUE THEN*>
+c
+<*ELSE*>
+d
+<*END*>
+e

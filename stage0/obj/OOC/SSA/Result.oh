@@ -1,0 +1,25 @@
+#ifndef _MODULE_OOC_SSA_Result_
+#define _MODULE_OOC_SSA_Result_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 OOC_SSA_Result__Class;
+#define OOC_SSA_Result__void (-2)
+#define OOC_SSA_Result__primary (-1)
+#define OOC_SSA_Result__result 0
+#define OOC_SSA_Result__store 2
+#define OOC_SSA_Result__selectValue 14
+#define OOC_SSA_Result__exception 19
+#define OOC_SSA_Result__dgatePlaceholder 23
+extern void OOC_SSA_Result__GetName(OOC_INT8 _class, OOC_CHAR8 name[], OOC_LEN name_0d);
+extern void OOC_OOC_SSA_Result_init(void);
+extern void OOC_OOC_SSA_Result_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Result__3303;
+#endif /* _MODULE_OOC_SSA_Result_ */
+
+/* --- */

@@ -1,0 +1,17 @@
+# this stylesheet is used by OOC:SSA:Inspector to render a human
+# readable representation of a procedure's SSA code
+
+body { background-color: white; font-family: sans-serif }
+table.ssaCode { border-collapse: collapse; border: thin solid black }
+td.ssaBlockHead { border: medium solid }
+td.ssaRes { text-align: right; }
+td.ssaInstr { text-align: left; }
+td.ssaJump { border: 0 dashed; border-top-width: thin; }
+td.ssaBranch { border: 0 dashed; border-top-width: thin; }
+td.filler { border: thin dotted black }
+tr.normal0 { background-color:#E0FFE0 }
+tr.normal1 { background-color:#D0D0FF }
+.highlight { background-color:#FF9999 }
+a.resRef:hover { background-color:#FF9999 }
+a.blockRef { color: black }
+td table { width: 100% }

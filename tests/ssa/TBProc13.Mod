@@ -1,0 +1,11 @@
+MODULE TBProc13;
+
+IMPORT TBProc1;
+
+TYPE MyP* = TBProc1.P;
+
+PROCEDURE (p: MyP) Proc();
+  BEGIN
+  END Proc;
+
+END TBProc13.

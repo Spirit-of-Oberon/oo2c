@@ -1,0 +1,9 @@
+MODULE Proc4;
+
+PROCEDURE P (a, b: INTEGER);
+  BEGIN
+  END P;
+
+BEGIN
+  P;
+END Proc4.

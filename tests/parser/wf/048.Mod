@@ -1,0 +1,4 @@
+MODULE M;
+BEGIN
+  x := a(B)
+END M.

@@ -1,0 +1,37 @@
+#ifndef _MODULE_XML_Locator_
+#define _MODULE_XML_Locator_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <XML/UnicodeBuffer.oh>
+#include <XML/Error.oh>
+#include <XML/DTD.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct XML_Locator__Position *XML_Locator__Locator;
+typedef struct XML_Locator__Position {
+  OOC_INT32 charIndex;
+  OOC_INT32 line;
+  OOC_INT32 column;
+  XML_DTD__ExternalEntity entity;
+  XML_DTD__InternalEntity inInternalEntity;
+} XML_Locator__Position;
+typedef struct XML_Locator__ErrorListenerDesc *XML_Locator__ErrorListener;
+typedef struct XML_Locator__ErrorListenerDesc {
+  char __dummy;
+} XML_Locator__ErrorListenerDesc;
+extern Msg__Msg XML_Locator__ErrorListenerDesc_Error(XML_Locator__ErrorListener el, XML_Error__Context context, OOC_INT32 code, OOC_CHAR8 fatalError, const struct XML_Locator__Position *pos__ref);
+#define _TBN_XML_Locator__ErrorListenerDesc_Error 0
+typedef Msg__Msg (*_TBP_XML_Locator__ErrorListenerDesc_Error)(XML_Locator__ErrorListener el, XML_Error__Context context, OOC_INT32 code, OOC_CHAR8 fatalError, const struct XML_Locator__Position *pos__ref);
+extern void OOC_XML_Locator_init(void);
+extern void OOC_XML_Locator_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_Locator__Locator;
+extern RT0__StructDesc _td_XML_Locator__Position;
+extern RT0__StructDesc _td_XML_Locator__ErrorListener;
+extern RT0__StructDesc _td_XML_Locator__ErrorListenerDesc;
+#endif /* _MODULE_XML_Locator_ */
+
+/* --- */

@@ -1,0 +1,52 @@
+#ifndef _MODULE_OOC_SSA_Allocator_
+#define _MODULE_OOC_SSA_Allocator_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/Dictionary.oh>
+#include <OOC/SSA.oh>
+#include <OOC/SSA/Opcode.oh>
+#include <OOC/SSA/Schedule.oh>
+#include <OOC/C/DeclWriter.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef ADT_Dictionary__Dictionary OOC_SSA_Allocator__State;
+typedef struct OOC_SSA_Allocator__BlockInfoDesc *OOC_SSA_Allocator__BlockInfo;
+typedef struct OOC_SSA_Allocator__BlockInfoDesc {
+  OOC_SSA_Allocator__BlockInfo nextInfo;
+  OOC_SSA_Schedule__Block block;
+  OOC_SSA__Instr mergeInstr;
+  ADT_Dictionary__Dictionary initState;
+  OOC_SSA__Instr *inCollect;
+  ADT_Dictionary__Dictionary *inState;
+  OOC_INT32 marker;
+} OOC_SSA_Allocator__BlockInfoDesc;
+extern OOC_SSA__Result OOC_SSA_Allocator__markInPlace;
+extern OOC_INT8 OOC_SSA_Allocator__SubclassToBasicType(OOC_INT8 subclass);
+extern OOC_INT8 OOC_SSA_Allocator__RegisterType(OOC_INT8 ctype);
+extern ADT_Dictionary__Dictionary OOC_SSA_Allocator__AssignRegisters(OOC_SSA__ProcBlock pb, OOC_SSA_Schedule__Block domRoot, OOC_C_DeclWriter__Writer w);
+extern void OOC_OOC_SSA_Allocator_init(void);
+extern void OOC_OOC_SSA_Allocator_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Allocator__1233;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__BlockList;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__1283;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__NameArray;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFile;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__1383;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFiles;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFileDesc;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__LiveData;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__LiveDataDesc;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__BlockInfo;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__BlockInfoDesc;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__3161;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__3150;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__3205;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__3194;
+extern RT0__StructDesc _td_OOC_SSA_Allocator__17736;
+#endif /* _MODULE_OOC_SSA_Allocator_ */
+
+/* --- */

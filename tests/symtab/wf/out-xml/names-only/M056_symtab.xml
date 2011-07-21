@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M056' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <import id='1' name='M055' pos='38' line='2' column='7' visible_from='42' export='no' imported_module_name='M055' imported_module_pos='38' imported_module_line='2' imported_module_column='7'/>
+  <type_name id='2' pos='74' line='5' column='24' ident_name='ChannelDesc' ident_pos='74' ident_line='5' ident_column='24'/>
+  <pointer_type id='3' pos='63' line='5' column='13' base_type_id='2'/>
+  <type_decl id='4' name='Channel' pos='52' line='5' column='2' visible_from='85' export='yes' type_id='3'/>
+  <record_type id='5' pos='104' line='6' column='17' class='Channel' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='6' name='ChannelDesc' pos='89' line='6' column='2' class='Channel' visible_from='127' export='yes' type_id='5'/>
+  <procedure_decl id='7' name='GetModTime' pos='165' line='9' column='35' visible_from='204' export='yes' is_type_bound='yes' is_forward_decl='no' tb_proc_index='-1'>
+    <procedure_type id='8' pos='130' line='9' column='0' receiver_id='10' resultType='#none'>
+      <type_name id='9' pos='145' line='9' column='15' ident_name='Channel' ident_pos='145' ident_line='9' ident_column='15'/>
+      <var_decl id='10' name='ch' pos='141' line='9' column='11' visible_from='152' export='no' is_parameter='yes' is_receiver='yes' is_var_parameter='no' type_id='9'/>
+      <type_name id='11' pos='189' line='9' column='59' module_name='M055' module_pos='189' module_line='9' module_column='59' ident_name='TimeStamp' ident_pos='194' ident_line='9' ident_column='64'/>
+      <var_decl id='12' name='mtime' pos='182' line='9' column='52' visible_from='203' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='11'/>
+    </procedure_type>
+  </procedure_decl>
+</module>

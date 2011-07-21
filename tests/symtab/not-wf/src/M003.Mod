@@ -1,0 +1,5 @@
+MODULE M;
+
+TYPE R = RECORD f, f: INTEGER END;
+
+END M.

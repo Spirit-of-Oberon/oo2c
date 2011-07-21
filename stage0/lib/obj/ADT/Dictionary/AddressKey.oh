@@ -1,0 +1,95 @@
+#ifndef _MODULE_ADT_Dictionary_AddressKey_
+#define _MODULE_ADT_Dictionary_AddressKey_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/Storable.oh>
+#include <Object.oh>
+#include <IO.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT32 ADT_Dictionary_AddressKey__Hash;
+typedef OOC_INT32 ADT_Dictionary_AddressKey__Index;
+typedef Object__Object ADT_Dictionary_AddressKey__Key;
+typedef Object__Object ADT_Dictionary_AddressKey__Value;
+typedef struct ADT_Dictionary_AddressKey__Entry {
+  OOC_INT32 hash;
+  Object__Object key;
+  Object__Object value;
+} ADT_Dictionary_AddressKey__Entry;
+typedef struct ADT_Dictionary_AddressKey__Entry *ADT_Dictionary_AddressKey__Table;
+typedef struct ADT_Dictionary_AddressKey__DictionaryDesc *ADT_Dictionary_AddressKey__Dictionary;
+typedef struct ADT_Dictionary_AddressKey__DictionaryDesc {
+  OOC_INT32 fill;
+  OOC_INT32 used;
+  OOC_INT32 size;
+  OOC_INT32 poly;
+  ADT_Dictionary_AddressKey__Table table;
+} ADT_Dictionary_AddressKey__DictionaryDesc;
+typedef struct ADT_Dictionary_AddressKey__DummyDesc *ADT_Dictionary_AddressKey__Dummy;
+typedef struct ADT_Dictionary_AddressKey__DummyDesc {
+  char __dummy;
+} ADT_Dictionary_AddressKey__DummyDesc;
+extern void ADT_Dictionary_AddressKey__Init(ADT_Dictionary_AddressKey__Dictionary dict);
+extern ADT_Dictionary_AddressKey__Dictionary ADT_Dictionary_AddressKey__New(void);
+extern void ADT_Dictionary_AddressKey__DictionaryDesc_Destroy(ADT_Dictionary_AddressKey__Dictionary dict);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Destroy 6
+typedef void (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Destroy)(ADT_Dictionary_AddressKey__Dictionary dict);
+extern OOC_CHAR8 ADT_Dictionary_AddressKey__DictionaryDesc_HasKey(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_HasKey 7
+typedef OOC_CHAR8 (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_HasKey)(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key);
+extern OOC_INT32 ADT_Dictionary_AddressKey__DictionaryDesc_Size(ADT_Dictionary_AddressKey__Dictionary dict);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Size 8
+typedef OOC_INT32 (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Size)(ADT_Dictionary_AddressKey__Dictionary dict);
+extern Object__Object ADT_Dictionary_AddressKey__DictionaryDesc_Get(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Get 9
+typedef Object__Object (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Get)(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key);
+extern void ADT_Dictionary_AddressKey__DictionaryDesc_Set(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key, Object__Object value);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Set 10
+typedef void (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Set)(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key, Object__Object value);
+extern ADT_Dictionary_AddressKey__Dictionary ADT_Dictionary_AddressKey__DictionaryDesc_Copy(ADT_Dictionary_AddressKey__Dictionary dict);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Copy 11
+typedef ADT_Dictionary_AddressKey__Dictionary (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Copy)(ADT_Dictionary_AddressKey__Dictionary dict);
+extern void ADT_Dictionary_AddressKey__DictionaryDesc_Delete(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Delete 12
+typedef void (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Delete)(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object key);
+extern void ADT_Dictionary_AddressKey__DictionaryDesc_Clear(ADT_Dictionary_AddressKey__Dictionary dict);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Clear 13
+typedef void (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Clear)(ADT_Dictionary_AddressKey__Dictionary dict);
+extern Object__ObjectArrayPtr ADT_Dictionary_AddressKey__DictionaryDesc_Keys(ADT_Dictionary_AddressKey__Dictionary dict);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Keys 14
+typedef Object__ObjectArrayPtr (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Keys)(ADT_Dictionary_AddressKey__Dictionary dict);
+extern Object__ObjectArrayPtr ADT_Dictionary_AddressKey__DictionaryDesc_Values(ADT_Dictionary_AddressKey__Dictionary dict);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Values 15
+typedef Object__ObjectArrayPtr (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Values)(ADT_Dictionary_AddressKey__Dictionary dict);
+extern OOC_CHAR8 NORETURN ADT_Dictionary_AddressKey__DictionaryDesc_Equals(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object obj) NORETURN2;
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Equals 2
+typedef OOC_CHAR8 NORETURN (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Equals)(ADT_Dictionary_AddressKey__Dictionary dict, Object__Object obj) NORETURN2;
+extern OOC_INT32 NORETURN ADT_Dictionary_AddressKey__DictionaryDesc_HashCode(ADT_Dictionary_AddressKey__Dictionary dict) NORETURN2;
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_HashCode 3
+typedef OOC_INT32 NORETURN (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_HashCode)(ADT_Dictionary_AddressKey__Dictionary dict) NORETURN2;
+extern void ADT_Dictionary_AddressKey__DictionaryDesc_Store(ADT_Dictionary_AddressKey__Dictionary dict, ADT_Storable__Writer w);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Store 4
+typedef void (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Store)(ADT_Dictionary_AddressKey__Dictionary dict, ADT_Storable__Writer w);
+extern void ADT_Dictionary_AddressKey__DictionaryDesc_Load(ADT_Dictionary_AddressKey__Dictionary dict, ADT_Storable__Reader r);
+#define _TBN_ADT_Dictionary_AddressKey__DictionaryDesc_Load 5
+typedef void (*_TBP_ADT_Dictionary_AddressKey__DictionaryDesc_Load)(ADT_Dictionary_AddressKey__Dictionary dict, ADT_Storable__Reader r);
+extern void ADT_Dictionary_AddressKey__DummyDesc_Destroy(ADT_Dictionary_AddressKey__Dummy dummy);
+#define _TBN_ADT_Dictionary_AddressKey__DummyDesc_Destroy 4
+typedef void (*_TBP_ADT_Dictionary_AddressKey__DummyDesc_Destroy)(ADT_Dictionary_AddressKey__Dummy dummy);
+extern void OOC_ADT_Dictionary_AddressKey_init(void);
+extern void OOC_ADT_Dictionary_AddressKey_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__Entry;
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__2635;
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__Table;
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__Dictionary;
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__DictionaryDesc;
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__Dummy;
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__DummyDesc;
+extern RT0__StructDesc _td_ADT_Dictionary_AddressKey__4107;
+#endif /* _MODULE_ADT_Dictionary_AddressKey_ */
+
+/* --- */

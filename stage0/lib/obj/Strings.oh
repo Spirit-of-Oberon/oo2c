@@ -1,0 +1,66 @@
+#ifndef _MODULE_Strings_
+#define _MODULE_Strings_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT8 Strings__CompareResults;
+#define Strings__less (-1)
+#define Strings__equal 0
+#define Strings__greater 1
+extern OOC_INT16 Strings__Length(const OOC_CHAR8 stringVal__ref[], OOC_LEN stringVal_0d);
+extern void Strings__Assign(const OOC_CHAR8 source__ref[], OOC_LEN source_0d, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern void Strings__Extract(const OOC_CHAR8 source__ref[], OOC_LEN source_0d, OOC_INT16 startPos, OOC_INT16 numberToExtract, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern void Strings__Delete(OOC_CHAR8 stringVar[], OOC_LEN stringVar_0d, OOC_INT16 startPos, OOC_INT16 numberToDelete);
+extern void Strings__Insert(const OOC_CHAR8 source__ref[], OOC_LEN source_0d, OOC_INT16 startPos, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern void Strings__Replace(const OOC_CHAR8 source__ref[], OOC_LEN source_0d, OOC_INT16 startPos, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern void Strings__Append(const OOC_CHAR8 source__ref[], OOC_LEN source_0d, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern void Strings__Concat(const OOC_CHAR8 source1__ref[], OOC_LEN source1_0d, const OOC_CHAR8 source2__ref[], OOC_LEN source2_0d, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern OOC_CHAR8 Strings__CanAssignAll(OOC_INT16 sourceLength, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern OOC_CHAR8 Strings__CanExtractAll(OOC_INT16 sourceLength, OOC_INT16 startPos, OOC_INT16 numberToExtract, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern OOC_CHAR8 Strings__CanDeleteAll(OOC_INT16 stringLength, OOC_INT16 startPos, OOC_INT16 numberToDelete);
+extern OOC_CHAR8 Strings__CanInsertAll(OOC_INT16 sourceLength, OOC_INT16 startPos, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern OOC_CHAR8 Strings__CanReplaceAll(OOC_INT16 sourceLength, OOC_INT16 startPos, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern OOC_CHAR8 Strings__CanAppendAll(OOC_INT16 sourceLength, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern OOC_CHAR8 Strings__CanConcatAll(OOC_INT16 source1Length, OOC_INT16 source2Length, OOC_CHAR8 destination[], OOC_LEN destination_0d);
+extern OOC_INT8 Strings__Compare(const OOC_CHAR8 stringVal1__ref[], OOC_LEN stringVal1_0d, const OOC_CHAR8 stringVal2__ref[], OOC_LEN stringVal2_0d);
+extern OOC_CHAR8 Strings__Equal(const OOC_CHAR8 stringVal1__ref[], OOC_LEN stringVal1_0d, const OOC_CHAR8 stringVal2__ref[], OOC_LEN stringVal2_0d);
+extern void Strings__FindNext(const OOC_CHAR8 pattern__ref[], OOC_LEN pattern_0d, const OOC_CHAR8 stringToSearch__ref[], OOC_LEN stringToSearch_0d, OOC_INT16 startPos, OOC_CHAR8 *patternFound, OOC_INT16 *posOfPattern);
+extern void Strings__FindPrev(const OOC_CHAR8 pattern__ref[], OOC_LEN pattern_0d, const OOC_CHAR8 stringToSearch__ref[], OOC_LEN stringToSearch_0d, OOC_INT16 startPos, OOC_CHAR8 *patternFound, OOC_INT16 *posOfPattern);
+extern void Strings__FindDiff(const OOC_CHAR8 stringVal1__ref[], OOC_LEN stringVal1_0d, const OOC_CHAR8 stringVal2__ref[], OOC_LEN stringVal2_0d, OOC_CHAR8 *differenceFound, OOC_INT16 *posOfDifference);
+extern void Strings__Capitalize(OOC_CHAR8 stringVar[], OOC_LEN stringVar_0d);
+extern void OOC_Strings_init(void);
+extern void OOC_Strings_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Strings__2019;
+extern RT0__StructDesc _td_Strings__2359;
+extern RT0__StructDesc _td_Strings__2391;
+extern RT0__StructDesc _td_Strings__2833;
+extern RT0__StructDesc _td_Strings__2921;
+extern RT0__StructDesc _td_Strings__4103;
+extern RT0__StructDesc _td_Strings__5060;
+extern RT0__StructDesc _td_Strings__5130;
+extern RT0__StructDesc _td_Strings__6934;
+extern RT0__StructDesc _td_Strings__7005;
+extern RT0__StructDesc _td_Strings__7952;
+extern RT0__StructDesc _td_Strings__7984;
+extern RT0__StructDesc _td_Strings__8395;
+extern RT0__StructDesc _td_Strings__8447;
+extern RT0__StructDesc _td_Strings__9075;
+extern RT0__StructDesc _td_Strings__9530;
+extern RT0__StructDesc _td_Strings__10730;
+extern RT0__StructDesc _td_Strings__11373;
+extern RT0__StructDesc _td_Strings__11865;
+extern RT0__StructDesc _td_Strings__12371;
+extern RT0__StructDesc _td_Strings__12831;
+extern RT0__StructDesc _td_Strings__13483;
+extern RT0__StructDesc _td_Strings__13905;
+extern RT0__StructDesc _td_Strings__15708;
+extern RT0__StructDesc _td_Strings__17841;
+extern RT0__StructDesc _td_Strings__18661;
+#endif /* _MODULE_Strings_ */
+
+/* --- */

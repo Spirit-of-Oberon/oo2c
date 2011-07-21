@@ -1,0 +1,106 @@
+#ifndef _MODULE_ADT_StringBuffer_
+#define _MODULE_ADT_StringBuffer_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Ascii.oh>
+#include <Object.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_CHAR8 *ADT_StringBuffer__CharsLatin1;
+typedef OOC_CHAR16 *ADT_StringBuffer__CharsUTF16;
+typedef struct ADT_StringBuffer__StringBufferDesc *ADT_StringBuffer__StringBuffer;
+typedef struct ADT_StringBuffer__StringBufferDesc {
+  OOC_INT32 capacity;
+  OOC_INT32 length;
+  ADT_StringBuffer__CharsLatin1 data8;
+  ADT_StringBuffer__CharsUTF16 data16;
+} ADT_StringBuffer__StringBufferDesc;
+extern void ADT_StringBuffer__StringBufferDesc_INIT(ADT_StringBuffer__StringBuffer b, OOC_INT32 initialCapacity);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_INIT 4
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_INIT)(ADT_StringBuffer__StringBuffer b, OOC_INT32 initialCapacity);
+extern Object__String ADT_StringBuffer__StringBufferDesc_ToString(ADT_StringBuffer__StringBuffer b);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_ToString 1
+typedef Object__String (*_TBP_ADT_StringBuffer__StringBufferDesc_ToString)(ADT_StringBuffer__StringBuffer b);
+extern OOC_CHAR32 ADT_StringBuffer__StringBufferDesc_CharAt(ADT_StringBuffer__StringBuffer b, OOC_INT32 index);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_CharAt 5
+typedef OOC_CHAR32 (*_TBP_ADT_StringBuffer__StringBufferDesc_CharAt)(ADT_StringBuffer__StringBuffer b, OOC_INT32 index);
+extern void ADT_StringBuffer__StringBufferDesc_Clear(ADT_StringBuffer__StringBuffer b);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_Clear 6
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_Clear)(ADT_StringBuffer__StringBuffer b);
+extern void ADT_StringBuffer__StringBufferDesc_EnsureCapacity(ADT_StringBuffer__StringBuffer b, OOC_INT32 cap);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_EnsureCapacity 7
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_EnsureCapacity)(ADT_StringBuffer__StringBuffer b, OOC_INT32 cap);
+extern ADT_StringBuffer__CharsLatin1 ADT_StringBuffer__StringBufferDesc_CharsLatin1(ADT_StringBuffer__StringBuffer b);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_CharsLatin1 8
+typedef ADT_StringBuffer__CharsLatin1 (*_TBP_ADT_StringBuffer__StringBufferDesc_CharsLatin1)(ADT_StringBuffer__StringBuffer b);
+extern void ADT_StringBuffer__StringBufferDesc_ConvertTo16(ADT_StringBuffer__StringBuffer b);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_ConvertTo16 9
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_ConvertTo16)(ADT_StringBuffer__StringBuffer b);
+extern ADT_StringBuffer__CharsUTF16 ADT_StringBuffer__StringBufferDesc_CharsUTF16(ADT_StringBuffer__StringBuffer b);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_CharsUTF16 10
+typedef ADT_StringBuffer__CharsUTF16 (*_TBP_ADT_StringBuffer__StringBufferDesc_CharsUTF16)(ADT_StringBuffer__StringBuffer b);
+extern void ADT_StringBuffer__StringBufferDesc_AppendLatin1Region(ADT_StringBuffer__StringBuffer b, const OOC_CHAR8 data[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendLatin1Region 11
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendLatin1Region)(ADT_StringBuffer__StringBuffer b, const OOC_CHAR8 data[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
+extern void ADT_StringBuffer__StringBufferDesc_AppendLatin1(ADT_StringBuffer__StringBuffer b, const OOC_CHAR8 data[], OOC_LEN data_0d);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendLatin1 12
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendLatin1)(ADT_StringBuffer__StringBuffer b, const OOC_CHAR8 data[], OOC_LEN data_0d);
+extern void ADT_StringBuffer__StringBufferDesc_AppendLatin1Char(ADT_StringBuffer__StringBuffer b, OOC_CHAR8 ch);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendLatin1Char 13
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendLatin1Char)(ADT_StringBuffer__StringBuffer b, OOC_CHAR8 ch);
+extern void ADT_StringBuffer__StringBufferDesc_AppendLn(ADT_StringBuffer__StringBuffer b);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendLn 14
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendLn)(ADT_StringBuffer__StringBuffer b);
+extern void ADT_StringBuffer__StringBufferDesc_AppendUTF16Region(ADT_StringBuffer__StringBuffer b, const OOC_CHAR16 data[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendUTF16Region 15
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendUTF16Region)(ADT_StringBuffer__StringBuffer b, const OOC_CHAR16 data[], OOC_LEN data_0d, OOC_INT32 start, OOC_INT32 end);
+extern void ADT_StringBuffer__StringBufferDesc_AppendChar(ADT_StringBuffer__StringBuffer b, OOC_CHAR32 ch);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendChar 16
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendChar)(ADT_StringBuffer__StringBuffer b, OOC_CHAR32 ch);
+extern void ADT_StringBuffer__StringBufferDesc_Append(ADT_StringBuffer__StringBuffer b, Object__Object obj);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_Append 17
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_Append)(ADT_StringBuffer__StringBuffer b, Object__Object obj);
+extern ADT_StringBuffer__StringBuffer ADT_StringBuffer__New(Object__String str);
+extern ADT_StringBuffer__StringBuffer ADT_StringBuffer__NewLatin1(const OOC_CHAR8 str[], OOC_LEN str_0d);
+extern ADT_StringBuffer__StringBuffer ADT_StringBuffer__NewLatin1Region(const OOC_CHAR8 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
+extern void ADT_StringBuffer__StringBufferDesc_AppendInt(ADT_StringBuffer__StringBuffer b, OOC_INT32 val);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendInt 18
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendInt)(ADT_StringBuffer__StringBuffer b, OOC_INT32 val);
+extern void ADT_StringBuffer__StringBufferDesc_AppendReal(ADT_StringBuffer__StringBuffer b, OOC_REAL32 val);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendReal 19
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendReal)(ADT_StringBuffer__StringBuffer b, OOC_REAL32 val);
+extern void ADT_StringBuffer__StringBufferDesc_AppendSet(ADT_StringBuffer__StringBuffer b, OOC_UINT32 val);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendSet 20
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendSet)(ADT_StringBuffer__StringBuffer b, OOC_UINT32 val);
+extern void ADT_StringBuffer__StringBufferDesc_AppendBool(ADT_StringBuffer__StringBuffer b, OOC_CHAR8 val);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_AppendBool 21
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_AppendBool)(ADT_StringBuffer__StringBuffer b, OOC_CHAR8 val);
+extern void ADT_StringBuffer__StringBufferDesc_Insert(ADT_StringBuffer__StringBuffer b, Object__Object obj, OOC_INT32 at);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_Insert 22
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_Insert)(ADT_StringBuffer__StringBuffer b, Object__Object obj, OOC_INT32 at);
+extern void ADT_StringBuffer__StringBufferDesc_Delete(ADT_StringBuffer__StringBuffer b, OOC_INT32 start, OOC_INT32 end);
+#define _TBN_ADT_StringBuffer__StringBufferDesc_Delete 23
+typedef void (*_TBP_ADT_StringBuffer__StringBufferDesc_Delete)(ADT_StringBuffer__StringBuffer b, OOC_INT32 start, OOC_INT32 end);
+extern void OOC_ADT_StringBuffer_init(void);
+extern void OOC_ADT_StringBuffer_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_ADT_StringBuffer__1012;
+extern RT0__StructDesc _td_ADT_StringBuffer__CharsLatin1;
+extern RT0__StructDesc _td_ADT_StringBuffer__1065;
+extern RT0__StructDesc _td_ADT_StringBuffer__CharsUTF16;
+extern RT0__StructDesc _td_ADT_StringBuffer__StringBuffer;
+extern RT0__StructDesc _td_ADT_StringBuffer__StringBufferDesc;
+extern RT0__StructDesc _td_ADT_StringBuffer__5722;
+extern RT0__StructDesc _td_ADT_StringBuffer__6351;
+extern RT0__StructDesc _td_ADT_StringBuffer__6555;
+extern RT0__StructDesc _td_ADT_StringBuffer__7130;
+extern RT0__StructDesc _td_ADT_StringBuffer__8918;
+extern RT0__StructDesc _td_ADT_StringBuffer__9124;
+extern RT0__StructDesc _td_ADT_StringBuffer__9518;
+extern RT0__StructDesc _td_ADT_StringBuffer__9768;
+#endif /* _MODULE_ADT_StringBuffer_ */
+
+/* --- */

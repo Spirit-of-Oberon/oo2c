@@ -1,0 +1,35 @@
+PRAGMAS
+  Warnings := FALSE;
+  Assertions := TRUE;
+  Initialize := FALSE;
+  PoisonHeap := -1;
+  StackCheck := TRUE;
+  ConformantMode := FALSE;
+
+  CaseSelectCheck := TRUE;
+  IndexCheck := TRUE;
+  RangeCheck := TRUE;
+  DerefCheck := TRUE;
+  FunctResult := TRUE;
+  TypeGuard := TRUE;
+  OverflowCheck := FALSE;
+  IntDivCheck := TRUE;
+  RealOverflowCheck := TRUE;
+  RealDivCheck := TRUE;
+END
+
+
+PATHS
+GET *.Mod FROM
+  wd/mod;
+  /usr/lib/Oo2c/lib;  ##PATHS:OOC:LIB##
+GET *.Sym, *.Lib FROM
+  wd/sym;
+  /usr/lib/Oo2c/sym;  ##PATHS:OOC:SYM##
+GET *.h, *.d, *.c, *.o FROM
+  wd/obj;
+  /usr/lib/Oo2c/obj;  ##PATHS:OOC:OBJ##
+  /usr/lib/Oo2c/lib;  ##PATHS:OOC:LIB##
+GET * FROM
+  wd/exe;
+END

@@ -1,0 +1,6 @@
+MODULE NoLengthInfo3;
+
+VAR
+  a: POINTER TO ARRAY[NO_LENGTH_INFO] OF ARRAY OF CHAR;
+  
+END NoLengthInfo3.

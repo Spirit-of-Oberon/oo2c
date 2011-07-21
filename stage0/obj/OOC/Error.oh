@@ -1,0 +1,73 @@
+#ifndef _MODULE_OOC_Error_
+#define _MODULE_OOC_Error_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Channel.oh>
+#include <Msg.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef Msg__Msg OOC_Error__Msg;
+typedef OOC_INT32 OOC_Error__Code;
+typedef OOC_CHAR8 OOC_Error__Char;
+typedef OOC_CHAR16 OOC_Error__LChar;
+typedef Msg__String OOC_Error__String;
+typedef Msg__StringPtr OOC_Error__StringPtr;
+typedef Msg__LString OOC_Error__LString;
+typedef Msg__LStringPtr OOC_Error__LStringPtr;
+typedef struct OOC_Error__ContextDesc *OOC_Error__Context;
+typedef struct OOC_Error__ContextDesc {
+  Msg__StringPtr id;
+} OOC_Error__ContextDesc;
+typedef struct OOC_Error__ListDesc *OOC_Error__List;
+typedef struct OOC_Error__ListDesc {
+  OOC_INT32 msgCount;
+  Msg__Msg msgList;
+  Msg__Msg lastMsg;
+  OOC_CHAR8 fileName[256];
+  OOC_CHAR8 adjustCharPos;
+  OOC_CHAR8 noError;
+} OOC_Error__ListDesc;
+#define OOC_Error__styleFileLineColumn 0
+#define OOC_Error__styleCharPos 1
+#define OOC_Error__styleAttributes 2
+extern OOC_INT8 OOC_Error__style;
+extern OOC_INT32 OOC_Error__minErrorDistance;
+#define OOC_Error__warningPrefix "Warning: "
+extern void OOC_Error__InitContext(OOC_Error__Context c, const Msg__String id__ref, OOC_LEN id_0d);
+extern Msg__Msg OOC_Error__New(OOC_Error__Context context, OOC_INT32 code);
+extern OOC_Error__List OOC_Error__NewList(Object__String fileName);
+extern void OOC_Error__ListDesc_AppendWarning(OOC_Error__List l, Msg__Msg msg);
+#define _TBN_OOC_Error__ListDesc_AppendWarning 2
+typedef void (*_TBP_OOC_Error__ListDesc_AppendWarning)(OOC_Error__List l, Msg__Msg msg);
+extern void OOC_Error__ListDesc_Append(OOC_Error__List l, Msg__Msg msg);
+#define _TBN_OOC_Error__ListDesc_Append 0
+typedef void (*_TBP_OOC_Error__ListDesc_Append)(OOC_Error__List l, Msg__Msg msg);
+extern OOC_CHAR8 OOC_Error__ListDesc_NoErrors(OOC_Error__List l);
+#define _TBN_OOC_Error__ListDesc_NoErrors 3
+typedef OOC_CHAR8 (*_TBP_OOC_Error__ListDesc_NoErrors)(OOC_Error__List l);
+extern void OOC_Error__ContextDesc_BaseTemplate(OOC_Error__Context c, Msg__Msg msg, const Msg__LString text__ref, OOC_LEN text_0d, Msg__LString templ, OOC_LEN templ_0d);
+#define _TBN_OOC_Error__ContextDesc_BaseTemplate 1
+typedef void (*_TBP_OOC_Error__ContextDesc_BaseTemplate)(OOC_Error__Context c, Msg__Msg msg, const Msg__LString text__ref, OOC_LEN text_0d, Msg__LString templ, OOC_LEN templ_0d);
+extern void OOC_Error__ListDesc_SetAdjustCharPos(OOC_Error__List errList, OOC_CHAR8 adjust);
+#define _TBN_OOC_Error__ListDesc_SetAdjustCharPos 4
+typedef void (*_TBP_OOC_Error__ListDesc_SetAdjustCharPos)(OOC_Error__List errList, OOC_CHAR8 adjust);
+extern void OOC_Error__ListDesc_Write(OOC_Error__List errList, Channel__Channel ch);
+#define _TBN_OOC_Error__ListDesc_Write 5
+typedef void (*_TBP_OOC_Error__ListDesc_Write)(OOC_Error__List errList, Channel__Channel ch);
+extern void OOC_OOC_Error_init(void);
+extern void OOC_OOC_Error_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_Error__Context;
+extern RT0__StructDesc _td_OOC_Error__ContextDesc;
+extern RT0__StructDesc _td_OOC_Error__List;
+extern RT0__StructDesc _td_OOC_Error__ListDesc;
+extern RT0__StructDesc _td_OOC_Error__1377;
+extern RT0__StructDesc _td_OOC_Error__3352;
+extern RT0__StructDesc _td_OOC_Error__4998;
+extern RT0__StructDesc _td_OOC_Error__6584;
+#endif /* _MODULE_OOC_Error_ */
+
+/* --- */

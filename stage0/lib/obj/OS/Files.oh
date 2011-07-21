@@ -1,0 +1,31 @@
+#ifndef _MODULE_OS_Files_
+#define _MODULE_OS_Files_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <Object.oh>
+#include <OS/Path.oh>
+#include <IO.oh>
+#include <IO/StdChannels.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef OOC_INT32 OS_Files__Mode;
+typedef Object__String *OS_Files__NameArray;
+typedef OOC_REAL64 OS_Files__Time;
+#define OS_Files__defaultMode 511
+extern OS_Files__NameArray OS_Files__ListDir(Object__String path);
+extern void OS_Files__MkDir(Object__String path, OOC_INT32 mode);
+extern void OS_Files__MakeDirs(Object__String path, OOC_INT32 mode);
+extern void OS_Files__Remove(Object__String path);
+extern OOC_CHAR8 OS_Files__Exists(Object__String path);
+extern OOC_REAL64 OS_Files__MTime(Object__String path);
+extern void OOC_OS_Files_init(void);
+extern void OOC_OS_Files_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OS_Files__1348;
+extern RT0__StructDesc _td_OS_Files__NameArray;
+#endif /* _MODULE_OS_Files_ */
+
+/* --- */

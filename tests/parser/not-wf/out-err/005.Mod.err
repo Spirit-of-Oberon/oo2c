@@ -1,0 +1,17 @@
+In file not-wf/005.Mod: 
+Expected symbol `.'
+column=3
+line=1
+pos=18
+sym_name=.
+
+Expected identifier
+column=4
+line=1
+pos=19
+
+Junk after end of module
+column=4
+line=1
+pos=19
+

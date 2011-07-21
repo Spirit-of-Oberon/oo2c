@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<module id='0' name='M059' pos='7' line='0' column='7' visible_from='0' export='yes'>
+  <type_name id='1' pos='39' line='3' column='20' ident_name='ObjDesc' ident_pos='39' ident_line='3' ident_column='20'/>
+  <pointer_type id='2' pos='28' line='3' column='9' base_type_id='1'/>
+  <type_decl id='3' name='Obj' pos='21' line='3' column='2' visible_from='46' export='yes' type_id='2'/>
+  <record_type id='4' pos='61' line='4' column='13' class='Obj' base_type='#none' tb_proc_count='-1'/>
+  <type_decl id='5' name='ObjDesc' pos='50' line='4' column='2' class='Obj' visible_from='71' export='yes' type_id='4'/>
+  <type_pars id='6'>
+    <type_name id='7' pos='88' line='5' column='15' ident_name='Obj' ident_pos='88' ident_line='5' ident_column='15'/>
+    <type_var id='8' pos='88' line='5' column='15' bound_id='7'/>
+    <type_decl id='9' name='Base' pos='82' line='5' column='9' visible_from='91' export='no' is_type_parameter='yes' type_id='8'/>
+    <record_type id='10' pos='95' line='5' column='22' type_pars_id='6' base_type='#none' tb_proc_count='-1'/>
+  </type_pars>
+  <type_decl id='11' name='BDesc' pos='75' line='5' column='2' visible_from='108' export='yes' type_id='10'/>
+</module>

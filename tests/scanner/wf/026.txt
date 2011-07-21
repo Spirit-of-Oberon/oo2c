@@ -1,0 +1,2 @@
+<*DEFINE d:="abc"; DEFINE s:="foo"*>
+<*IF d<=s THEN*>b<*END*>c

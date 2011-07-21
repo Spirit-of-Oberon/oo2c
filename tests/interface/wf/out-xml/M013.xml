@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M013' id=''>
+  <import-decl name='E' id='E' export='no' module='E'/>
+  <procedure name='P' id='P' export='yes'>
+    <oberon-doc>
+      <summary><oberon-var href='E#b'>E.b</oberon-var></summary>
+      <p pad-after='yes' no-indent='yes'><oberon-var href='E#b'>E.b</oberon-var></p>
+    </oberon-doc>
+    <formal-parameters/>
+  </procedure>
+  <module-ref name='E'>
+    <ref-target type='html' relative-uri='E.html'/>
+  </module-ref>
+</interface-description>

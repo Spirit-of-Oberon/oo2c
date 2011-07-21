@@ -1,0 +1,102 @@
+#ifndef _MODULE_ADT_ArrayList_
+#define _MODULE_ADT_ArrayList_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <ADT/Storable.oh>
+#include <ADT/Comparator.oh>
+#include <Object.oh>
+#include <IO.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef Object__Object *ADT_ArrayList__Array;
+typedef struct ADT_ArrayList__ArrayListDesc *ADT_ArrayList__ArrayList;
+typedef struct ADT_ArrayList__ArrayListDesc {
+  ADT_ArrayList__Array array;
+  OOC_INT32 size;
+} ADT_ArrayList__ArrayListDesc;
+extern void ADT_ArrayList__ArrayListDesc_CreateArray(ADT_ArrayList__ArrayList l, OOC_INT32 size, ADT_ArrayList__ArrayList old);
+#define _TBN_ADT_ArrayList__ArrayListDesc_CreateArray 6
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_CreateArray)(ADT_ArrayList__ArrayList l, OOC_INT32 size, ADT_ArrayList__ArrayList old);
+extern void ADT_ArrayList__ArrayListDesc_INIT(ADT_ArrayList__ArrayList l, OOC_INT32 initialSize);
+#define _TBN_ADT_ArrayList__ArrayListDesc_INIT 7
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_INIT)(ADT_ArrayList__ArrayList l, OOC_INT32 initialSize);
+extern ADT_ArrayList__ArrayList ADT_ArrayList__New(OOC_INT32 initialSize);
+extern void ADT_ArrayList__ArrayListDesc_Destroy(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Destroy 8
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Destroy)(ADT_ArrayList__ArrayList l);
+extern ADT_ArrayList__ArrayList ADT_ArrayList__ArrayListDesc_Copy(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Copy 9
+typedef ADT_ArrayList__ArrayList (*_TBP_ADT_ArrayList__ArrayListDesc_Copy)(ADT_ArrayList__ArrayList l);
+extern void ADT_ArrayList__ArrayListDesc_EnsureCapacity(ADT_ArrayList__ArrayList l, OOC_INT32 size);
+#define _TBN_ADT_ArrayList__ArrayListDesc_EnsureCapacity 10
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_EnsureCapacity)(ADT_ArrayList__ArrayList l, OOC_INT32 size);
+extern void ADT_ArrayList__ArrayListDesc_Clear(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Clear 11
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Clear)(ADT_ArrayList__ArrayList l);
+extern void ADT_ArrayList__ArrayListDesc_Append(ADT_ArrayList__ArrayList l, Object__Object obj);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Append 12
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Append)(ADT_ArrayList__ArrayList l, Object__Object obj);
+extern void ADT_ArrayList__ArrayListDesc_Insert(ADT_ArrayList__ArrayList l, OOC_INT32 index, Object__Object obj);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Insert 13
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Insert)(ADT_ArrayList__ArrayList l, OOC_INT32 index, Object__Object obj);
+extern Object__Object ADT_ArrayList__ArrayListDesc_Get(ADT_ArrayList__ArrayList l, OOC_INT32 index);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Get 14
+typedef Object__Object (*_TBP_ADT_ArrayList__ArrayListDesc_Get)(ADT_ArrayList__ArrayList l, OOC_INT32 index);
+extern void ADT_ArrayList__ArrayListDesc_Set(ADT_ArrayList__ArrayList l, OOC_INT32 index, Object__Object obj);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Set 15
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Set)(ADT_ArrayList__ArrayList l, OOC_INT32 index, Object__Object obj);
+extern void ADT_ArrayList__ArrayListDesc_RemoveRange(ADT_ArrayList__ArrayList l, OOC_INT32 fromIndex, OOC_INT32 toIndex);
+#define _TBN_ADT_ArrayList__ArrayListDesc_RemoveRange 16
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_RemoveRange)(ADT_ArrayList__ArrayList l, OOC_INT32 fromIndex, OOC_INT32 toIndex);
+extern void ADT_ArrayList__ArrayListDesc_Remove(ADT_ArrayList__ArrayList l, OOC_INT32 index);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Remove 17
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Remove)(ADT_ArrayList__ArrayList l, OOC_INT32 index);
+extern void ADT_ArrayList__ArrayListDesc_TrimToSize(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_TrimToSize 18
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_TrimToSize)(ADT_ArrayList__ArrayList l);
+extern OOC_INT32 ADT_ArrayList__ArrayListDesc_Size(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Size 19
+typedef OOC_INT32 (*_TBP_ADT_ArrayList__ArrayListDesc_Size)(ADT_ArrayList__ArrayList l);
+extern OOC_CHAR8 ADT_ArrayList__ArrayListDesc_Contains(ADT_ArrayList__ArrayList l, Object__Object obj);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Contains 20
+typedef OOC_CHAR8 (*_TBP_ADT_ArrayList__ArrayListDesc_Contains)(ADT_ArrayList__ArrayList l, Object__Object obj);
+extern OOC_INT32 ADT_ArrayList__ArrayListDesc_IndexOf(ADT_ArrayList__ArrayList l, Object__Object obj);
+#define _TBN_ADT_ArrayList__ArrayListDesc_IndexOf 21
+typedef OOC_INT32 (*_TBP_ADT_ArrayList__ArrayListDesc_IndexOf)(ADT_ArrayList__ArrayList l, Object__Object obj);
+extern OOC_INT32 ADT_ArrayList__ArrayListDesc_LastIndexOf(ADT_ArrayList__ArrayList l, Object__Object obj);
+#define _TBN_ADT_ArrayList__ArrayListDesc_LastIndexOf 22
+typedef OOC_INT32 (*_TBP_ADT_ArrayList__ArrayListDesc_LastIndexOf)(ADT_ArrayList__ArrayList l, Object__Object obj);
+extern OOC_CHAR8 ADT_ArrayList__ArrayListDesc_IsEmpty(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_IsEmpty 23
+typedef OOC_CHAR8 (*_TBP_ADT_ArrayList__ArrayListDesc_IsEmpty)(ADT_ArrayList__ArrayList l);
+extern OOC_CHAR8 ADT_ArrayList__ArrayListDesc_Equals(ADT_ArrayList__ArrayList l, Object__Object obj);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Equals 2
+typedef OOC_CHAR8 (*_TBP_ADT_ArrayList__ArrayListDesc_Equals)(ADT_ArrayList__ArrayList l, Object__Object obj);
+extern OOC_INT32 ADT_ArrayList__ArrayListDesc_HashCode(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_HashCode 3
+typedef OOC_INT32 (*_TBP_ADT_ArrayList__ArrayListDesc_HashCode)(ADT_ArrayList__ArrayList l);
+extern void ADT_ArrayList__ArrayListDesc_Store(ADT_ArrayList__ArrayList l, ADT_Storable__Writer w);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Store 4
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Store)(ADT_ArrayList__ArrayList l, ADT_Storable__Writer w);
+extern void ADT_ArrayList__ArrayListDesc_Load(ADT_ArrayList__ArrayList l, ADT_Storable__Reader r);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Load 5
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Load)(ADT_ArrayList__ArrayList l, ADT_Storable__Reader r);
+extern void ADT_ArrayList__ArrayListDesc_Sort(ADT_ArrayList__ArrayList a, OOC_INT32 fromIndex, OOC_INT32 toIndex, ADT_Comparator__Comparator cmp);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Sort 24
+typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Sort)(ADT_ArrayList__ArrayList a, OOC_INT32 fromIndex, OOC_INT32 toIndex, ADT_Comparator__Comparator cmp);
+extern Object__ObjectArrayPtr ADT_ArrayList__ArrayListDesc_Elements(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_Elements 25
+typedef Object__ObjectArrayPtr (*_TBP_ADT_ArrayList__ArrayListDesc_Elements)(ADT_ArrayList__ArrayList l);
+extern void OOC_ADT_ArrayList_init(void);
+extern void OOC_ADT_ArrayList_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_ADT_ArrayList__1011;
+extern RT0__StructDesc _td_ADT_ArrayList__Array;
+extern RT0__StructDesc _td_ADT_ArrayList__ArrayList;
+extern RT0__StructDesc _td_ADT_ArrayList__ArrayListDesc;
+#endif /* _MODULE_ADT_ArrayList_ */
+
+/* --- */

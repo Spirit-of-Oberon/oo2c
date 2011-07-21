@@ -1,0 +1,27 @@
+#ifndef _MODULE_OOC_SSA_Stats_
+#define _MODULE_OOC_SSA_Stats_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <OOC/SSA.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern void OOC_SSA_Stats__AddProcBlock(Object__String label, OOC_SSA__ProcBlock pb);
+extern void OOC_SSA_Stats__Write(void);
+extern void OOC_OOC_SSA_Stats_init(void);
+extern void OOC_OOC_SSA_Stats_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_OOC_SSA_Stats__Stats;
+extern RT0__StructDesc _td_OOC_SSA_Stats__StatsDesc;
+extern RT0__StructDesc _td_OOC_SSA_Stats__329;
+extern RT0__StructDesc _td_OOC_SSA_Stats__1297;
+extern RT0__StructDesc _td_OOC_SSA_Stats__1338;
+extern RT0__StructDesc _td_OOC_SSA_Stats__1327;
+extern RT0__StructDesc _td_OOC_SSA_Stats__1376;
+extern RT0__StructDesc _td_OOC_SSA_Stats__1365;
+extern RT0__StructDesc _td_OOC_SSA_Stats__1401;
+#endif /* _MODULE_OOC_SSA_Stats_ */
+
+/* --- */

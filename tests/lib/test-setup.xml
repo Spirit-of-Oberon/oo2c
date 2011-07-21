@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE test-setup SYSTEM "../../rsrc/OOC/TestFramework/test-setup.dtd">
+
+<test-setup lang="O2">
+  &test-env;
+  
+  <processor name="oo2c"
+	     version="devel"
+	     command="../../bin/oo2c"
+	     config-file=""
+	     working-dir="wd" 
+	     flags="--use-stderr --config $OOC_DEV_ROOT/oo2crc-install.xml --error-style char-pos -r ../resources -r ../lib-oo2c -r wd"
+	     filter-command="&OOEF;" 
+	     diff-command="&DIFF;" 
+	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"
+	     />
+
+  <test-suite uri="testsuite.xml" />
+</test-setup>

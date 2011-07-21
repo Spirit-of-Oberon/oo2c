@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*IF TRUE THEN*&gt;</symbol>
+<symbol id='pragma' pos='16' line='0' column='16'>&lt;*ELSE*&gt;&lt;*ELSE*&gt;&lt;*END*&gt;</symbol>
+<symbol id='endOfFile' pos='39' line='0' column='39'></symbol>
+</document>

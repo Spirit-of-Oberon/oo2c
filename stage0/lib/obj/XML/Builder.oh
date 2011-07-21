@@ -1,0 +1,123 @@
+#ifndef _MODULE_XML_Builder_
+#define _MODULE_XML_Builder_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <URI.oh>
+#include <XML/DTD.oh>
+#include <XML/Locator.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+typedef struct XML_Builder__BuilderDesc *XML_Builder__Builder;
+typedef struct XML_Builder__BuilderDesc {
+  char __dummy;
+} XML_Builder__BuilderDesc;
+typedef struct XML_Builder__AttributeDesc *XML_Builder__Attribute;
+typedef struct XML_Builder__AttributeDesc {
+  XML_DTD__NamespaceDeclaration namespaceDecl;
+  XML_UnicodeBuffer__CharArray localName;
+  XML_DTD__AttrDecl attrDecl;
+  XML_DTD__AttValue value;
+  OOC_CHAR8 specified;
+  OOC_CHAR8 __pad17;
+  OOC_CHAR8 __pad18;
+  OOC_CHAR8 __pad19;
+  struct XML_Locator__Position pos;
+} XML_Builder__AttributeDesc;
+typedef struct XML_Builder__AttributeListDesc *XML_Builder__AttributeList;
+typedef XML_Builder__Attribute *XML_Builder__AttributeArray;
+typedef struct XML_Builder__AttributeListDesc {
+  OOC_INT32 len;
+  XML_Builder__AttributeArray attr;
+} XML_Builder__AttributeListDesc;
+extern void XML_Builder__BuilderDesc_SetLocator(XML_Builder__Builder b, XML_Locator__Locator locator);
+#define _TBN_XML_Builder__BuilderDesc_SetLocator 0
+typedef void (*_TBP_XML_Builder__BuilderDesc_SetLocator)(XML_Builder__Builder b, XML_Locator__Locator locator);
+extern void XML_Builder__BuilderDesc_SetErrorListener(XML_Builder__Builder b, XML_Locator__ErrorListener el);
+#define _TBN_XML_Builder__BuilderDesc_SetErrorListener 1
+typedef void (*_TBP_XML_Builder__BuilderDesc_SetErrorListener)(XML_Builder__Builder b, XML_Locator__ErrorListener el);
+extern void XML_Builder__BuilderDesc_StartDocument(XML_Builder__Builder b, XML_DTD__ExternalEntity documentEntity);
+#define _TBN_XML_Builder__BuilderDesc_StartDocument 2
+typedef void (*_TBP_XML_Builder__BuilderDesc_StartDocument)(XML_Builder__Builder b, XML_DTD__ExternalEntity documentEntity);
+extern void XML_Builder__BuilderDesc_EndDocument(XML_Builder__Builder b);
+#define _TBN_XML_Builder__BuilderDesc_EndDocument 3
+typedef void (*_TBP_XML_Builder__BuilderDesc_EndDocument)(XML_Builder__Builder b);
+extern void XML_Builder__BuilderDesc_StartDTD(XML_Builder__Builder b, XML_DTD__Builder dtdBuilder);
+#define _TBN_XML_Builder__BuilderDesc_StartDTD 4
+typedef void (*_TBP_XML_Builder__BuilderDesc_StartDTD)(XML_Builder__Builder b, XML_DTD__Builder dtdBuilder);
+extern void XML_Builder__BuilderDesc_EndDTD(XML_Builder__Builder b, XML_DTD__ExternalEntity externalDTD, OOC_CHAR8 allDeclarationsProcessed);
+#define _TBN_XML_Builder__BuilderDesc_EndDTD 5
+typedef void (*_TBP_XML_Builder__BuilderDesc_EndDTD)(XML_Builder__Builder b, XML_DTD__ExternalEntity externalDTD, OOC_CHAR8 allDeclarationsProcessed);
+extern void XML_Builder__BuilderDesc_StartElement(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName);
+#define _TBN_XML_Builder__BuilderDesc_StartElement 6
+typedef void (*_TBP_XML_Builder__BuilderDesc_StartElement)(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName);
+extern void XML_Builder__BuilderDesc_EndElement(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName);
+#define _TBN_XML_Builder__BuilderDesc_EndElement 7
+typedef void (*_TBP_XML_Builder__BuilderDesc_EndElement)(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName);
+extern void XML_Builder__BuilderDesc_Attribute(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName, XML_DTD__AttrDecl attrDecl, XML_DTD__AttValue value, OOC_CHAR8 specified);
+#define _TBN_XML_Builder__BuilderDesc_Attribute 8
+typedef void (*_TBP_XML_Builder__BuilderDesc_Attribute)(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName, XML_DTD__AttrDecl attrDecl, XML_DTD__AttValue value, OOC_CHAR8 specified);
+extern void XML_Builder__BuilderDesc_NamespaceDeclaration(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl);
+#define _TBN_XML_Builder__BuilderDesc_NamespaceDeclaration 9
+typedef void (*_TBP_XML_Builder__BuilderDesc_NamespaceDeclaration)(XML_Builder__Builder b, XML_DTD__NamespaceDeclaration namespaceDecl);
+extern void XML_Builder__BuilderDesc_AttributesDone(XML_Builder__Builder b);
+#define _TBN_XML_Builder__BuilderDesc_AttributesDone 10
+typedef void (*_TBP_XML_Builder__BuilderDesc_AttributesDone)(XML_Builder__Builder b);
+extern void XML_Builder__BuilderDesc_SkippedEntity(XML_Builder__Builder b, XML_UnicodeBuffer__CharArray name, XML_DTD__Entity entity);
+#define _TBN_XML_Builder__BuilderDesc_SkippedEntity 11
+typedef void (*_TBP_XML_Builder__BuilderDesc_SkippedEntity)(XML_Builder__Builder b, XML_UnicodeBuffer__CharArray name, XML_DTD__Entity entity);
+extern void XML_Builder__BuilderDesc_Characters(XML_Builder__Builder b, XML_DTD__StringVar chars, OOC_LEN chars_0d, OOC_INT32 charsStart, OOC_INT32 charsEnd, OOC_INT8 elementWhitespace);
+#define _TBN_XML_Builder__BuilderDesc_Characters 12
+typedef void (*_TBP_XML_Builder__BuilderDesc_Characters)(XML_Builder__Builder b, XML_DTD__StringVar chars, OOC_LEN chars_0d, OOC_INT32 charsStart, OOC_INT32 charsEnd, OOC_INT8 elementWhitespace);
+extern void XML_Builder__BuilderDesc_StartCDATA(XML_Builder__Builder b);
+#define _TBN_XML_Builder__BuilderDesc_StartCDATA 13
+typedef void (*_TBP_XML_Builder__BuilderDesc_StartCDATA)(XML_Builder__Builder b);
+extern void XML_Builder__BuilderDesc_EndCDATA(XML_Builder__Builder b);
+#define _TBN_XML_Builder__BuilderDesc_EndCDATA 14
+typedef void (*_TBP_XML_Builder__BuilderDesc_EndCDATA)(XML_Builder__Builder b);
+extern void XML_Builder__BuilderDesc_StartEntity(XML_Builder__Builder b, XML_DTD__Entity entity);
+#define _TBN_XML_Builder__BuilderDesc_StartEntity 15
+typedef void (*_TBP_XML_Builder__BuilderDesc_StartEntity)(XML_Builder__Builder b, XML_DTD__Entity entity);
+extern void XML_Builder__BuilderDesc_EndEntity(XML_Builder__Builder b, XML_DTD__Entity entity);
+#define _TBN_XML_Builder__BuilderDesc_EndEntity 16
+typedef void (*_TBP_XML_Builder__BuilderDesc_EndEntity)(XML_Builder__Builder b, XML_DTD__Entity entity);
+extern void XML_Builder__BuilderDesc_EntityDecl(XML_Builder__Builder b, XML_DTD__Entity entity);
+#define _TBN_XML_Builder__BuilderDesc_EntityDecl 17
+typedef void (*_TBP_XML_Builder__BuilderDesc_EntityDecl)(XML_Builder__Builder b, XML_DTD__Entity entity);
+extern void XML_Builder__BuilderDesc_Notation(XML_Builder__Builder b, XML_DTD__Notation notation);
+#define _TBN_XML_Builder__BuilderDesc_Notation 18
+typedef void (*_TBP_XML_Builder__BuilderDesc_Notation)(XML_Builder__Builder b, XML_DTD__Notation notation);
+extern void XML_Builder__BuilderDesc_ProcessingInstruction(XML_Builder__Builder b, XML_UnicodeBuffer__CharArray target, XML_DTD__StringVar content, OOC_LEN content_0d, OOC_INT32 contentStart, OOC_INT32 contentEnd, URI__URI baseURI);
+#define _TBN_XML_Builder__BuilderDesc_ProcessingInstruction 19
+typedef void (*_TBP_XML_Builder__BuilderDesc_ProcessingInstruction)(XML_Builder__Builder b, XML_UnicodeBuffer__CharArray target, XML_DTD__StringVar content, OOC_LEN content_0d, OOC_INT32 contentStart, OOC_INT32 contentEnd, URI__URI baseURI);
+extern void XML_Builder__BuilderDesc_Comment(XML_Builder__Builder b, XML_DTD__StringVar chars, OOC_LEN chars_0d, OOC_INT32 charsStart, OOC_INT32 charsEnd);
+#define _TBN_XML_Builder__BuilderDesc_Comment 20
+typedef void (*_TBP_XML_Builder__BuilderDesc_Comment)(XML_Builder__Builder b, XML_DTD__StringVar chars, OOC_LEN chars_0d, OOC_INT32 charsStart, OOC_INT32 charsEnd);
+extern void XML_Builder__Init(XML_Builder__Builder b);
+extern XML_Builder__Builder XML_Builder__New(void);
+extern void XML_Builder__InitAttribute(XML_Builder__Attribute attr, XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName, XML_DTD__AttrDecl attrDecl, XML_DTD__AttValue value, OOC_CHAR8 specified, XML_Locator__Locator locator);
+extern XML_Builder__Attribute XML_Builder__NewAttribute(XML_DTD__NamespaceDeclaration namespaceDecl, XML_UnicodeBuffer__CharArray localName, XML_DTD__AttrDecl attrDecl, XML_DTD__AttValue value, OOC_CHAR8 specified, XML_Locator__Locator locator);
+extern void XML_Builder__InitAttributeList(XML_Builder__AttributeList attrList);
+extern XML_Builder__AttributeList XML_Builder__NewAttributeList(void);
+extern void XML_Builder__AttributeListDesc_Clear(XML_Builder__AttributeList attrList);
+#define _TBN_XML_Builder__AttributeListDesc_Clear 0
+typedef void (*_TBP_XML_Builder__AttributeListDesc_Clear)(XML_Builder__AttributeList attrList);
+extern void XML_Builder__AttributeListDesc_Append(XML_Builder__AttributeList attrList, XML_Builder__Attribute attr);
+#define _TBN_XML_Builder__AttributeListDesc_Append 1
+typedef void (*_TBP_XML_Builder__AttributeListDesc_Append)(XML_Builder__AttributeList attrList, XML_Builder__Attribute attr);
+extern void OOC_XML_Builder_init(void);
+extern void OOC_XML_Builder_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_XML_Builder__Builder;
+extern RT0__StructDesc _td_XML_Builder__BuilderDesc;
+extern RT0__StructDesc _td_XML_Builder__Attribute;
+extern RT0__StructDesc _td_XML_Builder__AttributeDesc;
+extern RT0__StructDesc _td_XML_Builder__AttributeList;
+extern RT0__StructDesc _td_XML_Builder__3787;
+extern RT0__StructDesc _td_XML_Builder__AttributeArray;
+extern RT0__StructDesc _td_XML_Builder__AttributeListDesc;
+#endif /* _MODULE_XML_Builder_ */
+
+/* --- */

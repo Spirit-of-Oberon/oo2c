@@ -1,0 +1,40 @@
+#ifndef _MODULE_Err_
+#define _MODULE_Err_
+
+#include <__typemap.h>
+#include <RT0.oh>
+#include <StdChannels.oh>
+#include <TextRider.oh>
+#include <Object.oh>
+#include <RT0.oh>
+#include <Object.oh>
+#include <Exception.oh>
+extern TextRider__Writer Err__writer;
+extern OOC_CHAR8 Err__Done(void);
+extern void Err__ClearError(void);
+extern void Err__SetWriter(TextRider__Writer w);
+extern void Err__Flush(void);
+extern void Err__Char(OOC_CHAR8 ch);
+extern void Err__String(const OOC_CHAR8 s__ref[], OOC_LEN s_0d);
+extern void Err__Object(Object__Object obj);
+extern void Err__Bool(OOC_CHAR8 _bool);
+extern void Err__LongInt(OOC_INT32 lint, OOC_INT32 n);
+extern void Err__ShortInt(OOC_INT8 sint, OOC_INT32 n);
+extern void Err__Int(OOC_INT32 _int, OOC_INT32 n);
+extern void Err__Hex(OOC_INT32 lint, OOC_INT32 n);
+extern void Err__LongReal(OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+extern void Err__Real(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void Err__LongRealFix(OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+extern void Err__RealFix(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void Err__LongRealEng(OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
+extern void Err__RealEng(OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
+extern void Err__Set(OOC_UINT32 s);
+extern void Err__Ln(void);
+extern void OOC_Err_init(void);
+extern void OOC_Err_init0(void);
+
+/* run-time meta data */
+extern RT0__StructDesc _td_Err__2209;
+#endif /* _MODULE_Err_ */
+
+/* --- */

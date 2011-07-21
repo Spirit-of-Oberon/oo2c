@@ -1,0 +1,9 @@
+MODULE Rot3;
+
+IMPORT SYSTEM;
+
+VAR
+  r: INTEGER;
+BEGIN
+  r := SYSTEM.ROT(1,1.0);
+END Rot3.

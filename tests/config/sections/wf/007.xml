@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<configuration>
+  <options>
+    <define name='min+0'  type='integer'>-2147483648</define>
+    <define name='min+1'  type='integer'>-2147483647</define>
+    <define name='min+2'  type='integer'>-2147483646</define>
+    <define name='min+3'  type='integer'>-2147483645</define>
+    <define name='min+4'  type='integer'>-2147483644</define>
+    <define name='min+5'  type='integer'>-2147483643</define>
+    <define name='min+6'  type='integer'>-2147483642</define>
+    <define name='min+7'  type='integer'>-2147483641</define>
+    <define name='min+8'  type='integer'>-2147483640</define>
+    <define name='min+9'  type='integer'>-2147483639</define>
+    <define name='min+10' type='integer'>-2147483638</define>
+    <define name='min+11' type='integer'>-2147483637</define>
+    <define name='min+12' type='integer'>-2147483636</define>
+    <define name='min+13' type='integer'>-2147483635</define>
+    <define name='min+14' type='integer'>-2147483634</define>
+    <define name='min+15' type='integer'>-2147483633</define>
+    <define name='min+16' type='integer'>-2147483632</define>
+    <define name='min+17' type='integer'>-2147483631</define>
+    <define name='min+18' type='integer'>-2147483630</define>
+    <define name='min+19' type='integer'>-2147483629</define>
+  </options>
+</configuration>

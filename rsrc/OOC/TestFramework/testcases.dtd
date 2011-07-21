@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+This DTD specifies the format for ``Hostess'' test suite descriptions.
+For a more information on the ``Hostess'' project, please refer to
+
+  http://hostess.sourceforge.net/
+
+-->
+
+<!ENTITY % TESTTYPE "(reject|accept|error|run)">
+<!ENTITY % LANGUAGES "CDATA">  <!-- list of language dialects, may be empty -->
+<!ENTITY % URI "CDATA">
+
+<!--
+    The root element of the whole collection is "testsuite".
+-->
+<!ELEMENT testsuite (testcases+, processor-info*)>
+<!ATTLIST testsuite 
+          profile	CDATA		#IMPLIED >
+
+<!--
+    The root element of a collection is "testcases".  It groups
+    a set of tests in a particular "profile", which is descriptive.  For
+    example, a "Oberon-1" profile might group test cases with modules
+    derived from the Oberon-1 language specification.  Or the profile
+    might be associated with the test supplier.
+
+    The value of "default-lang" provides the default value for the
+    "lang" attribute of "test" child elements.
+
+    Tests within a "testcases" are evaluated in order.  That is, tests
+    can depend on earlier "accept", "error", or "run" tests.
+-->
+<!ELEMENT testcases (test*)>
+<!ATTLIST testcases
+          profile	CDATA           #IMPLIED 
+          default-lang  %LANGUAGES;	#REQUIRED >
+
+<!--
+    The body of each "test" element is its description, used
+    to evaluate the diagnostic produced on negative tests.
+    People will generally read this to evaluate whether the
+    test failed for the correct reason.
+
+    Each test has a unique "id" used in diagnostics.
+
+    Each test has a "type", describing the expected outcome of the test:
+
+      reject: The language processor should reject the test file.
+        That is, the file is not considered part of the listed
+        languages.
+
+      accept: The language processor is expected to accept the file.
+        That is, the test case is considered to by within the
+        specification of the listed languages.
+      
+      error: The language processor is expected to accept the file,
+        but the execution of the emitted code is expected to throw an
+        exception.  This is a variant of "accept", with a more
+        restricted success criterion.
+
+      run: The language processor is expected to accept the file, and
+        the execution of the emitted code is expected to finish
+        successfully.  This is a variant of "accept", with a more
+        restricted success criterion.
+
+    The attribute "relevance" determines if the test covers a feature
+    that is part of the language definition ("standard", the default),
+    or "informal".  An "informal" test case tests a feature that is
+    not derived from a language specification, but can be found in
+    existing processor implementations.
+
+    Tests apply to one or more particular languages "lang".  If the
+    attribute "lang" is not provided, the test framework takes the
+    value from the "default-lang" attribute of the enclosing
+    "testcases" element.
+
+    Each test is in a particular ASCII "file".  Relative
+    URIs are interpreted relative to the base URI of the document
+    holding the testcase.
+
+    For "output" tests, compilers must accept the test, and the
+    program they generate must also produce the same output as in the
+    given reference file (disregarding differences in end-of-line
+    characters).  An "output" attribute is only applicable to test
+    cases of type "run".  Relative "output" URIs are interpreted
+    relative to the base URI of the document holding the testcase.
+
+-->
+
+<!ENTITY % inline-text "#PCDATA|em|b|code" >
+<!ELEMENT test (%inline-text;)*>
+<!ATTLIST test
+          id		ID		#REQUIRED
+	  type		%TESTTYPE;	#REQUIRED
+          relevance     (standard|informal) "standard"
+	  file		%URI;		#REQUIRED
+	  lang		%LANGUAGES;	#IMPLIED
+	  output	%URI;		#IMPLIED >
+
+<!--
+    Really basic HTML font tweaks, to support highlighting
+    some aspects of test descriptions ...
+    em == emphasis (e.g. italics, fun colors)
+    b == bold
+    code == language keywords, code excerpts
+-->
+<!ELEMENT em (%inline-text;)*>
+<!ELEMENT b (%inline-text;)*>
+<!ELEMENT code (%inline-text;)*>

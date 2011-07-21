@@ -1,0 +1,7 @@
+MODULE M;
+
+TYPE
+  B = POINTER TO RECORD END;
+  R = RECORD (B) END;
+
+END M.

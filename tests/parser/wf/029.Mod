@@ -1,0 +1,5 @@
+MODULE M;
+BEGIN
+  x := a;
+  y := b
+END M.

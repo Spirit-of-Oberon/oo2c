@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Another table, this one uses a default different than <samp>asis</samp>:</summary>
+  <p pad-after='no' no-indent='yes'>Another table, this one uses a default different than <samp>asis</samp>:</p>
+  <table pad-after='yes'>
+    <table-row pad-after='yes'>
+      <table-first-column pad-after='no'><var>var1</var></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='no' no-indent='yes'>First item.</p>
+      </item>
+    </table-row>
+    <table-row pad-after='no'>
+      <table-first-column pad-after='no'><var>var2</var></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='no' no-indent='yes'>Second item.</p>
+      </item>
+    </table-row>
+  </table>
+  <p pad-after='yes' no-indent='no'>And so it ends.</p>
+</oberon-doc>

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='invalid' pos='0' line='0' column='0'>"this string is not ended on the same</symbol>
+<symbol id='whitespace' pos='37' line='0' column='37'>&#10;</symbol>
+<symbol id='ident' pos='38' line='1' column='0'>line</symbol>
+<symbol id='invalid' pos='42' line='1' column='4'>"</symbol>
+<symbol id='whitespace' pos='43' line='1' column='5'>&#10;</symbol>
+<symbol id='endOfFile' pos='44' line='2' column='0'></symbol>
+</document>

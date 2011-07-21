@@ -1,0 +1,23 @@
+some tab characters:
+x
+	x
+a	x
+bb	x
+ccc	x
+dddd	x
+eeeee	x
+ffffff	x
+ggggggg	x
+hhhhhhhh	x
+	 y
+a	 y
+bb	 y
+ccc	 y
+dddd	 y
+eeeee	 y
+ffffff	 y
+ggggggg	 y
+hhhhhhhh	 y
+(*	*)comment
+
+   	

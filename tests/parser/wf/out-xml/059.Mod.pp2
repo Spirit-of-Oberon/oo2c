@@ -1,0 +1,6 @@
+MODULE M;
+
+TYPE
+  T = RECORD
+  END;
+END M.

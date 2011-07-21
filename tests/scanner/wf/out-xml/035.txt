@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*WITH DO*&gt;</symbol>
+<symbol id='whitespace' pos='11' line='0' column='11'>&#10;</symbol>
+<symbol id='pragma' pos='12' line='1' column='0'>&lt;*END*&gt;</symbol>
+<symbol id='whitespace' pos='19' line='1' column='7'>&#10;</symbol>
+<symbol id='endOfFile' pos='20' line='2' column='0'></symbol>
+</document>

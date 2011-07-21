@@ -1,0 +1,9 @@
+Another table, this one uses a default different than @samp{asis}:
+@table @var
+@item var1
+First item.
+@item var2
+Second item.
+@end table
+
+And so it ends.
