@@ -1,9 +1,9 @@
 MODULE H2O:Source [OOC_EXTENSIONS];
 
 IMPORT
-  H2O:Module, H2O:Option,
+  H2O:Type, H2O:Option,
   Object, Err, Log, ADT:Dictionary,
-  IO, IO:FileChannel, OS:Files, OS:Path, Exception;
+  IO, IO:FileChannel, IO:Memory, OS:Files, OS:Path, Exception;
 
 CONST
   cr = 0DX;
@@ -13,11 +13,12 @@ CONST
 TYPE
   Source* = POINTER TO SourceDesc;
   SourceDesc = RECORD
+    isFile : BOOLEAN;
     name : STRING;
     pos, line, col : LONGINT;
 	channel : IO.ByteChannel;
     next : Source;
-    module : Module.Module;
+    module : Type.Module;
   END;
 
   Input* = POINTER TO InputDesc;
@@ -39,6 +40,12 @@ TYPE
    required and unprocessed options elements exist. *)
     frameworkLength : LONGINT;
   END;
+
+VAR
+  options- : Option.Options;
+
+  outputSearchFile : Option.Boolean;
+  outputFrameworkPath : Option.Boolean;
 
 PROCEDURE (i : Input) AppendPath* (path : STRING);
 BEGIN
@@ -79,54 +86,11 @@ BEGIN
   i.Error(e.GetMessage());
 END Exception;
 
-PROCEDURE (i : Input) ReadChar* (VAR ch : CHAR);
-VAR
-  count : LONGINT;
-  src : Source;
-BEGIN
-  TRY
-    REPEAT
-      IF i.src = NIL THEN
-        ch := eof
-      ELSE
-        (* Read one character from the current source *)
-        count := i.src.channel.Read(ch, 0, 1);
-        IF count = -1 THEN
-          (* No more input available *)
-          IF ch # eol THEN
-            (* Check file termination, required for preprocessor *)
-            ch := eol;
-            Err.String("End of line assumed for incorrectly terminated file");
-            Err.Ln;
-            i.ShowContext
-          ELSE
-            (* Close this source, and retry *)
-            i.src.channel.Close;
-            INC(i.lines, i.src.line); INC(i.files);
-            i.src := i.src.next;
-            ch := cr;
-          END
-        ELSIF count = 1 THEN
-          src := i.src;
-          INC(src.pos);
-          IF ch = eol THEN
-            src.col := 0; INC(src.line)
-          ELSE
-            INC(src.col)
-          END
-        ELSE
-          i.Error("Non-blocking stream returned 0 bytes")
-        END
-      END
-    UNTIL ch # cr;
-  CATCH IO.Error:
-    i.Exception(Exception.Current())
-  END;
-END ReadChar;
-
 PROCEDURE (i : Input) SearchFile(path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
 BEGIN
-  Log.Object("SearchFile", path);
+  IF outputSearchFile.value THEN
+    Log.Object("SearchFile", path);
+  END;
   TRY
     channel := FileChannel.Open(path, {FileChannel.read});
     RETURN TRUE;
@@ -153,7 +117,9 @@ BEGIN
           IF ext.Equals(".framework") THEN
             includeDir := element + "/Headers/";
             i.frameworkMap.Set(root, includeDir);
-            Log.Object("Framework", root + " at " + includeDir);
+            IF outputFrameworkPath.value THEN
+              Log.Object("Framework", root + " at " + includeDir);
+            END;
             i.FindFramework(element);
           END
         END
@@ -220,63 +186,142 @@ BEGIN
   RETURN FALSE;
 END SearchPath;
 
-PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
+PROCEDURE (i : Input) PushSource(channel : IO.ByteChannel; name : STRING; module : Type.Module; isFile : BOOLEAN);
 VAR
-  found : BOOLEAN;
-  realFileName : STRING;
-  moduleName : STRING;
-  module : Module.Module;
   s : Source;
-  channel : IO.ByteChannel;
 BEGIN
-  IF i.exclude.Contains(fileName) THEN 
-    RETURN;
-  END;
-  TRY
-    IF search THEN
-      found := i.SearchPath(fileName, realFileName, channel) OR
-        i.SearchFrameworks(fileName, realFileName, channel);
-    ELSE
-      IF i.src = NIL THEN
-        realFileName := fileName;
-      ELSE
-        realFileName := Path.DirName(i.src.name) + "/" + fileName;
-      END;
-      found := i.SearchFile(realFileName, channel);
-    END;
-    IF ~found THEN
-      Err.String ("Error: Cannot locate module ");
-      Err.Object (fileName);
-      Err.Ln;
-      HALT (1)
-    END;    
-  CATCH IO.Error:
-	i.Exception(Exception.Current());
-  END;
-
   NEW(s);
   s.channel := channel;
   s.pos := 0;
   s.line := 0;
   s.col := 0;
   s.next := i.src;
-  s.name := realFileName;
+  s.name := name;
+  s.module := module;
+  s.isFile := isFile;
   i.src := s;
   Err.String("<Processing "); Err.Object(s.name); Err.Char(">"); Err.Ln;
+END PushSource;
 
-  moduleName := Module.ModuleName(realFileName);
-  module := Module.FindModule(moduleName);
+PROCEDURE (i : Input) PushProlog(prolog : STRING; module : Type.Module; suffix : STRING);
+VAR
+  channel : IO.ByteChannel;
+  string8 : Object.String8;
+  chars8 : Object.CharsLatin1;
+  length : LONGINT;
+BEGIN
+  string8 := prolog.ToString8(" ");
+  chars8 := string8.CharsLatin1();
+  TRY 
+    channel := Memory.Open();
+    length := channel.Write(chars8^, 0, LEN(chars8^)-1);
+    channel.SetPos(0);
+    i.PushSource(channel, module.name + ":" + suffix, module, FALSE);
+  CATCH IO.Error:
+    i.Exception(Exception.Current())
+  END;
+END PushProlog;
+
+PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
+VAR
+  found : BOOLEAN;
+  realFileName : STRING;
+  moduleName : STRING;
+  module : Type.Module;
+  channel : IO.ByteChannel;
+  prolog : STRING;
+BEGIN
+  IF i.exclude.Contains(fileName) THEN 
+    RETURN;
+  END;
+  IF search THEN
+    found := i.SearchPath(fileName, realFileName, channel) OR
+      i.SearchFrameworks(fileName, realFileName, channel);
+  ELSE
+    IF i.src = NIL THEN
+      realFileName := fileName;
+    ELSE
+      realFileName := Path.DirName(i.src.name) + "/" + fileName;
+    END;
+    found := i.SearchFile(realFileName, channel);
+  END;
+  IF ~found THEN
+    Err.String ("Error: Cannot locate module ");
+    Err.Object (fileName);
+    Err.Ln;
+    HALT (1)
+  END;    
+
+  realFileName := realFileName.ToString8("_");
+  moduleName := Type.ModuleName(realFileName);
+  module := Type.FindModule(moduleName);
   IF module = NIL THEN
     Err.String("NEW ");
-    module := Module.NewModule(moduleName);
+    module := Type.NewModule(moduleName);
   END;
   Err.String("MODULE "); Err.Object(moduleName); 
   Err.String(" for "); Err.Object(realFileName);
   Err.Ln;
-  s.module := module;
+  i.PushSource(channel, realFileName, module, TRUE);
+  prolog := module.prolog.value;
+  IF prolog.length > 0 THEN
+    i.PushProlog(prolog, module, "Prolog");
+  END;
 END Include;
 
-PROCEDURE (i : Input) GetModule*() : Module.Module;
+PROCEDURE (i : Input) ReadChar* (VAR ch : CHAR);
+VAR
+  count : LONGINT;
+  src : Source; epilog : STRING;
+BEGIN
+  TRY
+    REPEAT
+      IF i.src = NIL THEN
+        ch := eof
+      ELSE
+        (* Read one character from the current source *)
+        count := i.src.channel.Read(ch, 0, 1);
+        IF count = -1 THEN
+          (* No more input available *)
+          IF ch # eol THEN
+            (* Check file termination, required for preprocessor *)
+            ch := eol;
+            Err.String("End of line assumed for incorrectly terminated file");
+            Err.Ln;
+            i.ShowContext
+          ELSE
+            (* Close this source, and retry *)
+            src := i.src;
+            i.src.channel.Close;
+            INC(i.lines, i.src.line); INC(i.files);
+            i.src := i.src.next;
+            ch := cr;
+
+            (* check for module epilog *)
+            epilog := src.module.epilog.value ;
+            IF src.isFile & (epilog.length > 0)  THEN
+              i.PushProlog(epilog, src.module, "Epilog")
+            END;
+          END
+        ELSIF count = 1 THEN
+          src := i.src;
+          INC(src.pos);
+          IF ch = eol THEN
+            src.col := 0; INC(src.line)
+          ELSE
+            INC(src.col)
+          END
+        ELSE
+          i.Error("Non-blocking stream returned 0 bytes")
+        END
+      END
+    UNTIL ch # cr;
+  CATCH IO.Error:
+    i.Exception(Exception.Current())
+  END;
+END ReadChar;
+
+PROCEDURE (i : Input) GetModule*() : Type.Module;
 BEGIN
   RETURN i.src.module;
 END GetModule;
@@ -304,4 +349,13 @@ BEGIN
   RETURN i;
 END New;
 
+PROCEDURE InitOptions;
+BEGIN
+  options := NEW(Option.Options);
+  outputSearchFile := options.Boolean("OutputSearchFile", FALSE);
+  outputFrameworkPath := options.Boolean("OutputFrameworkPath", FALSE);
+END InitOptions;
+
+BEGIN
+  InitOptions;
 END H2O:Source.

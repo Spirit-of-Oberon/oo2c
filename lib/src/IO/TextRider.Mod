@@ -1,4 +1,4 @@
-(*	$Id: TextRider.Mod,v 1.8 2004/11/21 20:31:44 mva Exp $	*)
+(*	$Id: TextRider.Mod,v 1.9 2005/02/26 17:30:19 mva Exp $	*)
 MODULE IO:TextRider [OOC_EXTENSIONS];
 
 (*
@@ -926,6 +926,10 @@ PROCEDURE (r: Reader) ReadLn*() RAISES IO.Error;
 (**This method reads and discards all characters up to and including the next
    end-of-line character.  *)
   BEGIN
+    IF (r.pos=r.lineLength) & ~r.consumeEOL THEN
+      r.ReadLineBuffer;
+    END;
+    r.consumeEOL:=FALSE;
     r.pos:=r.lineLength;
   END ReadLn;
 

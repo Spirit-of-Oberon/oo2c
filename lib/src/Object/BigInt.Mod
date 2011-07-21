@@ -1,7 +1,7 @@
-(*	$Id: BigInt.Mod,v 1.7 2004/05/23 18:25:26 mva Exp $	*)
+(*	$Id: BigInt.Mod,v 1.8 2005/01/18 09:26:34 mva Exp $	*)
 MODULE Object:BigInt [OOC_EXTENSIONS];
 (*  Implements integer values of arbitrary magnitude.
-    Copyright (C) 2002-2004  Michael van Acken
+    Copyright (C) 2002-2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -794,9 +794,12 @@ PROCEDURE (a: BigInt) ToString*(): Object.String8;
     RETURN a.Format(10);
   END ToString;
 
-PROCEDURE NewLatin1Region* (str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
-                            inputBase: LONGINT): BigInt;
-(* @precond
+PROCEDURE NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
+                           inputBase: LONGINT): BigInt;
+(**Result is @code{NIL} if the string interval does not match the syntax for
+   integer numbers.
+   
+   @precond
    @samp{@oparam{start} <= @oparam{end}}
    @end precond *)
   VAR
@@ -832,13 +835,19 @@ PROCEDURE NewLatin1Region* (str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
       ELSIF (d >= ORD("A")) THEN
         DEC(d, ORD("A")-10);
       END;
-      ASSERT((d >= 0) & (d < base));
-      z := MulAdd1(z, SHORT(inputBase), SHORT(d));
+      IF ((d >= 0) & (d < base)) THEN
+        z := MulAdd1(z, SHORT(inputBase), SHORT(d));
+      ELSE                               (* error: bail out *)
+        RETURN NIL;
+      END;
       INC (start);
     END;
     z.size := sign*z.size;
-    ASSERT(start # firstDigit);
-    RETURN z;
+    IF (start # firstDigit) THEN
+      RETURN z;
+    ELSE                                 (* no digits, then no number *)
+      RETURN NIL;
+    END;
   END NewLatin1Region;
 
 PROCEDURE NewLatin1* (str[NO_COPY]: ARRAY OF CHAR; inputBase: LONGINT): BigInt;

@@ -31,8 +31,8 @@ RT0__StructDesc _td_Object_BigInt__11375 = { (RT0__Struct[]){&RT0__integer}, NUL
 RT0__StructDesc _td_Object_BigInt__11426 = { (RT0__Struct[]){&RT0__integer}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Object_BigInt__16944 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Object_BigInt__16933 = { (RT0__Struct[]){&_td_Object_BigInt__16944}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_Object_BigInt__19822 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_Object_BigInt__20985 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_Object_BigInt__19821 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_Object_BigInt__21284 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"Object:BigInt", (RT0__Struct[]) { &_td_Object_BigInt__BigInt, &_td_Object_BigInt__DigitArray, &_td_Object_BigInt__BigIntDesc, NULL }, 0 };
 
 extern void OOC_Object_BigInt_open(RT0__Module client) {

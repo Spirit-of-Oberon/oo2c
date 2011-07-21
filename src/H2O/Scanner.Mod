@@ -65,6 +65,7 @@ CONST
   condIf*=110;
   dotdotdot* = 111;
   hash* = 112;
+  paste* = 113;
 
   (* 200: arithmetic operators *)
 
@@ -363,7 +364,7 @@ VAR
     END;
     AcceptChar;
   END GetString;
-  
+
   PROCEDURE AssignOp(noAssignOp, assignOp : INTEGER);
   BEGIN
     AcceptChar;
@@ -432,7 +433,13 @@ BEGIN
       Number(FALSE);
     | '"': GetString('"')
     | "'": GetString("'")
-    | "#": SymOp(hash);
+    | "#": 
+      AcceptChar;
+      IF ch = "#" THEN
+        SymOp(paste);
+      ELSE
+        token.sym := hash;
+      END;
     | ')': SymOp(rbracket);
     | '(': SymOp(lbracket);
     | ']': SymOp(rsqbracket);
@@ -606,5 +613,12 @@ BEGIN
   s.in.ReadChar(s.ch);
   RETURN s;
 END New;
+
+(* Obtain the text of a string by removing quotes. *)
+
+PROCEDURE Unquote* (name : STRING) : STRING;
+BEGIN
+  RETURN name.Substring(1, name.length-1);
+END Unquote;
 
 END H2O:Scanner.

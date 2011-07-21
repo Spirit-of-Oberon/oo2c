@@ -107,8 +107,8 @@ extern RT0__StructDesc _td_Object_BigInt__11375;
 extern RT0__StructDesc _td_Object_BigInt__11426;
 extern RT0__StructDesc _td_Object_BigInt__16944;
 extern RT0__StructDesc _td_Object_BigInt__16933;
-extern RT0__StructDesc _td_Object_BigInt__19822;
-extern RT0__StructDesc _td_Object_BigInt__20985;
+extern RT0__StructDesc _td_Object_BigInt__19821;
+extern RT0__StructDesc _td_Object_BigInt__21284;
 #endif /* _MODULE_Object_BigInt_ */
 
 /* --- */

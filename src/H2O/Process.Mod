@@ -1,9 +1,9 @@
 MODULE H2O:Process;
 
 IMPORT
-  Err, Object,
+  Log, Err, Object,
   ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList, ADT:ArrayList,
-  H2O:Source, H2O:Error, H2O:Scanner, H2O:Module;
+  H2O:Source, H2O:Error, H2O:Scanner, H2O:Type;
 
 CONST
   (* Pre-Processor symbols *)
@@ -30,6 +30,10 @@ CONST
   strictUndefine* = 5;
 
 TYPE
+
+  TokenList = LinkedList.LinkedList(Scanner.Token);
+  TokenIterator = LinkedList.Iterator(Scanner.Token);
+
   Param = POINTER TO ParamDesc;
   ParamDesc = RECORD
     next : Param;			(* next parameter in linear list *)
@@ -39,11 +43,11 @@ TYPE
 
   Macro* = POINTER TO MacroDesc;
   MacroDesc* = RECORD (Object.ObjectDesc)
-    module- : Module.Module;	(* module for macro definition *)
+    module- : Type.Module;	(* module for macro definition *)
     name- : STRING;				(* name of macro *)
     nParams : INTEGER;			(* number of formal parameters *)
     params : Param;				(* list of parameter names *)
-    body : LinkedList.LinkedList;	(* linked list of tokens *)
+    body : TokenList;	(* linked list of tokens *)
     function- : BOOLEAN;			(* macro requires parameters *)
     selfdefine : BOOLEAN;		(* symbol defined equivalent to self *)
   END;
@@ -54,7 +58,7 @@ TYPE
     scanner : Scanner.Scanner;		(* input scanner *)
     in- : Source.Input;
     err- : Error.Error;
-    expanded : LinkedList.LinkedList;	(* queue of tokens from expansion *)
+    expanded : TokenList;	(* queue of tokens from expansion *)
     macro : Dictionary.Dictionary(STRING,Macro);	(* defined macros *)
     macroDecl- : ArrayList.ArrayList(Macro); (* macros in declared order *)
   END;
@@ -67,7 +71,7 @@ PROCEDURE PrintMacro(m : Macro);
 VAR
   o : Object.Object;
   p : Param;
-  i : LinkedList.Iterator;
+  i : TokenIterator;
 BEGIN
   Err.String("MACRO "); Err.Object(m.name);
   IF m.function THEN
@@ -117,6 +121,12 @@ BEGIN
   p.expanded.Prepend(Scanner.NewIdentToken(m.name));
 END PushMacro;
 
+PROCEDURE (p : Process) Undefine(name : STRING);
+BEGIN
+  p.macroDecl.Remove(p.macroDecl.IndexOf(p.macro.Get(name)));
+  p.macro.Delete(name);
+END Undefine;
+
 PROCEDURE (p : Process) GetToken* (token : Scanner.Token; options : SET);
 VAR
   m : Macro;
@@ -146,14 +156,27 @@ VAR
 
   PROCEDURE ExpandMacro(m : Macro);
   VAR 
-    params : POINTER TO ARRAY OF LinkedList.LinkedList;
-    i : INTEGER;
-    result : LinkedList.LinkedList;
-    iBody, iParam : LinkedList.Iterator;
+    params : POINTER TO ARRAY OF TokenList;
+    i, size, paste : LONGINT;
+    result : TokenList;
+    iBody, iParam : TokenIterator;
     o : Object.Object;
     s, t : Scanner.Token;
-    
-    PROCEDURE ScanParameter(list : LinkedList.LinkedList);
+ 
+    PROCEDURE PasteTokens() : BOOLEAN;
+    VAR 
+      t1, t2 : Scanner.Token;
+    BEGIN
+      t2 := result.RemoveLast();
+      t1 := result.RemoveLast();
+      IF (t1.sym = Scanner.ident) & (t2.sym = Scanner.ident) THEN
+        result.Append(Scanner.NewIdentToken(t1.name + t2.name));
+        RETURN TRUE;
+      END;
+      RETURN FALSE;
+    END PasteTokens;
+
+    PROCEDURE ScanParameter(list : TokenList);
     VAR
       bracketLevel, braceLevel : INTEGER;
     BEGIN
@@ -195,7 +218,7 @@ VAR
           Err.String("FORMAL["); Err.Int(i,0); Err.String("]");
         END;
 
-        params[i] := LinkedList.New();
+        params[i] := NEW(TokenList);
 
         ScanParameter(params[i]);
         IF i < m.nParams-1 THEN Expect(Scanner.comma) END;
@@ -203,8 +226,8 @@ VAR
       Expect(Scanner.rbracket);
     END;
 
-    result := LinkedList.New();
-    iBody := m.body.GetIterator(NIL); iParam := NIL;
+    result := NEW(TokenList);
+    iBody := m.body.GetIterator(NIL); iParam := NIL; paste := 0;
     WHILE iBody.HasNext() DO
       o := iBody.Next(); s := o(Scanner.Token);
       IF s.sym = Scanner.parameter THEN
@@ -220,11 +243,23 @@ VAR
           END;
           result.Append(t);
         END
+      ELSIF s.sym = Scanner.paste THEN
+        paste := result.Size() + 1;
       ELSE
         IF debugExpand IN moduleOptions THEN
           Err.String("APPEND["); s.Write(Err.writer); Err.String("]"); Err.Ln;
         END;
         result.Append(s);
+      END;
+      (* check for token paste operation *)
+      IF paste > 0 THEN
+        size := result.Size();
+        IF size = paste THEN
+          IF (size < 2) OR ~PasteTokens() THEN
+            p.err.Error("Illegal token paste");
+          END;
+          paste := 0;
+        END;
       END;
     END;
     result.Append(token.Copy());
@@ -356,6 +391,7 @@ VAR
 
       IF p.macro.HasKey(name) THEN
         p.err.MsgParam("Macro '$0' redefined", name, NIL, NIL, strictRedefine IN moduleOptions);
+        p.Undefine(name);
       END;
 
       defFunc := p.scanner.ch = '(';  (* bracket must immediately follow ident *)
@@ -368,7 +404,7 @@ VAR
       m.name := name;
       m.nParams := 0;
       m.params := NIL;
-      m.body := LinkedList.New();
+      m.body := NEW(TokenList);
       m.selfdefine := FALSE;
       m.function := FALSE;
 
@@ -430,8 +466,7 @@ VAR
       ELSIF ~p.macro.HasKey(token.name) THEN 
         p.err.MsgParam("#undef macro '$0' not defined", token.name, NIL, NIL, strictUndefine IN moduleOptions);
       ELSE
-        p.macroDecl.Remove(p.macroDecl.IndexOf(p.macro.Get(token.name)));
-        p.macro.Delete(token.name);
+	    p.Undefine(token.name);
       END;
       GetSymP;
       End();
@@ -631,7 +666,7 @@ BEGIN
   p.ex := ex;
   p.macro := NEW(Dictionary.Dictionary(STRING,Macro));
   p.macroDecl := NEW(ArrayList.ArrayList(Macro), 10);
-  p.expanded := LinkedList.New();
+  p.expanded := NEW(TokenList);
   RETURN p;
 END New;
 

@@ -176,7 +176,7 @@ extern RT0__StructDesc _td_IO_TextRider__17219;
 extern RT0__StructDesc _td_IO_TextRider__21133;
 extern RT0__StructDesc _td_IO_TextRider__22450;
 extern RT0__StructDesc _td_IO_TextRider__22837;
-extern RT0__StructDesc _td_IO_TextRider__25897;
+extern RT0__StructDesc _td_IO_TextRider__26004;
 #endif /* _MODULE_IO_TextRider_ */
 
 /* --- */

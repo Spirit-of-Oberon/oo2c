@@ -1601,11 +1601,26 @@ l22:
 }
 
 void IO_TextRider__ReaderDesc_ReadLn(IO_TextRider__Reader r) {
-  register OOC_INT32 i0,i1;
+  register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)r;
-  i1 = *(OOC_INT32*)((_check_pointer(i0, 25830))+16);
-  *(OOC_INT32*)((_check_pointer(i0, 25823))+12) = i1;
+  i1 = *(OOC_INT32*)((_check_pointer(i0, 25827))+12);
+  i2 = *(OOC_INT32*)((_check_pointer(i0, 25833))+16);
+  i1 = i1==i2;
+  if (i1) goto l3;
+  i1=0u;
+  goto l5;
+l3:
+  i1 = *(OOC_UINT8*)((_check_pointer(i0, 25850))+20);
+  i1 = !i1;
+  
+l5:
+  if (!i1) goto l7;
+  IO_TextRider__ReaderDesc_ReadLineBuffer((IO_TextRider__Reader)i0);
+l7:
+  *(OOC_UINT8*)((_check_pointer(i0, 25905))+20) = 0u;
+  i1 = *(OOC_INT32*)((_check_pointer(i0, 25937))+16);
+  *(OOC_INT32*)((_check_pointer(i0, 25930))+12) = i1;
   return;
   ;
 }
@@ -1614,27 +1629,27 @@ void IO_TextRider__ReaderDesc_ReadLine(IO_TextRider__Reader r, OOC_CHAR8 s[], OO
   register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
   OOC_INT32 pos;
 
-  _assert((s_0d>0), 127, 26912);
+  _assert((s_0d>0), 127, 27019);
   i0 = (OOC_INT32)r;
-  i1 = *(OOC_INT32*)((_check_pointer(i0, 26939))+12);
-  i2 = *(OOC_INT32*)((_check_pointer(i0, 26945))+16);
+  i1 = *(OOC_INT32*)((_check_pointer(i0, 27046))+12);
+  i2 = *(OOC_INT32*)((_check_pointer(i0, 27052))+16);
   i1 = i1==i2;
   if (!i1) goto l11;
-  i1 = *(OOC_INT32*)((_check_pointer(i0, 27009))+16);
+  i1 = *(OOC_INT32*)((_check_pointer(i0, 27116))+16);
   i1 = i1>0;
   if (i1) goto l5;
   i1=0u;
   goto l7;
 l5:
-  i1 = *(OOC_UINT8*)((_check_pointer(i0, 27027))+20);
+  i1 = *(OOC_UINT8*)((_check_pointer(i0, 27134))+20);
   
 l7:
   if (i1) goto l9;
   IO_TextRider__ReaderDesc_ReadLineBuffer((IO_TextRider__Reader)i0);
   goto l11;
 l9:
-  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(0, s_0d, OOC_UINT8, 27134))) = 0u;
-  *(OOC_UINT8*)((_check_pointer(i0, 27152))+20) = 0u;
+  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(0, s_0d, OOC_UINT8, 27241))) = 0u;
+  *(OOC_UINT8*)((_check_pointer(i0, 27259))+20) = 0u;
   return;
 l11:
   i1 = s_0d-1;
@@ -1644,30 +1659,30 @@ l11:
 l12_loop:
   i4 = i3==i1;
   if (i4) goto l19;
-  i4 = *(OOC_INT32*)((_check_pointer(i0, 27414))+12);
-  i5 = *(OOC_INT32*)((_check_pointer(i0, 27420))+16);
+  i4 = *(OOC_INT32*)((_check_pointer(i0, 27521))+12);
+  i5 = *(OOC_INT32*)((_check_pointer(i0, 27527))+16);
   i4 = i4==i5;
   if (i4) goto l17;
-  i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 27584))+4);
-  i4 = _check_pointer(i4, 27591);
-  i5 = *(OOC_INT32*)((_check_pointer(i0, 27593))+12);
+  i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 27691))+4);
+  i4 = _check_pointer(i4, 27698);
+  i5 = *(OOC_INT32*)((_check_pointer(i0, 27700))+12);
   i6 = OOC_ARRAY_LENGTH(i4, 0);
-  i4 = *(OOC_UINT8*)(i4+(_check_index(i5, i6, OOC_UINT32, 27591)));
-  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i3, s_0d, OOC_UINT32, 27576))) = i4;
+  i4 = *(OOC_UINT8*)(i4+(_check_index(i5, i6, OOC_UINT32, 27698)));
+  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i3, s_0d, OOC_UINT32, 27683))) = i4;
   goto l20;
 l17:
-  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i3, s_0d, OOC_UINT32, 27446))) = 0u;
-  *(OOC_UINT8*)((_check_pointer(i0, 27466))+20) = 0u;
+  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i3, s_0d, OOC_UINT32, 27553))) = 0u;
+  *(OOC_UINT8*)((_check_pointer(i0, 27573))+20) = 0u;
   return;
   goto l20;
 l19:
-  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i3, s_0d, OOC_UINT32, 27341))) = 0u;
+  *(OOC_UINT8*)((OOC_INT32)s+(_check_index(i3, s_0d, OOC_UINT32, 27448))) = 0u;
   IO__RaiseFormatError((Object__String)i2);
 l20:
   i3 = i3+1;
   pos = i3;
-  i4 = *(OOC_INT32*)((_check_pointer(i0, 27639))+12);
-  *(OOC_INT32*)((_check_pointer(i0, 27639))+12) = (i4+1);
+  i4 = *(OOC_INT32*)((_check_pointer(i0, 27746))+12);
+  *(OOC_INT32*)((_check_pointer(i0, 27746))+12) = (i4+1);
   
   goto l12_loop;
 l22:

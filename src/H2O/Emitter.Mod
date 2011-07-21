@@ -21,7 +21,7 @@
 
 MODULE H2O:Emitter;
 
-IMPORT TextRider, H2O:Value, Object;
+IMPORT IO:TextRider, H2O:Value, Object;
 
 CONST
   (* Declaration types *)

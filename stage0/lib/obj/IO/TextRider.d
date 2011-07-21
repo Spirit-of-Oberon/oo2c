@@ -52,7 +52,7 @@ RT0__StructDesc _td_IO_TextRider__17219 = { (RT0__Struct[]){&RT0__char}, NULL, N
 RT0__StructDesc _td_IO_TextRider__21133 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_IO_TextRider__22450 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 8, 8, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_IO_TextRider__22837 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_IO_TextRider__25897 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_IO_TextRider__26004 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"IO:TextRider", (RT0__Struct[]) { &_td_IO_TextRider__OverflowError, &_td_IO_TextRider__OverflowErrorDesc, &_td_IO_TextRider__Writer, &_td_IO_TextRider__WriterDesc, &_td_IO_TextRider__Buffer, &_td_IO_TextRider__Reader, &_td_IO_TextRider__ReaderDesc, NULL }, 0 };
 
 extern void OOC_IO_TextRider_open(RT0__Module client) {

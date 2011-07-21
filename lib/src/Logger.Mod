@@ -244,13 +244,11 @@ PROCEDURE (lh: Handle) DebugLongReal*(msg: STRING; x: LONGREAL);
 PROCEDURE (lh: Handle) Report*(msg: STRING);
 (**Report messages are also duplicated into the debug log.  *)
   BEGIN
-    IF lh.enableReport THEN
-      IF lh.enableDebug & lh.debugTarget.passOnDebug THEN
-        lh.debugTarget.Write(lh.prefixReportInDebug, msg);
-      END;
-      IF lh.reportTarget.passOnReport THEN
-        lh.reportTarget.Write(lh.prefix, msg);
-      END;
+    IF lh.enableDebug & lh.debugTarget.passOnDebug THEN
+      lh.debugTarget.Write(lh.prefixReportInDebug, msg);
+    END;
+    IF lh.enableReport & lh.reportTarget.passOnReport THEN
+      lh.reportTarget.Write(lh.prefix, msg);
     END;
   END Report;
 
