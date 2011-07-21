@@ -1,4 +1,4 @@
-(* 	$Id: IGraph.Mod,v 1.8 2004/07/01 19:12:57 mva Exp $	 *)
+(* 	$Id: IGraph.Mod,v 1.9 2004/07/11 10:52:00 mva Exp $	 *)
 MODULE OOC:SSA:IGraph;
 (*  Manipulation of interference graph of values' life ranges.
     Copyright (C) 2001-2004  Michael van Acken
@@ -21,7 +21,7 @@ MODULE OOC:SSA:IGraph;
 *)
 
 IMPORT
-  Log, Exception;
+  Exception;
   
 TYPE
   SetType = SET;
@@ -379,6 +379,10 @@ PROCEDURE (g: Graph) ColorGraphCombinatorial*(): ColorArray;
       INC(size);
     END;
 
+    IF (size > sizeSet) THEN             (* bail out *)
+      RETURN NIL;
+    END;
+    
     (* create our own interference matrix based on the permutation *)
     g.AssertSymmetricMatrix();
     FOR i := 0 TO sizeSet-1 DO
@@ -392,10 +396,6 @@ PROCEDURE (g: Graph) ColorGraphCombinatorial*(): ColorArray;
       END;
     END;
 
-    Log.Int("### g.size", g.size);
-    Log.Int("### size", size);
-    ASSERT(size <= sizeSet);
-    
     NEW (ca, g.size);
     IF (size # 0) THEN
       (* find a k-coloring for our reduced graph *)

@@ -2,7 +2,8 @@ MODULE OOC:X86:SSA;
 
 IMPORT
   Object, Object:Boxed, Object:BigInt, IntDict := ADT:Dictionary:IntValue,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  TR := OOC:SymbolTable:TypeRules;
 
 TYPE
   Opcode* = SHORTINT;
@@ -21,10 +22,20 @@ CONST  (* Register Names: *)
   gp3* = 6;                              (* ebx *)
   gp4* = 7;                              (* esi, not byte addressable *)
   gp5* = 8;                              (* edi, not byte addressable *)
+  st0* = 9;                              (* x87 register st(0) *)
+  fp0* = 10;                             (* xmm0 *)
+  fp1* = 11;                             (* xmm1 *)
+  fp2* = 12;                             (* xmm2 *)
+  fp3* = 13;                             (* xmm3 *)
+  fp4* = 14;                             (* xmm4 *)
+  fp5* = 15;                             (* xmm5 *)
+  fp6* = 16;                             (* xmm6 *)
+  fp7* = 17;                             (* xmm7 *)
   resultRegister* = gp0;                 (* register for function results *)
-  lastRegister* = gp5;                   (* maximum of all register ids *)
+  resultRegisterFp* = st0;               (* register for fp function results *)
+  lastRegister* = fp7;                   (* maximum of all register ids *)
 
-  callerSaved* = {gp0, gp1, gp2};
+  callerSaved* = {gp0, gp1, gp2, st0, fp0..fp7};
   calleeSaved* = {sp, fp, gp3, gp4, gp5};
 
   lastFpRegister* = 7;
@@ -58,19 +69,31 @@ CONST  (* Instruction Opcodes: *)
      and its sign is preserved by the shift operation.  *)
   asl* = opcodeArithmetic+7;
   (**Arithmetic (and logical) shift left.  *)
-  indexed* = opcodeArithmetic+8;
-  eql* = opcodeArithmetic+9;
-  neq* = opcodeArithmetic+10;
-  lss* = opcodeArithmetic+11;
-  leq* = opcodeArithmetic+12;
-  gtr* = opcodeArithmetic+13;
-  geq* = opcodeArithmetic+14;
-  setBool* = opcodeArithmetic+15;
+  lsr* = opcodeArithmetic+8;
+  (**Logical shift right.  *)
+  lsl* = opcodeArithmetic+9;
+  (**Logical (and arithmetic) shift left.  *)
+  rr* = opcodeArithmetic+10;
+  (**Rotate right.  *)
+  rl* = opcodeArithmetic+11;
+  (**Rotate left.  *)
+  indexed* = opcodeArithmetic+12;
+  eql* = opcodeArithmetic+13;
+  neq* = opcodeArithmetic+14;
+  lss* = opcodeArithmetic+15;
+  leq* = opcodeArithmetic+16;
+  gtr* = opcodeArithmetic+17;
+  geq* = opcodeArithmetic+18;
+  setBool* = opcodeArithmetic+19;
   (**Set byte to @code{0} or @code{1}, depending on the current state of the
      condition codes.  *)
-  typeConv* = opcodeArithmetic+16;
+  bitTestAndSet* = opcodeArithmetic+20;
+  bitTestAndClear* = opcodeArithmetic+21;
+  typeConv* = opcodeArithmetic+22;
+  fpLoad* = opcodeArithmetic+23;
+  fpStorePop* = opcodeArithmetic+24;
   
-  opcodeFunctionFraming = opcodeArithmetic+17;
+  opcodeFunctionFraming = opcodeArithmetic+26;
   enter* = opcodeFunctionFraming+0;
   (**An ``enter'' instruction represents the state of the processor immediately
      after control has passed from the caller to the current function.  Its
@@ -95,11 +118,14 @@ CONST  (* Instruction Opcodes: *)
   call* = opcodeFunctionFraming+3;
   (**First operand is the called address, and the second the current stack
      pointer.  The rest of the operand list are the actual function parameters.  *)
-  function* = opcodeFunctionFraming+4;
+  bounceResult* = opcodeFunctionFraming+4;
+  (**Copies a floating point value from register @samp{st0} into one of the
+     SSE2 registers @samp{xmm}.  *)
+  function* = opcodeFunctionFraming+5;
   (**This is the block that represents the whole function.  *)
-  allocateStack* = opcodeFunctionFraming+5;
+  allocateStack* = opcodeFunctionFraming+6;
   (**Allocate space for local variables on stack.  *)
-  standin* = opcodeFunctionFraming+6;
+  standin* = opcodeFunctionFraming+7;
   (**A ``standin'' instruction is a foothold of non-instruction data on a value
      that is part of the function's code.  The instruction has a single
      operand, holding the value of interest to the external data structure; it
@@ -114,18 +140,19 @@ CONST  (* Instruction Opcodes: *)
      have the same argument.  A standin instruction can only be deleted by the
      data that holds the reference to it.  *)
   
-  opcodeMemory = opcodeFunctionFraming+7;
+  opcodeMemory = opcodeFunctionFraming+8;
   get* = opcodeMemory+0;
   (**@code{get} @var{address} *)
   set* = opcodeMemory+1;
   (**@code{set} @var{address} @var{value} *)
   copy* = opcodeMemory+2;
-  push* = opcodeMemory+3;
-  pop* = opcodeMemory+4;
-  leave* = opcodeMemory+5;
-  getLengthParam* = opcodeMemory+6;
-  getLengthHeap* = opcodeMemory+7;
-  setStack* = opcodeMemory+8;
+  typeCast* = opcodeMemory+3;
+  loadRegister* = opcodeMemory+4;
+  push* = opcodeMemory+5;
+  pop* = opcodeMemory+6;
+  leave* = opcodeMemory+7;
+  getLengthHeap* = opcodeMemory+8;
+  setStack* = opcodeMemory+9;
   (**Set stack element to the given value.  First argument is the current stack
      pinter, second the offset relative to the top of the stack, and the third
      the value.
@@ -137,9 +164,9 @@ CONST  (* Instruction Opcodes: *)
      This instruction duplicates the memory dependencies of its call
      instruction, and the call in turn has memory dependencies on all its
      @oconst{setStack} instructions.  *)
-  typeTag* = opcodeMemory+9;
+  typeTag* = opcodeMemory+10;
   
-  opcodeControlFlow = opcodeMemory+10;
+  opcodeControlFlow = opcodeMemory+12;
   branch* = opcodeControlFlow+0;
   (**A branch is a place in a function were control may continue to one of two
      (or more) mutually exclusive paths.  Each path is represented by a
@@ -157,7 +184,14 @@ CONST  (* Instruction Opcodes: *)
      shortcut operators @code{OR} or @code{&}.  Such a branch has no
      @oconst{merge} instruction of its own.  From its @oconst{guard}s, control
      is passed on either to another @oconst{guard} or another branch's
-     @oconst{merge}.  *)
+     @oconst{merge}.
+
+     In a @code{IF} statement, the branch instruction has a single argument
+     that is either the boolean constant @code{0} or @code{1}.  In a
+     @code{CASE} statement, the branch instructions have an even number of
+     arguments, a lower and upper limit taken from an element of the list of
+     labels.  The special case of an no-argument @oconst{branch} represents the
+     @code{ELSE} part of the @code{CASE}.  *)
   guard* = opcodeControlFlow+1;
   merge* = opcodeControlFlow+2;
   (**Instructions with opcode @oconst{merge} are part of a class of
@@ -177,6 +211,10 @@ CONST  (* Instruction Opcodes: *)
   loopEnd* = opcodeControlFlow+7;
   loopExit* = opcodeControlFlow+8;
   loopBackedge* = opcodeControlFlow+9;
+  (**From this instruction control passes back to the loop's start.  This means
+     that there is an implicit control and memory dependency from
+     @oconst{loopStart} onto this instruction.  This dependency is @emph{not}
+     made explicit to avoid cyclic instruction dependencies.  *)
   
 CONST  (* Operand and Result Types: *)
   noType* = 0;
@@ -209,6 +247,7 @@ CONST  (* Operand and Result Types: *)
   real64* = 11;
   (**Double precision IEEE-754 floating point number.  *)
   gpRegisterType* = signed32;
+  fpRegisterType* = real64;
 
 TYPE
   Node* = POINTER TO NodeDesc;
@@ -235,13 +274,16 @@ TYPE
        from an enclosing procedure.
 
        When used as part of @oconst{const} instruction, then it refers to the
-       address of a variable.  There are three slightly different
+       address of a variable.  There are four slightly different
        interpretations, depending on the sort of variable in the designator:
 
        @table @asis
        @item Local variable of a function
        The result of the @oconst{const} is the offset of the local variable or
        parameter relative to the function's frame pointer.
+       @item Length of an array parameter
+       The result of the @oconst{const} is the offset of the length parameter
+       relative to the function's frame pointer.
        @item Designator is @code{NIL}
        This means the size of local variable area of the current function.
        @item Global variable of a module
@@ -249,6 +291,7 @@ TYPE
        @end table  *)
     (GlobalDesc)
     decl-: Sym.VarDecl;
+    dim-: LONGINT;
   END;
   Proc* = POINTER TO ProcDesc;
   ProcDesc = RECORD
@@ -283,14 +326,14 @@ TYPE
   Const* = POINTER TO ConstDesc;
   ConstDesc = RECORD
     (SelectorDesc)
-    value-: Boxed.Object;
+    value-: Object.Object;
+    (**Either a @otype{Boxed.Object} or @otype{BranchInstr}.  *)
     type-: Sym.PredefId;
     (**This field holds a type id from module @omodule{Predef} or @samp{-1}.
-       It is used to distinguish the type of string constants.  A string
-       constant is identified by its address in the program, but the code
-       generator needs to now if the address points to a sequence of 1, 2, or 4
-       byte values.  For non-string constants, the value of this field is set
-       to @samp{-1}.  *)
+       It is used to distinguish the size of integer constants and the type of
+       string constants.  A string constant is identified by its address in the
+       program, but the code generator needs to now if the address points to a
+       sequence of 1, 2, or 4 byte values.  *)
   END;
   HeapObj* = POINTER TO HeapObjDesc;
   HeapObjDesc = RECORD
@@ -558,6 +601,7 @@ TYPE
     paths-: BlockList;
     (**If this is a boolean branch, then index 0 is the ``true'' path, and
        index 1 ``false''.  *)
+    caseBranch-: BOOLEAN;
   END;
   MergeInstrDesc = RECORD
     (**Used for both @oconst{merge}, @oconst{loopEnd} @emph{and}
@@ -586,7 +630,7 @@ TYPE
   LoopStartInstrDesc = RECORD
     (BlockDesc)
     backedge-: Instr;
-    end-: Instr;
+    end-: MergeInstr;
   END;
   LoopBackedgeInstr* = POINTER TO LoopBackedgeInstrDesc;
   LoopBackedgeInstrDesc = RECORD
@@ -620,10 +664,20 @@ TYPE
 CONST
   alignStackTo* = 4;
 
+PROCEDURE IsSigned*(type: Type): BOOLEAN;
+  BEGIN
+    RETURN (signed8 <= type) & (type <= signed64);
+  END IsSigned;
+
 PROCEDURE IsUnsigned*(type: Type): BOOLEAN;
   BEGIN
     RETURN (unsigned8 <= type) & (type <= unsigned64);
   END IsUnsigned;
+
+PROCEDURE IsFloat*(type: Type): BOOLEAN;
+  BEGIN
+    RETURN (type >= real32);
+  END IsFloat;
 
 PROCEDURE ^ (b: Block) AddInstr1*(opcode: Opcode; arg1: Result): Instr;
 
@@ -643,6 +697,7 @@ PROCEDURE (s: Var) INIT*(var: Sym.VarDecl);
   BEGIN
     s.INIT^();
     s.decl := var;
+    s.dim := -1;
   END INIT;
 
 PROCEDURE (s: Var) SameSelector*(sel: Selector): BOOLEAN;
@@ -703,7 +758,7 @@ PROCEDURE (s: ModuleDescr) SameSelector*(sel: Selector): BOOLEAN;
     RETURN (sel IS ModuleDescr);
   END SameSelector;
 
-PROCEDURE (s: Const) INIT*(value: Boxed.Object; type: Sym.PredefId);
+PROCEDURE (s: Const) INIT*(value: Object.Object; type: Sym.PredefId);
   BEGIN
     s.INIT^();
     s.value := value;
@@ -962,6 +1017,22 @@ PROCEDURE (res: Result) ReplaceUses* (with: Result);
     END
   END ReplaceUses;
 
+PROCEDURE (res: Result) ReplaceUsesExcept* (with: Result; except: Opnd);
+(**Replaces all uses of @oparam{res} with @oparam{with}.  *)
+  VAR
+    use, nextUse: Opnd;
+  BEGIN
+    use := res.useList;
+    WHILE (use # NIL) DO
+      nextUse := use.nextUse;
+      IF (use # except) THEN
+        DeleteUse(use);
+        SetUse(with, use);
+      END;
+      use := nextUse;
+    END
+  END ReplaceUsesExcept;
+
 PROCEDURE (calledAdr: Result) CalledProc*(): Sym.ProcDecl;
 (**Given the first argument of a @oconst{call} instruction, return the
    called procedure iff the call is static.  Otherwise, return @code{NIL}.  *)
@@ -989,12 +1060,18 @@ PROCEDURE (res: Result) IsTrue*(): BOOLEAN;
         ~res.instr.designator[0](Const).value.Equals(BigInt.zero);
   END IsTrue;
 
+PROCEDURE (res: Result) IsFloat*(): BOOLEAN;
+(**Return @code{TRUE} if @oparam{res} is a floating point value.  *)
+  BEGIN
+    RETURN IsFloat(res.type);
+  END IsFloat;
+
 PROCEDURE (res: Result) GetConst*(): Boxed.Object;
 (**If @oparam{res} is a constant value known at compile time, then return the
    value.  Otherwise, return @code{NIL}.  *)
   BEGIN
     IF (res.instr.opcode = const) & (res.instr.designator[0] IS Const)THEN
-      RETURN res.instr.designator[0](Const).value;
+      RETURN res.instr.designator[0](Const).value(Boxed.Object);
     ELSE
       RETURN NIL;
     END;
@@ -1827,6 +1904,17 @@ PROCEDURE (b: Block) NestingDepth*(): LONGINT;
     RETURN i;
   END NestingDepth;
 
+PROCEDURE (b: Block) Dominates*(x: Block): BOOLEAN;
+  BEGIN
+    WHILE (x # NIL) DO
+      IF (x = b) THEN
+        RETURN TRUE;
+      END;
+      x := x.block;
+    END;
+    RETURN FALSE;
+  END Dominates;
+
 PROCEDURE (b: Block) Count*(opcode: Opcode): LONGINT;
   VAR
     i: LONGINT;
@@ -1999,15 +2087,31 @@ PROCEDURE (b: Block) AddConstInt*(value: BigInt.BigInt;
     RETURN b.AddConst(NEW(Const, value, -1), type);
   END AddConstInt;
 
+PROCEDURE (b: Block) AddConstReal*(value: Boxed.LongReal;
+                                  type: Sym.Type): Result;
+  BEGIN
+    RETURN b.AddConst(NEW(Const, value, -1), type);
+  END AddConstReal;
+
+PROCEDURE (b: Block) AddConstZero*(type: Sym.Type): Result;
+  BEGIN
+    IF TR.IsRealType(type) THEN
+      RETURN b.AddConstReal(Boxed.zeroLongReal, type);
+    ELSE
+      RETURN b.AddConstInt(BigInt.zero, type);
+    END;
+  END AddConstZero;
+
+
 PROCEDURE (b: Block) AddConstDim*(dim: LONGINT): Result;
   BEGIN
     RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim), -1),
                       Predef.GetType(Predef.longint));
   END AddConstDim;
 
-PROCEDURE (b: Block) AddConstLength*(dim: LONGINT): Result;
+PROCEDURE (b: Block) AddConstLength*(length: LONGINT): Result;
   BEGIN
-    RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim), -1),
+    RETURN b.AddConst(NEW(Const, BigInt.NewInt(length), -1),
                       Predef.GetType(Predef.address));
   END AddConstLength;
 
@@ -2076,6 +2180,14 @@ PROCEDURE (b: Block) AddFramePointerOffset*(varDecl: Sym.VarDecl): Result;
     RETURN instr.AddResult(address);
   END AddFramePointerOffset;
 
+PROCEDURE (b: Block) AddLoadRegister*(value: Result; reg: Register): Result;
+  VAR
+    instr: Instr;
+  BEGIN
+    instr := b.AddInstr1(loadRegister, value);
+    RETURN instr.AddResultReg(value.type, reg);
+  END AddLoadRegister;
+
 PROCEDURE (opnd: Opnd) InsertCopy*();
   VAR
     opndInstr, instr: Instr;
@@ -2102,12 +2214,17 @@ PROCEDURE (opnd: Opnd) InsertCopy*();
 
 
 
-PROCEDURE (instr: BranchInstr) INIT*();
+PROCEDURE (instr: BranchInstr) INIT*(caseBranch: BOOLEAN);
   BEGIN
     instr.INIT^(branch);
     instr.paths := NIL;
+    instr.caseBranch := caseBranch;
   END INIT;
 
+PROCEDURE (instr: BranchInstr) SetPaths*(paths: BlockList);
+  BEGIN
+    instr.paths := paths;
+  END SetPaths;
 PROCEDURE (instr: BranchInstr) SetPaths2*(pathTrue, pathFalse: Block);
   VAR
     paths: BlockList;
@@ -2118,11 +2235,12 @@ PROCEDURE (instr: BranchInstr) SetPaths2*(pathTrue, pathFalse: Block);
     instr.paths := paths;
   END SetPaths2;
 
-PROCEDURE (b: Block) AddBranch*(select: Result): BranchInstr;
+PROCEDURE (b: Block) AddBranch*(select: Result;
+                                caseBranch: BOOLEAN): BranchInstr;
   VAR
     instr: BranchInstr;
   BEGIN
-    instr := NEW(BranchInstr);
+    instr := NEW(BranchInstr, caseBranch);
     instr.AddOpnd(select);
     b.Add(instr);
     RETURN instr;
@@ -2175,7 +2293,9 @@ PROCEDURE (b: Block) AddMerge0*(opcode: Opcode; arg1: Result): MergeInstr;
     instr: MergeInstr;
   BEGIN
     instr := b.AddMerge(opcode, NIL);
-    AddOpnd(instr, NEW(Opnd, arg1));
+    IF (arg1 # NIL) THEN
+      AddOpnd(instr, NEW(Opnd, arg1));
+    END;
     RETURN instr;
   END AddMerge0;
 
@@ -2221,7 +2341,7 @@ PROCEDURE (instr: LoopStartInstr) SetBackedge*(backedge: Instr);
     instr.backedge := backedge;
   END SetBackedge;
 
-PROCEDURE (instr: LoopStartInstr) SetEnd*(end: Instr);
+PROCEDURE (instr: LoopStartInstr) SetEnd*(end: MergeInstr);
   BEGIN
     instr.end := end;
   END SetEnd;
@@ -2370,11 +2490,17 @@ PROCEDURE (b: FunctionBlock) SetMaxSizeCallStack*(size: LONGINT);
     b.maxSizeCallStack := size;
   END SetMaxSizeCallStack;
 
-PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
+PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl;
+                                     dim: LONGINT): LONGINT;
 (**Returns the offset of the given parameter relative to the frame pointer of
    the function.  If @oparam{varDecl} is @code{NIL}, result is the size of the
    local variable area, aligned to the nearest multiple of
-   @oconst{alignStackTo}.  *)
+   @oconst{alignStackTo}.
+
+   @oparam{dim} is used to refer to implicit information associated with
+   procedure parameters.  A value of @code{-1} refers to the address of the
+   variable itself.  For open array parameters, a non-negative value denotes
+   the length of the array for the given dimension.  *)
   CONST
     sizeAddress = 4;
     sizeLength = 4;
@@ -2385,7 +2511,11 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
     
   PROCEDURE ArgumentSize(type: Sym.Type): LONGINT;
     BEGIN
-      RETURN 4;
+      IF TR.IsPredefType(type, Predef.longreal) THEN
+        RETURN 8;
+      ELSE
+        RETURN 4;
+      END;
     END ArgumentSize;
   
   BEGIN
@@ -2399,10 +2529,14 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
     ELSE
       offset := sizeAddress*2;  (* return address plus old frame pointer *)
       FOR p IN b.procDecl.formalPars.params^ DO
+        type := p.type;
         IF (p = varDecl) THEN
-          RETURN offset;
+          IF (dim >= 0) THEN
+            RETURN offset+ArgumentSize(type)+dim*sizeLength;
+          ELSE
+            RETURN offset;
+          END;
         ELSE
-          type := p.type;
           INC(offset, ArgumentSize(type));
           WITH type: Sym.Record DO
             IF p.isVarParam & type.isExtensible THEN (* type tag *)
@@ -2420,15 +2554,15 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
   END Offset;
 
 PROCEDURE (b: FunctionBlock) AddGetLengthInstr* (getInstr: Instr; dim: LONGINT;
-                                                 dimType: Sym.Array): Result;
+                                                 dimType: Sym.Array;
+                                                 fp: Result): Result;
 (**Given a @code{getInstr} instruction, this method produces a @code{get-length}
    instruction that returns the length of the variable for @oparam{dim}.
    @oparam{dimType} is the array type of dimension @oparam{dim}.  *)
   VAR
-    getLength: Instr;
-    dimension: Result;
+    getLength, paramAdr: Instr;
+    dimension, offset: Result;
     paramRef: Sym.VarDecl;
-    opcode: Opcode;
     
   PROCEDURE VarParamArray (get: Instr): Sym.VarDecl;
   (* If the get accesses a parameter without any further selectors, then
@@ -2449,17 +2583,33 @@ PROCEDURE (b: FunctionBlock) AddGetLengthInstr* (getInstr: Instr; dim: LONGINT;
       dimension := b.AddConstDim(dim);
       paramRef := VarParamArray(getInstr);
       IF (paramRef # NIL) THEN
-        opcode := getLengthParam;
+        offset := b.AddFramePointerOffset(paramRef);
+        offset.instr.designator[0](Var).dim := dim;
+        paramAdr := b.AddInstr2(add, fp, offset);
+        getLength := b.AddInstr1(get, paramAdr.AddResult(address));
       ELSE
-        opcode := getLengthHeap;
+        getLength := b.AddInstr0(getLengthHeap);
       END;
-      getLength := b.AddInstr0(opcode);
       RETURN getLength.AddResult(length);
     ELSE
       RETURN b.AddConstInt(BigInt.NewInt(dimType.length),
                            Predef.GetType(Predef.lengthType));
     END;
   END AddGetLengthInstr;
+
+PROCEDURE (b: FunctionBlock) AddGetParamTypeTag*(parameter: Sym.VarDecl;
+                                                 fp: Result): Result;
+(**Return the type tag of the record parameter.  *)
+  VAR
+    getInstr, paramAdr: Instr;
+    offset: Result;
+  BEGIN
+    offset := b.AddFramePointerOffset(parameter);
+    offset.instr.designator[0](Var).dim := 0;
+    paramAdr := b.AddInstr2(add, fp, offset);
+    getInstr := b.AddInstr1(get, paramAdr.AddResult(address));
+    RETURN getInstr.AddResult(address);
+  END AddGetParamTypeTag;
 
 PROCEDURE (fctBlock: FunctionBlock) DeadCodeElimination*();
   CONST

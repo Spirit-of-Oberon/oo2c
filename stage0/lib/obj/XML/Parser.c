@@ -91,7 +91,7 @@ static OOC_CHAR8 XML_Parser__IsDigit(OOC_CHAR16 ch) {
     goto l11;
   }
 l6:
-  i1 = (OOC_UINT8)48u<=(OOC_UINT8)i0;
+  i1 = (OOC_UINT16)48u<=(OOC_UINT16)i0;
   if (i1) goto l9;
   i0=0u;
   goto l10;
@@ -705,7 +705,7 @@ static OOC_CHAR8 XML_Parser__IsPubidChar(OOC_CHAR16 ch) {
 
   i0 = ch;
   i1 = _cap(i0);
-  i2 = (OOC_UINT8)65u<=(OOC_UINT8)i1;
+  i2 = (OOC_UINT16)65u<=(OOC_UINT16)i1;
   if (i2) goto l3;
   i1=0u;
   goto l5;
@@ -714,7 +714,7 @@ l3:
   
 l5:
   if (i1) goto l11;
-  i1 = (OOC_UINT8)48u<=(OOC_UINT8)i0;
+  i1 = (OOC_UINT16)48u<=(OOC_UINT16)i0;
   if (i1) goto l9;
   i1=0u;
   goto l13;
@@ -793,7 +793,7 @@ static OOC_CHAR8 XML_Parser__IsVersionNumChar(OOC_CHAR16 ch) {
 
   i0 = ch;
   i1 = _cap(i0);
-  i2 = (OOC_UINT8)65u<=(OOC_UINT8)i1;
+  i2 = (OOC_UINT16)65u<=(OOC_UINT16)i1;
   if (i2) goto l3;
   i1=0u;
   goto l5;
@@ -802,7 +802,7 @@ l3:
   
 l5:
   if (i1) goto l11;
-  i1 = (OOC_UINT8)48u<=(OOC_UINT8)i0;
+  i1 = (OOC_UINT16)48u<=(OOC_UINT16)i0;
   if (i1) goto l9;
   i1=0u;
   goto l13;
@@ -850,7 +850,7 @@ static OOC_CHAR8 XML_Parser__IsEncNameChar(OOC_CHAR16 ch, OOC_CHAR8 first) {
 
   i0 = ch;
   i1 = _cap(i0);
-  i2 = (OOC_UINT8)65u<=(OOC_UINT8)i1;
+  i2 = (OOC_UINT16)65u<=(OOC_UINT16)i1;
   if (i2) goto l3;
   i1=0u;
   goto l5;
@@ -865,7 +865,7 @@ l5:
   return 0u;
   goto l28;
 l9:
-  i1 = (OOC_UINT8)48u<=(OOC_UINT8)i0;
+  i1 = (OOC_UINT16)48u<=(OOC_UINT16)i0;
   if (i1) goto l12;
   i1=0u;
   goto l14;

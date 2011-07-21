@@ -1,8 +1,7 @@
 MODULE OOC:X86:Write;
 
 IMPORT
-  Log, D := OOC:X86:Debug,
-  SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
+  SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt, (*D := OOC:X86:Debug,*)
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, S := OOC:X86:SSA, OOC:X86:RuntimeData;
@@ -21,13 +20,14 @@ TYPE
     instructions: StringBuffer.StringBuffer;
     incomingList: Arc;
     branch, jump: Arc;
+    caseBranches: POINTER TO ARRAY OF Arc;
     blockInstr: S.Block;
     label: LONGINT;
   END;
   
 TYPE
   Writer* = POINTER TO WriterDesc;
-  StringToLabel = Dictionary.Dictionary(STRING, STRING);
+  ObjectToLabel = Dictionary.Dictionary(Object.Object, STRING);
   WriterDesc = RECORD
     module: Sym.Module;
     w: TextRider.Writer;
@@ -35,8 +35,9 @@ TYPE
     blockMap: Dictionary.Dictionary(S.Block, Block);
     blockCount: LONGINT;
 
-    strings: ARRAY 3 OF StringToLabel;
-    stringList: ARRAY 3 OF ArrayList.ArrayList(STRING);
+    constantsCount: LONGINT;
+    constants: ARRAY Predef.lastId+1 OF ObjectToLabel;
+    constantList: ARRAY Predef.lastId+1 OF ArrayList.ArrayList;
     
     (* current function: *)
     fctBlock: S.FunctionBlock;
@@ -59,6 +60,7 @@ PROCEDURE (block: Block) INIT*(blockInstr: S.Block);
     block.incomingList := NIL;
     block.branch := NIL;
     block.jump := NIL;
+    block.caseBranches := NIL;
     block.blockInstr := blockInstr;
     block.label := 0;
   END INIT;
@@ -75,13 +77,12 @@ PROCEDURE AddToIncoming(block: Block; arc: Arc);
     block.incomingList := arc;
   END AddToIncoming;
 
-PROCEDURE (block: Block) SetArc(VAR arc: Arc; to: Block;
-                                type: S.Type; opcode: S.Opcode);
+PROCEDURE (block: Block) SetArc(VAR arc: Arc; to: Block; opcode: S.Opcode);
   BEGIN
     ASSERT(arc = NIL);
     NEW(arc);
     arc.from := block;
-    arc.type := type;
+    arc.type := -1;
     arc.opcode := opcode;
     AddToIncoming(to, arc);
   END SetArc;
@@ -171,12 +172,13 @@ PROCEDURE (w: Writer) INIT*(module: Sym.Module; ch: IO.ByteChannel);
   BEGIN
     w.module := module;
     w.w := TextRider.ConnectWriter(ch);
-    w.w.WriteString(tab+".arch athlon");
+    w.w.WriteString(tab+".arch pentium4"); (* no arch k8 *)
     w.blockCount := 0;
 
-    FOR i := 0 TO 2 DO
-      w.strings[i] := NEW(StringToLabel);
-      w.stringList[i] := NEW(ArrayList.ArrayList(STRING), 8);
+    w.constantsCount := 0;
+    FOR i := 0 TO Predef.lastId DO
+      w.constants[i] := NEW(ObjectToLabel);
+      w.constantList[i] := NEW(ArrayList.ArrayList, 8);
     END;
   END INIT;
 
@@ -223,36 +225,115 @@ PROCEDURE (w: Writer) ModuleVariables();
     END;
   END ModuleVariables;
 
-PROCEDURE (w: Writer) StringSymbol(value: STRING; type: Sym.PredefId): STRING;
+PROCEDURE (w: Writer) ConstSymbol(value: Object.Object;
+                                  type: Sym.PredefId): STRING;
   VAR
-    dict: StringToLabel;
-    array: ArrayList.ArrayList(STRING);
+    dict: ObjectToLabel;
+    array: ArrayList.ArrayList;
   BEGIN
-    ASSERT(type = Predef.stringChar);
-    dict := w.strings[type-Predef.stringChar];
-    array := w.stringList[type-Predef.stringChar];
+    dict := w.constants[type];
+    array := w.constantList[type];
     IF ~dict.HasKey(value) THEN
-      dict.Set(value, ".LS"+Boxed.IntToString(array.size));
+      dict.Set(value, ".LC"+Boxed.IntToString(w.constantsCount));
+      INC(w.constantsCount);
       array.Append(value);
     END;
     RETURN dict.Get(value);
-  END StringSymbol;
+  END ConstSymbol;
 
-PROCEDURE (w: Writer) StringConstants();
+PROCEDURE ToHex(n: LONGINT; digits: LONGINT): STRING;
+  CONST
+    BASE=16;
   VAR
-    s, i: LONGINT;
-    value, label: STRING;
+    dig, shift, i: LONGINT;
+    str: ARRAY 16 OF CHAR;
   BEGIN
-    FOR s := 0 TO 2 DO
-      FOR i := 0 TO w.stringList[s].size-1 DO
-        ASSERT(s = 0);
-        value := w.stringList[s].array[i];
-        label := w.strings[s].Get(value);
-        w.w.WriteObject(nl+label+":");
-        w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
+    shift := -4*digits;
+    FOR i := 0 TO digits-1 DO
+      INC(shift, 4);
+      dig := ASH(n, shift) MOD BASE;
+      IF (dig <= 9) THEN
+        str[i] := CHR(ORD("0") + dig);
+      ELSE
+        str[i] := CHR(ORD("A") - 10 + dig);
       END;
     END;
-  END StringConstants;
+    RETURN Object.NewLatin1Region(str, 0, digits);
+  END ToHex;
+
+PROCEDURE (w: Writer) Constants();
+  VAR
+    s, i: LONGINT;
+    label: STRING;
+    value, x: Object.Object;
+    lr: RECORD x, y: LONGINT; END;
+    guard: S.Block;
+    opnd: S.Opnd;
+
+  PROCEDURE AddInt(opnd: S.Opnd);
+    VAR
+      value: Object.Object;
+    BEGIN
+      value := opnd.arg.instr.designator[0](S.Const).value;
+      WITH value: Boxed.String DO
+        w.w.WriteLInt(ORD(value.value.CharAt(0)), 0);
+      ELSE
+        w.w.WriteObject(value);
+      END;
+    END AddInt;
+  
+  BEGIN
+    FOR s := 0 TO Predef.lastId DO
+      FOR i := 0 TO w.constantList[s].size-1 DO
+        value := w.constantList[s].array[i];
+        IF ~(value IS S.MergeInstr) THEN
+          (* MergeInstr values are auxiliary constants used by the BranchInstr
+             stuff below.  Such constants are embedded in the statement blocks.  *)
+          label := w.constants[s].Get(value);
+          w.w.WriteObject(nl+label+":");
+          WITH value: STRING DO
+            ASSERT(s = Predef.stringChar);
+            w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
+            
+          | value: Boxed.LongReal DO
+            IF (s = Predef.real) THEN
+              w.w.WriteObject(nlTab+'.long 0x'+
+                              ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+            ELSE
+              SYSTEM.MOVE(SYSTEM.ADR(value.value), SYSTEM.ADR(lr),
+                          SIZE(LONGREAL));
+              w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.x, 8));
+              w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.y, 8));
+            END;
+            
+          | value: S.BranchInstr DO        (* range & jump table of case statm *)
+            FOR guard IN value.paths^ DO
+              opnd := guard.opndList;
+              IF (opnd = NIL) THEN       (* default path aka else *)
+                x := Predef.GetMin(Predef.GetType(Predef.longint));
+                w.w.WriteObject(nlTab+'.long '+x.ToString());
+                x := Predef.GetMax(Predef.GetType(Predef.longint));
+                w.w.WriteObject(nlTab+'.long '+x.ToString());
+                w.w.WriteObject(nlTab+'.long '+
+                                w.constants[Predef.void].Get(guard));
+              ELSE
+                WHILE (opnd # NIL) DO
+                  w.w.WriteObject(nlTab+'.long ');
+                  AddInt(opnd);
+                  opnd := opnd.nextOpnd;
+                  w.w.WriteObject(nlTab+'.long ');
+                  AddInt(opnd);
+                  opnd := opnd.nextOpnd;
+                  w.w.WriteObject(nlTab+'.long '+
+                                  w.constants[Predef.void].Get(guard));
+                END;
+              END;
+            END;
+          END;
+        END;
+      END;
+    END;
+  END Constants;
 
 PROCEDURE (w: Writer) EndFile*();
   VAR
@@ -270,12 +351,12 @@ PROCEDURE (w: Writer) EndFile*();
 
     w.RuntimeData();
     w.ModuleVariables();
-    w.StringConstants();
+    w.Constants();
     
     w.w.WriteString(nl);
   END EndFile;
 
-PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
+PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
   VAR
     instr, nextInstr, cmp: S.Instr;
     type: S.Type;
@@ -285,6 +366,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     opnd: S.Opnd;
     qtdData: Naming.QualTypeData;
     merge: S.MergeInstr;
+    path: S.Block;
+    omitStackArg: BOOLEAN;
+    i: LONGINT;
     
     opndWidth: S.Type;
     (* Operand/result size of the operation.  Defaults to the type of the
@@ -306,10 +390,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           RETURN "b";
         | S.signed16, S.unsigned16:
           RETURN "w";
-        | S.signed32, S.unsigned32, S.real32, S.address:
+        | S.signed32, S.unsigned32, S.address:
           RETURN "l";
         | S.signed64, S.unsigned64:
           RETURN "q";
+        | S.real32:
+          RETURN "s";
+        | S.real64:
+          IF (opc[0] = "f") THEN
+            RETURN "l";               (* x87 opcodes use suffix "l" *)
+          ELSE
+            RETURN "d";               (* SSE2 opcodes use suffix "d" *)
+          END;
         END;
       END Type;
     
@@ -335,6 +427,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       OpcTT(opc, opndWidth, S.noType);
     END Opc;
 
+  PROCEDURE ShiftOpcode(opcode: S.Opcode);
+    BEGIN
+      CASE opcode OF
+      | S.asr: Opc("sar");
+      | S.asl: Opc("sal");
+      | S.lsr: Opc("shr");
+      | S.lsl: Opc("shl");
+      | S.rl:  Opc("rol");
+      | S.rr:  Opc("ror");
+      END;
+    END ShiftOpcode;
+  
   PROCEDURE RegT(reg: S.Register; type: S.Type);
     VAR
       str: ARRAY 8 OF CHAR;
@@ -361,7 +465,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.gp4: str := "%si";
         | S.gp5: str := "%di";
         END;
-      | S.signed32, S.unsigned32, S.real32, S.address:
+      | S.signed32, S.unsigned32, S.address:
         CASE reg OF
         | S.sp: str := "%esp";
         | S.fp: str := "%ebp";
@@ -371,6 +475,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.gp3: str := "%ebx";
         | S.gp4: str := "%esi";
         | S.gp5: str := "%edi";
+        END;
+      | S.real32, S.real64:
+        CASE reg OF
+        | S.st0: str := "%st";
+        | S.fp0: str := "%xmm0";
+        | S.fp1: str := "%xmm1";
+        | S.fp2: str := "%xmm2";
+        | S.fp3: str := "%xmm3";
+        | S.fp4: str := "%xmm4";
+        | S.fp5: str := "%xmm5";
+        | S.fp6: str := "%xmm6";
+        | S.fp7: str := "%xmm7";
         END;
       END;
       sb.AppendLatin1(str);
@@ -396,29 +512,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
   PROCEDURE Literal(instr: S.Instr);
     VAR
       s: S.Selector;
-      value: Boxed.Object;
+      value: Object.Object;
       i: LONGINT;
-
-    PROCEDURE ToHex(n: LONGINT; digits: LONGINT): STRING;
-      CONST
-        BASE=16;
-      VAR
-        dig, shift, i: LONGINT;
-        str: ARRAY 16 OF CHAR;
-      BEGIN
-        shift := -4*digits;
-        FOR i := 0 TO digits-1 DO
-          INC(shift, 4);
-          dig := ASH(n, shift) MOD BASE;
-          IF (dig <= 9) THEN
-            str[i] := CHR(ORD("0") + dig);
-          ELSE
-            str[i] := CHR(ORD("A") - 10 + dig);
-          END;
-        END;
-        RETURN Object.NewLatin1Region(str, 0, digits);
-      END ToHex;
-    
+      predefId: Sym.PredefId;
     BEGIN
       FOR i := 0 TO LEN(instr.designator^)-1 DO
         IF (i # 0) THEN
@@ -429,8 +525,10 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         WITH s: S.Const DO
           value := s.value;
           type := instr.resultList.type;
-          IF (s.type >= 0) THEN          (* string constant *)
-            sb.Append(w.StringSymbol(value(Boxed.String).value, s.type));
+          IF (value # NIL) & (value IS S.BranchInstr) THEN
+            sb.Append(w.ConstSymbol(value, s.type));
+          ELSIF (s.type >= 0) THEN       (* string constant *)
+            sb.Append(w.ConstSymbol(value(Boxed.String).value, s.type));
           ELSIF (value = NIL) THEN
             sb.Append("0");
           ELSE
@@ -439,8 +537,17 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             | value: Boxed.Set DO
               sb.AppendInt(value.ToLongInt());
             | value: Boxed.LongReal DO
+              CASE type OF  (* FIXME... seems a kind of silly reconstruction *)
+              | S.real32:
+                predefId := Predef.real;
+              | S.real64:
+                predefId := Predef.longreal;
+              END;
+              sb.Append(w.ConstSymbol(value, predefId));
+              (*
               sb.Append("0x");
               sb.Append(ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+              *)
             ELSE
               sb.Append(s.value);
             END;
@@ -449,7 +556,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           IF s.IsGlobalVar() THEN
             sb.Append(Naming.NameOfDeclaration(s.decl));
           ELSE
-            sb.AppendInt(w.fctBlock.Offset(s.decl));
+            sb.AppendInt(w.fctBlock.Offset(s.decl, s.dim));
           END;
         | s: S.Proc DO
           sb.Append(Naming.NameOfDeclaration(s.decl));
@@ -505,7 +612,12 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         argInstr1 := opnd.arg.instr;
         CASE argInstr1.opcode OF
         | S.const:
-          sb.AppendLatin1Char("$");
+          CASE argInstr1.resultList.type OF
+          | S.real32, S.real64:
+            (* take from memory *)
+          ELSE
+            sb.AppendLatin1Char("$");
+          END;
           Literal(argInstr1);
         | S.add:           (* address is register plus displacement *)
           Offset(argInstr1.opndList.arg,
@@ -555,9 +667,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       NEW(io, merge.Count(S.gate));
       i := 0;
       FOR opnd IN jump.GateOperands() DO
-        io[i].in := opnd;
-        io[i].out := opnd.instr.resultList;
-        INC(i);
+        IF opnd.instr.IsLive() THEN
+          io[i].in := opnd;
+          io[i].out := opnd.instr.resultList;
+          INC(i);
+        END;
       END;
 
       (* pass 1: eliminate all moves from and to the same location *)
@@ -582,7 +696,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         IF (j = len) THEN  (* can clobber old value of location *)
           (* FIXME... mem/mem does not work *)
           opndWidth := io[i].out.type;
-          Opc("mov");
+          IF S.IsFloat(opndWidth) THEN
+            Opc("movs");
+          ELSE
+            Opc("mov");
+          END;
           Opnd(io[i].in);
           Comma();
           Result(io[i].out);
@@ -617,28 +735,28 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       opc := cmp.opcode;
       IF (opc = S.const) THEN      (* condition with constant guard *)
         IF (neg # cmp.resultList.IsTrue()) THEN
-          block.SetArc(block.jump, w.GetBlock(path2), -1, S.jump);
+          block.SetArc(block.jump, w.GetBlock(path2), S.jump);
         ELSE
-          block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
+          block.SetArc(block.jump, w.GetBlock(path1), S.jump);
         END;
       ELSE
         IF neg THEN opc := NegateBranch(opc); END;
-        block.SetArc(block.branch, w.GetBlock(path2),
-                     cmp.opndList.arg.type, opc);
-        block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
+        block.SetArc(block.branch, w.GetBlock(path2), opc);
+        block.branch.type := cmp.opndList.arg.type;
+        block.SetArc(block.jump, w.GetBlock(path1), S.jump);
       END;
-      dummy := w.WriteBlock(path1);
-      dummy := w.WriteBlock(path2);
+      dummy := w.WriteBlock(path1, NIL);
+      dummy := w.WriteBlock(path2, NIL);
     END WriteBranch2;
 
   PROCEDURE WriteMerge(instr: S.MergeInstr);
     VAR
       dummy: Block;
     BEGIN
-      dummy := w.WriteBlock(instr);
+      dummy := w.WriteBlock(instr, NIL);
       
       block := NEW(Block, NIL);
-      dummy.SetArc(dummy.jump, block, -1, S.jump);
+      dummy.SetArc(dummy.jump, block, S.jump);
       sb := NEW(StringBuffer.StringBuffer, 1024);
       block.instructions := sb;
       w.blocks.Append(block);
@@ -656,14 +774,28 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       toType: S.Type;
     BEGIN
       toType := toReg.type;
-      IF (fromType = toType) THEN
+      IF (fromType = toType) OR
+         (S.TypeSize(toType) <= S.TypeSize(fromType)) THEN
+        (* do nothing when converting a value to a smaller type or type of same
+           size; FIXME... this operation may cause an overflow  *)
         IF valueOpnd & (toReg.register = fromMemReg.arg.register) THEN
           RETURN;                        (* copy register onto itself *)
         END;
-        OpcTT("mov", fromType, S.noType);
-      ELSIF (toType < S.unsigned8) THEN  (* to signed type *)
+        fromType := toType;  (* for down conversion *)
+        CASE fromType OF
+        | S.real32, S.real64:
+          IF (toReg.register # S.st0) THEN
+            OpcTT("movs", fromType, S.noType);
+          ELSE
+            OpcTT("fld", fromType, S.noType);
+          END;
+        ELSE
+          OpcTT("mov", fromType, S.noType);
+        END;
+      ELSIF (toType < S.unsigned8) & (fromType < S.unsigned8) THEN
+        (* from signed to signed type *)
         OpcTT("movs", fromType, toType);
-      ELSE                               (* to unsigned type *)
+      ELSE
         OpcTT("movz", fromType, toType);
       END;
       
@@ -677,9 +809,63 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           OpndMem(fromMemReg);
         END;
       END;
-      Comma();
-      RegT(toReg.register, toType);
+      IF (toReg.register # S.st0) THEN
+        Comma();
+        RegT(toReg.register, toType);
+      END;
     END MovMemReg;
+
+  PROCEDURE MovMemRegNoX(fromMemReg: S.Opnd; fromType: S.Type;
+                       valueOpnd: BOOLEAN; toReg: S.Result);
+  (* Move from memory or register to register.  If source type `fromType' and
+     destinataion type differ, then extend the value accordingly.
+
+     If `valueOpnd' is TRUE, then `fromMemReg' does designate a value, instead
+     of a memory address.  In this case, it may be a register or immediate
+     operand, and the value is copied into the output register.  *)
+    VAR
+      toType: S.Type;
+    BEGIN
+      toType := toReg.type;
+      IF valueOpnd & (toReg.register = fromMemReg.arg.register) THEN
+        RETURN;                        (* copy register onto itself *)
+      END;
+      fromType := toType;  (* for down conversion *)
+      CASE fromType OF
+      | S.real32, S.real64:
+        IF (toReg.register # S.st0) THEN
+          OpcTT("movs", fromType, S.noType);
+        ELSE
+          OpcTT("fld", fromType, S.noType);
+        END;
+      ELSE
+        OpcTT("mov", fromType, S.noType);
+      END;
+      
+      opndWidth := fromType;
+      IF valueOpnd THEN
+        Opnd(instr.opndList);
+      ELSE
+        IF fromMemReg.immediate THEN
+          DirectOpnd(fromMemReg);
+        ELSE
+          OpndMem(fromMemReg);
+        END;
+      END;
+      IF (toReg.register # S.st0) THEN
+        Comma();
+        RegT(toReg.register, toType);
+      END;
+    END MovMemRegNoX;
+
+  PROCEDURE Bounce(from, to: S.Result);
+    BEGIN
+      Opc("movs");
+      Result(from);
+      sb.AppendLatin1(", (%esp)");
+      Opc("fld");
+      sb.AppendLatin1("(%esp)");
+    END Bounce;
   
   BEGIN
     qtdData := NIL;
@@ -688,6 +874,10 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     block.instructions := sb;
     w.blocks.Append(block);
 
+    IF (label # NIL) THEN
+      sb.Append(nl+label+":");
+    END;
+    
     instr := b.instrList;
     WHILE (instr # NIL) DO
       nextInstr := instr.nextInstr;
@@ -703,16 +893,33 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           (* arithmetic *)
         | S.const:
           type := instr.resultList.type;
-          Opc("mov");
-          sb.AppendLatin1Char("$");
-          Literal(instr);
-          Comma();
-          Result(instr.resultList);
+          CASE type OF
+          | S.real32, S.real64:
+            IF (instr.resultList.register = S.st0) THEN (* load %st0 *)
+              Opc("fld");
+              Literal(instr);
+            ELSE                         (* load %xmmN *)
+              Opc("movs");
+              Literal(instr);
+              Comma();
+              Result(instr.resultList);
+            END;
+          ELSE                           (* load some gp register *)
+            Opc("mov");
+            sb.AppendLatin1Char("$");
+            Literal(instr);
+            Comma();
+            Result(instr.resultList);
+          END;
         | S.add:
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
             Opc("inc");
           ELSE
-            Opc("add");
+            IF instr.resultList.IsFloat() THEN
+              Opc("adds");
+            ELSE
+              Opc("add");
+            END;
             Opnd(instr.opndList.nextOpnd);
             Comma();
           END;
@@ -727,7 +934,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
             Opc("dec");
           ELSE
-            Opc("sub");
+            IF instr.resultList.IsFloat() THEN
+              Opc("subs");
+            ELSE
+              Opc("sub");
+            END;
             Opnd(instr.opndList.nextOpnd);
             Comma();
           END;
@@ -744,9 +955,21 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Opc("neg");
           Opnd(instr.opndList);
           AssertResultMatch(instr.opndList);
+        | S.asr, S.asl, S.lsr, S.lsl, S.rl, S.rr:
+          ShiftOpcode(instr.opcode);
+          opndWidth := S.signed8;
+          Opnd(instr.opndList.nextOpnd);
+          Comma();
+          opndWidth := instr.resultList.type;
+          Result(instr.resultList);
+          AssertResultMatch(instr.opndList);
         | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
           opndWidth := instr.opndList.arg.type;
-          Opc("cmp");
+          IF S.IsFloat(opndWidth) THEN
+            Opc("ucomis");
+          ELSE
+            Opc("cmp");
+          END;
           Opnd(instr.opndList.nextOpnd);
           Comma();
           Opnd(instr.opndList);
@@ -755,6 +978,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           str := "set"+OpcodeCC(cmp.opndList.arg.type, cmp.opcode)+" ";
           sb.Append(str);
           Opnd(instr.opndList);
+        | S.bitTestAndSet:
+          Opc("bts");
+          Opnd(instr.opndList.nextOpnd);
+          Comma();
+          Result(instr.resultList);
+          AssertResultMatch(instr.opndList);
+        | S.bitTestAndClear:
+          Opc("btr");
+          Opnd(instr.opndList.nextOpnd);
+          Comma();
+          Result(instr.resultList);
+          AssertResultMatch(instr.opndList);
           
           (* function framing *)
         | S.enter:
@@ -764,6 +999,12 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.call:
           Opc0("call");
           DirectOpnd(instr.opndList);
+        | S.bounceResult:
+          Opc("fstp");
+          sb.AppendLatin1("(%esp)");
+          Opc("movs");
+          sb.AppendLatin1("(%esp), ");
+          Result(instr.resultList);
         | S.leave:
           (* undo local variables and call arguments: *)
           sb.Append(nl+w.labelExit+":");
@@ -774,7 +1015,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Opc0("leave");
           
           (* memory *)
-        | S.copy, S.typeConv:
+        | S.copy, S.loadRegister, S.typeConv:
           (* prevent zero or sign extension when switching between integer
              and address type *)
           IF (instr.resultList.type = S.address) &
@@ -789,9 +1030,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             type := instr.opndList.arg.type;
           END;
           MovMemReg(instr.opndList, type, TRUE, instr.resultList);
+        | S.typeCast:
+          type := instr.opndList.arg.type;
+          MovMemRegNoX(instr.opndList, type, TRUE, instr.resultList);
         | S.return:
-          MovMemReg(instr.opndList, instr.opndList.arg.type, TRUE,
-                    instr.resultList);
+          IF (instr.resultList.register = S.st0) &
+             ~instr.opndList.immediate &
+             (instr.opndList.arg.type # S.st0) THEN
+            Bounce(instr.opndList.arg, instr.resultList);
+          ELSE
+            MovMemReg(instr.opndList, instr.opndList.arg.type, TRUE,
+                      instr.resultList);
+          END;
           Opc0("jmp");
           sb.Append(w.labelExit);
         | S.get:
@@ -799,7 +1049,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
                     instr.resultList);
         | S.set:
           opndWidth := instr.opndList.nextOpnd.arg.type;
-          Opc("mov");
+          IF instr.opndList.nextOpnd.arg.IsFloat() THEN
+            Opc("movs");
+          ELSE
+            Opc("mov");
+          END;
           Opnd(instr.opndList.nextOpnd);
           Comma();
           IF instr.opndList.immediate THEN
@@ -814,9 +1068,22 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.setStack:
           opnd := instr.NthOpnd(2);
           opndWidth := opnd.arg.type;
-          Opc("mov");
-          Opnd(opnd);
-          sb.Append(", ");
+          omitStackArg := FALSE;
+          CASE opnd.arg.type OF
+          | S.real32, S.real64:
+            IF (opnd.arg.register = S.st0) THEN
+              Opc("fstp");
+              omitStackArg := TRUE;
+            ELSE
+              Opc("movs");
+            END;
+          ELSE
+            Opc("mov");
+          END;
+          IF ~omitStackArg THEN
+            Opnd(opnd);
+            sb.Append(", ");
+          END;
           Literal(instr.opndList.nextOpnd.arg.instr);
           sb.Append("(%esp)");
         | S.typeTag:
@@ -831,8 +1098,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.branch:                      (* handled below *)
         | S.jump, S.loopExit:
           FixGatedValues(instr);
-          block.SetArc(block.jump, w.GetBlock(instr.MergingTarget()),
-                       -1, S.jump);
+          block.SetArc(block.jump, w.GetBlock(instr.MergingTarget()), S.jump);
           nextInstr := NIL;              (* bail out *)
         | S.gate:                        (* nothing to do *)
         | S.loopStart:
@@ -840,8 +1106,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.loopBackedge:
           FixGatedValues(instr);
           block.SetArc(block.jump,
-                       w.GetBlock(instr(S.LoopBackedgeInstr).start),
-                       -1, S.jump);
+                       w.GetBlock(instr(S.LoopBackedgeInstr).start), S.jump);
         | S.loopEnd:
           (* nothing *)
         END;
@@ -849,7 +1114,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       
       WITH instr: S.BranchInstr DO
         cmp := instr.opndList.arg.instr;
-        IF (instr.paths[0](S.MergeInstr).jumps # NIL) THEN
+        IF instr.caseBranch THEN
+          Opc0("jmp *");
+          opndWidth := S.address;
+          Opnd(instr.opndList);
+          NEW(block.caseBranches, LEN(instr.paths^));
+          FOR i := 0 TO LEN(instr.paths^)-1 DO
+            path := instr.paths[i];
+            dummy := w.WriteBlock(path, w.ConstSymbol(path, Predef.void));
+            block.caseBranches[i] := NIL;
+            block.SetArc(block.caseBranches[i], dummy, S.branch);
+          END;
+        ELSIF (instr.paths[0](S.MergeInstr).jumps # NIL) THEN
           WriteBranch2(cmp, FALSE, instr.paths[1], instr.paths[0]);
         ELSE
           WriteBranch2(cmp, TRUE, instr.paths[0], instr.paths[1]);
@@ -863,10 +1139,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         ASSERT(instr.opcode = S.loopEnd);
         WriteMerge(instr);
       | instr: S.LoopStartInstr DO
-        dummy := w.WriteBlock(instr);
+        dummy := w.WriteBlock(instr, NIL);
       | instr: S.Block DO
-        Log.Type("instr", instr);
-        D.Log("instr", instr);
         ASSERT(FALSE);
       ELSE
         (* nothing *)
@@ -933,7 +1207,7 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
       INC(w.blockCount);
       FOR i := 1 TO w.blocks.size-1 DO
         block := w.blocks.array[i];
-        IF (block.incomingList = NIL) THEN
+        IF (block.incomingList = NIL) & block.IsEmpty() THEN
           ASSERT(block.branch = NIL);
           IF (block.jump # NIL) THEN
             ClearArc(block.jump);
@@ -970,7 +1244,7 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
   
   BEGIN
     w.labelExit := StartFunction(b);
-    dummy := w.WriteBlock(b);
+    dummy := w.WriteBlock(b, NIL);
     EndFunction();
   END WriteFunction;
 

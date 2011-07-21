@@ -94,6 +94,29 @@ static void* _c92;
 static void* _c93;
 static void* _c94;
 static void* _c95;
+static void* _c96;
+static void* _c97;
+static void* _c98;
+static void* _c99;
+static void* _c100;
+static void* _c101;
+static void* _c102;
+static void* _c103;
+static void* _c104;
+static void* _c105;
+static void* _c106;
+static void* _c107;
+static void* _c108;
+static void* _c109;
+static void* _c110;
+static void* _c111;
+static void* _c112;
+static void* _c113;
+static void* _c114;
+static void* _c115;
+static void* _c116;
+static void* _c117;
+static void* _c118;
 #include <OOC/X86/Debug.oh>
 #include <Object/Boxed.oh>
 #include <IO/TextRider.oh>
@@ -104,6 +127,7 @@ static void* _c95;
 #include <OOC/X86/Machine.oh>
 static OOC_X86_Debug__Output OOC_X86_Debug__out;
 #define OOC_X86_Debug__writeAllInstructions OOC_FALSE
+#define OOC_X86_Debug__writeDesignator OOC_TRUE
 #define OOC_X86_Debug__resultPrefix (OOC_CHAR8)'('
 #define OOC_X86_Debug__resultSuffix (OOC_CHAR8)')'
 #define OOC_X86_Debug__instrPrefix (OOC_CHAR8)'{'
@@ -118,11 +142,11 @@ static RT0__ModuleDesc _mid;
 RT0__StructDesc _td_OOC_X86_Debug__Output = { (RT0__Struct[]){&_td_OOC_X86_Debug__OutputDesc}, NULL, NULL, &_mid, "Output", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_X86_Debug__OutputDesc = { (RT0__Struct[]){&_td_OOC_X86_Debug__OutputDesc}, (void*[]){(void*)OOC_X86_Debug__OutputDesc_INIT,(void*)OOC_X86_Debug__OutputDesc_GetInstrCode,(void*)OOC_X86_Debug__OutputDesc_Label,(void*)OOC_X86_Debug__OutputDesc_Result,(void*)OOC_X86_Debug__OutputDesc_Instr,(void*)OOC_X86_Debug__OutputDesc_WriteFunction}, NULL, &_mid, "OutputDesc", 16, 0, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_X86_Debug__State = { (RT0__Struct[]){&_td_OOC_X86_Debug__StateDesc}, NULL, NULL, &_mid, "State", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_X86_Debug__StateDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_X86_Debug__StateDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode,(void*)OOC_X86_Debug__StateDesc_INIT,(void*)OOC_X86_Debug__StateDesc_Copy}, NULL, &_mid, "StateDesc", 60, 2, 0, RT0__strRecord };
-RT0__StructDesc _td_OOC_X86_Debug__508 = { (RT0__Struct[]){&_td_OOC_X86_SSA__Result}, NULL, NULL, &_mid, NULL, 36, 9, 0, RT0__strArray };
-RT0__StructDesc _td_OOC_X86_Debug__11553 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_X86_Debug__11657 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_X86_Debug__11709 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_X86_Debug__StateDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_X86_Debug__StateDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode,(void*)OOC_X86_Debug__StateDesc_INIT,(void*)OOC_X86_Debug__StateDesc_Copy}, NULL, &_mid, "StateDesc", 96, 2, 0, RT0__strRecord };
+RT0__StructDesc _td_OOC_X86_Debug__508 = { (RT0__Struct[]){&_td_OOC_X86_SSA__Result}, NULL, NULL, &_mid, NULL, 72, 18, 0, RT0__strArray };
+RT0__StructDesc _td_OOC_X86_Debug__12596 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_X86_Debug__12700 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_X86_Debug__12752 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 static RT0__StructDesc _td__qtd0 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd0}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_Dictionary__DictionaryDesc_Equals,(void*)ADT_Dictionary__DictionaryDesc_HashCode,(void*)ADT_Dictionary__DictionaryDesc_Store,(void*)ADT_Dictionary__DictionaryDesc_Load,(void*)ADT_Dictionary__DictionaryDesc_INIT,(void*)ADT_Dictionary__DictionaryDesc_Destroy,(void*)ADT_Dictionary__DictionaryDesc_Lookup,(void*)ADT_Dictionary__DictionaryDesc_Insert,(void*)ADT_Dictionary__DictionaryDesc_Resize,(void*)ADT_Dictionary__DictionaryDesc_HasKey,(void*)ADT_Dictionary__DictionaryDesc_Size,(void*)ADT_Dictionary__DictionaryDesc_Get,(void*)ADT_Dictionary__DictionaryDesc_Set,(void*)ADT_Dictionary__DictionaryDesc_Copy,(void*)ADT_Dictionary__DictionaryDesc_Delete,(void*)ADT_Dictionary__DictionaryDesc_Clear,(void*)ADT_Dictionary__DictionaryDesc_Keys,(void*)ADT_Dictionary__DictionaryDesc_Values,(void*)ADT_Dictionary__DictionaryDesc_Items}, (RT0__Struct[]){&_td_ADT_Dictionary__DictionaryDesc, &_td_OOC_X86_SSA__Instr, &_td_Object__String, NULL}, &_mid, "ADT:Dictionary.DictionaryDesc(OOC:X86:SSA.Instr,Object.String)", 20, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd1 = { (RT0__Struct[]){&_td__qtd0}, NULL, (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary, &_td_OOC_X86_SSA__Instr, &_td_Object__String, NULL}, &_mid, "ADT:Dictionary.Dictionary(OOC:X86:SSA.Instr,Object.String)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd2 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd2}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_Dictionary__DictionaryDesc_Equals,(void*)ADT_Dictionary__DictionaryDesc_HashCode,(void*)ADT_Dictionary__DictionaryDesc_Store,(void*)ADT_Dictionary__DictionaryDesc_Load,(void*)ADT_Dictionary__DictionaryDesc_INIT,(void*)ADT_Dictionary__DictionaryDesc_Destroy,(void*)ADT_Dictionary__DictionaryDesc_Lookup,(void*)ADT_Dictionary__DictionaryDesc_Insert,(void*)ADT_Dictionary__DictionaryDesc_Resize,(void*)ADT_Dictionary__DictionaryDesc_HasKey,(void*)ADT_Dictionary__DictionaryDesc_Size,(void*)ADT_Dictionary__DictionaryDesc_Get,(void*)ADT_Dictionary__DictionaryDesc_Set,(void*)ADT_Dictionary__DictionaryDesc_Copy,(void*)ADT_Dictionary__DictionaryDesc_Delete,(void*)ADT_Dictionary__DictionaryDesc_Clear,(void*)ADT_Dictionary__DictionaryDesc_Keys,(void*)ADT_Dictionary__DictionaryDesc_Values,(void*)ADT_Dictionary__DictionaryDesc_Items}, (RT0__Struct[]){&_td_ADT_Dictionary__DictionaryDesc, &_td_OOC_X86_SSA__Instr, &_td_OOC_X86_Debug__State, NULL}, &_mid, "ADT:Dictionary.DictionaryDesc(OOC:X86:SSA.Instr,OOC:X86:Debug.State)", 20, 3, 0, RT0__strQualType };

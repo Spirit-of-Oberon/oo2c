@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; assign17">-->
+  select ="&SetupTestCasesWithOut; abs0">-->
 
   &TestSetupWithOut;
     
@@ -264,6 +264,64 @@
       function's return value.
     </test>
     
+    <test id="real1" type="run" file="Real1.Mod" output="Real1.Ref">
+      Passing <code>REAL</code> constant to procedure parameter.
+    </test>
+    <test id="real2" type="run" file="Real2.Mod" output="Real2.Ref">
+      Passing non-constant <code>REAL</code> value to procedure parameter.
+    </test>
+    <test id="real3" type="run" file="Real3.Mod" output="Real3.Ref">
+      Returning <code>REAL</code> constant from function.
+    </test>
+    <test id="real4" type="run" file="Real4.Mod" output="Real4.Ref">
+      Add and subtract two <code>REAL</code> values taken from global
+      variables.
+    </test>
+    <test id="real5" type="run" file="Real5.Mod" output="Real5.Ref">
+      Add and subtract two <code>REAL</code> values taken from
+      parameters and return the result.
+    </test>
+    <test id="real6" type="run" file="Real6.Mod" output="Real6.Ref">
+      Add and subtract two <code>REAL</code> values produced by
+      functions.
+    </test>
+    <test id="real7" type="run" file="Real7.Mod" output="Real7.Ref">
+      Compare two <code>REAL</code> values.
+    </test>
+      
+    <test id="longreal1" type="run"
+          file="LongReal1.Mod" output="LongReal1.Ref">
+      Passing <code>LONGREAL</code> constant to procedure parameter.
+    </test>
+    <test id="longreal2" type="run"
+          file="LongReal2.Mod" output="LongReal2.Ref">
+      Passing non-constant <code>LONGREAL</code> value to procedure
+      parameter.
+    </test>
+    <test id="longreal3" type="run"
+          file="LongReal3.Mod" output="LongReal3.Ref">
+      Returning <code>LONGREAL</code> constant from function.
+    </test>
+    <test id="longreal4" type="run"
+          file="LongReal4.Mod" output="LongReal4.Ref">
+      Add and subtract two <code>LONGREAL</code> values taken from global
+      variables.
+    </test>
+    <test id="longreal5" type="run"
+          file="LongReal5.Mod" output="LongReal5.Ref">
+      Add and subtract two <code>LONGREAL</code> values taken from
+      parameters and return the result.
+    </test>
+    <test id="longreal6" type="run"
+          file="LongReal6.Mod" output="LongReal6.Ref">
+      Add and subtract two <code>LONGREAL</code> values produced by
+      functions.
+    </test>
+    <test id="longreal7" type="run"
+          file="LongReal7.Mod" output="LongReal7.Ref">
+      Compare two <code>LONGREAL</code> values.
+    </test>
+      
     <test id="if1" type="run"
       file="HOTIf1.Mod" output="HOTIf1.Ref">
       A simple <code>IF-ELSE-END</code> statement, using a
@@ -568,6 +626,9 @@
       Applying a field selector to the result of <code>NEW</code>.
     </test>
     
+    <test id="abs0" type="run" file="Abs0.Mod" output="Abs0.Ref">
+      "Manual" computation of absolute value.
+    </test>
     <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
       Predefined function <code>ABS</code> for some integers and reals.
     </test>
@@ -1322,6 +1383,10 @@
     </test>
     <test id="val6" type="reject" file="Val6.Mod">
       Arguments of <code>SYSTEM.VAL</code> have different size.
+    </test>
+    <test id="val7" type="run" file="Val7.Mod">
+      Using <code>SYSTEM.VAL</code> one the right hand side of an
+      array assignment.
     </test>
 
     <test id="lsh1" type="run" file="Lsh1.Mod" output="Lsh1.Ref">

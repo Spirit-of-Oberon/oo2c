@@ -114,7 +114,7 @@ void OOC_OOC_Config_init(void) {
   _c5 = Object__NewLatin1Region("xsltproc", 9, 0, 8);
   _c6 = Object__NewLatin1Region("xsltproc", 9, 0, 8);
   _c7 = Object__NewLatin1Region("no", 3, 0, 2);
-  _c8 = Object__NewLatin1Region("/home/ooc-devel/local/ooc2/lib/oo2c/oo2crc.xml", 47, 0, 46);
+  _c8 = Object__NewLatin1Region("/usr/home/ooc-devel/local-ooc2/lib/oo2c/oo2crc.xml", 51, 0, 50);
 
   OOC_Config__InitConfig((Object__String8)((OOC_INT32)_c8));
   RT0__poisonHeap = 85;

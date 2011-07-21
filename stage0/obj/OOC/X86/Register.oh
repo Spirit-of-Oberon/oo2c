@@ -20,7 +20,7 @@ typedef struct OOC_X86_Register__RegisterFileDesc {
   ADT_ArrayList__ArrayList resultList;
   OOC_SSA_IGraph__Graph iGraph;
   OOC_INT32 maxColor;
-  OOC_X86_SSA__Result prelocatedRep[9];
+  OOC_X86_SSA__Result prelocatedRep[18];
   ADT_Dictionary__Dictionary doneBranches;
 } OOC_X86_Register__RegisterFileDesc;
 typedef struct OOC_X86_Register__LiveDataDesc *OOC_X86_Register__LiveData;
@@ -48,7 +48,7 @@ extern RT0__StructDesc _td_OOC_X86_Register__RegisterFileDesc;
 extern RT0__StructDesc _td_OOC_X86_Register__597;
 extern RT0__StructDesc _td_OOC_X86_Register__LiveData;
 extern RT0__StructDesc _td_OOC_X86_Register__LiveDataDesc;
-extern RT0__StructDesc _td_OOC_X86_Register__11102;
+extern RT0__StructDesc _td_OOC_X86_Register__12042;
 #endif /* _MODULE_OOC_X86_Register_ */
 
 /* --- */

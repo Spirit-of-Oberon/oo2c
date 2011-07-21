@@ -32,6 +32,7 @@ VAR
 
 CONST
   writeAllInstructions = FALSE;
+  writeDesignator = TRUE;
   resultPrefix = "(";
   resultSuffix = ")";
   instrPrefix = "{";
@@ -98,6 +99,10 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.neg: str := "neg";
     | S.asr: str := "asr";
     | S.asl: str := "asl";
+    | S.lsr: str := "lsr";
+    | S.lsl: str := "lsl";
+    | S.rr: str := "rr";
+    | S.rl: str := "rl";
     | S.indexed: str := "indexed";
     | S.eql: str := "eql";
     | S.neq: str := "neq";
@@ -106,13 +111,18 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.gtr: str := "gtr";
     | S.geq: str := "geq";
     | S.setBool: str := "setBool";
+    | S.bitTestAndSet: str := "bitTestAndSet";
+    | S.bitTestAndClear: str := "bitTestAndClear";
     | S.typeConv: str := "typeConv";
+    | S.fpLoad: str := "fpLoad";
+    | S.fpStorePop: str := "fpStorePop";
 
       (* function framing *)
     | S.enter: str := "enter";
     | S.exit: str := "exit";
     | S.return: str := "return";
     | S.call: str := "call";
+    | S.bounceResult: str := "bounceResult";
     | S.function: str := "function";
     | S.allocateStack: str := "allocateStack";
     | S.standin: str := "standin";
@@ -121,10 +131,11 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.get: str := "get";
     | S.set: str := "set";
     | S.copy: str := "copy";
+    | S.typeCast: str := "typeCast";
+    | S.loadRegister: str := "loadRegister";
     | S.push: str := "push";
     | S.pop: str := "pop";
     | S.leave: str := "leave";
-    | S.getLengthParam: str := "getLengthParam";
     | S.getLengthHeap: str := "getLengthHeap";
     | S.setStack: str := "setStack";
     | S.typeTag: str := "typeTag";
@@ -170,6 +181,17 @@ PROCEDURE Register*(reg: S.Register): STRING;
     | S.gp3: RETURN "gp3";
     | S.gp4: RETURN "gp4";
     | S.gp5: RETURN "gp5";
+    | S.st0: RETURN "st0";
+    | S.fp0: RETURN "fp0";
+    | S.fp1: RETURN "fp1";
+    | S.fp2: RETURN "fp2";
+    | S.fp3: RETURN "fp3";
+    | S.fp4: RETURN "fp4";
+    | S.fp5: RETURN "fp5";
+    | S.fp6: RETURN "fp6";
+    | S.fp7: RETURN "fp7";
+    ELSE
+      RETURN "???";
     END;
   END Register;
 
@@ -264,7 +286,12 @@ PROCEDURE (out: Output) WriteFunction*();
         ELSIF selector.IsGlobalVar() THEN
           w.WriteObject("adr("+Naming.NameOfDeclaration(selector.decl)+")");
         ELSE
-          w.WriteObject("offset("+selector.decl.Name()+")");
+          w.WriteObject("offset("+selector.decl.Name());
+          IF (selector.dim >= 0) THEN
+            w.WriteChar(".");
+            w.WriteLInt(selector.dim, 0);
+          END;
+          w.WriteObject(")");
         END;
       | selector: S.Proc DO
         w.WriteObject("adr("+selector.decl.Name()+")");
@@ -285,7 +312,7 @@ PROCEDURE (out: Output) WriteFunction*();
       jump: S.Instr;
     BEGIN
       w.WriteString("(");
-      IF FALSE & (instr.designator # NIL) THEN
+      IF writeDesignator & (instr.designator # NIL) THEN
         w.WriteString("<");
         FOR s IN instr.designator^ DO
           WITH s: S.Var DO
@@ -360,7 +387,6 @@ PROCEDURE (out: Output) WriteFunction*();
   PROCEDURE WriteBlock(b: S.Block; indent: LONGINT);
     VAR
       instr: S.Instr;
-      res: S.Result;
       dep: S.Dep;
       i: LONGINT;
     BEGIN
@@ -377,9 +403,14 @@ PROCEDURE (out: Output) WriteFunction*();
             w.WriteObject(out.Label(instr));
             w.WriteChar(" ");
           ELSE
-            FOR res IN instr.Results() DO
-              w.WriteObject(out.Label(res));
+            w.WriteObject(out.Label(instr.resultList));
+            w.WriteChar(" ");
+            IF (instr.resultList.nextResult # NIL) THEN
+              w.WriteObject(out.Label(instr.resultList.nextResult));
               w.WriteChar(" ");
+              IF (instr.resultList.nextResult.nextResult # NIL) THEN
+                w.WriteString("... ");
+              END;
             END;
             w.WriteString("<- ");
           END;
@@ -473,6 +504,7 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
     waiting: Dictionary.Dictionary(S.Instr, State);
     keys: Object.ObjectArrayPtr(S.Instr);
     instr: S.Instr;
+    loopStart: S.LoopStartInstr;
   
   PROCEDURE ValidateBlock(s: State);
    (**Track changes to the state @oparam{s} performed by the sequence of
@@ -593,23 +625,26 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
       RETURN s;
     END PopState;
 
+  PROCEDURE MergedBlocks(merge: S.Instr): LONGINT;
+    VAR
+      c: LONGINT;
+      dep: S.Dep;
+    BEGIN
+      c := 0;
+      FOR dep IN merge.BeforeList(S.depControl) DO
+        INC(c);
+      END;
+      IF (merge.opcode = S.loopEnd) THEN
+        (* uncount dep loopEnd -> loopStart *)
+        DEC(c);
+      END;
+      RETURN c;
+    END MergedBlocks;
+  
   PROCEDURE MergeState(merge: S.MergeInstr; s: State);
     VAR
       i: LONGINT;
       t: State;
-
-    PROCEDURE MergedBlocks(merge: S.Instr): LONGINT;
-      VAR
-        c: LONGINT;
-        dep: S.Dep;
-      BEGIN
-        c := 0;
-        FOR dep IN merge.BeforeList(S.depControl) DO
-          INC(c);
-        END;
-        RETURN c;
-      END MergedBlocks;
-    
     BEGIN
       IF waiting.HasKey(merge) THEN
         t := waiting.Get(merge);
@@ -655,7 +690,13 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
             MergeState(block(S.MergeInstr), s);
           END;
         | S.loopStart:
-          PushBlock(s, s.instr(S.Block));
+          loopStart := s.instr(S.LoopStartInstr);
+          PushBlock(s, loopStart);
+          IF (MergedBlocks(loopStart.end) = 0) THEN
+            (* special case: if the loop has no exit, then the end of the
+               loop is never reached by normal means *)
+            PushBlock(s, loopStart.end);
+          END;
         | S.loopExit:
           (* add state to loopEnd *)
           block := s.instr.MergingTarget();
@@ -680,7 +721,7 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
         PushState(s);
       ELSE
         FOR dep IN s.controlCP.AfterList(S.depControl) DO
-          IF (dep.instr IS S.MergeInstr) THEN
+          IF (dep.instr IS S.MergeInstr) & (dep.instr.opcode # S.loopEnd) THEN
             MergeState(dep.instr(S.MergeInstr), s);
           END;
         END;

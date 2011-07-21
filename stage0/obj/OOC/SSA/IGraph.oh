@@ -69,20 +69,20 @@ extern void OOC_OOC_SSA_IGraph_init(void);
 extern void OOC_OOC_SSA_IGraph_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_SSA_IGraph__1004;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__995;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__999;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__990;
 extern RT0__StructDesc _td_OOC_SSA_IGraph__BitMatrix;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__1116;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__1111;
 extern RT0__StructDesc _td_OOC_SSA_IGraph__ColorArray;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__1155;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__1150;
 extern RT0__StructDesc _td_OOC_SSA_IGraph__Vector;
 extern RT0__StructDesc _td_OOC_SSA_IGraph__Graph;
 extern RT0__StructDesc _td_OOC_SSA_IGraph__GraphDesc;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__9236;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__9276;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__9265;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__9301;
-extern RT0__StructDesc _td_OOC_SSA_IGraph__10275;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__9231;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__9271;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__9260;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__9296;
+extern RT0__StructDesc _td_OOC_SSA_IGraph__10270;
 #endif /* _MODULE_OOC_SSA_IGraph_ */
 
 /* --- */

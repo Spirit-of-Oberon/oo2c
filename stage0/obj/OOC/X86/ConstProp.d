@@ -1,4 +1,5 @@
 #include <OOC/X86/ConstProp.oh>
+#include <Object.oh>
 #include <Object/Boxed.oh>
 #include <Object/BigInt.oh>
 typedef struct OOC_X86_ConstProp__WorklistDesc *OOC_X86_ConstProp__Worklist;

@@ -235,7 +235,7 @@ l18:
           OOC_X86_SSA__Instr s;
 
           i0 = (OOC_INT32)pb;
-          i0 = (OOC_INT32)OOC_X86_SSA__BlockDesc_AddInstr0((OOC_X86_SSA__Block)i0, 8);
+          i0 = (OOC_INT32)OOC_X86_SSA__BlockDesc_AddInstr0((OOC_X86_SSA__Block)i0, 12);
           _new = (OOC_X86_SSA__Instr)i0;
           i1 = (OOC_INT32)base;
           i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 3619));
@@ -477,7 +477,7 @@ l51:
         i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 6376));
         _assert((i0==0), 127, 6353);
         goto l69;
-      case 12:
+      case 16:
         i1 = (OOC_INT32)OOC_X86_SSA__InstrDesc_NthArg((OOC_X86_SSA__Instr)i0, 1);
         i1 = OOC_X86_Algebraic__IsNMinus1((OOC_X86_SSA__Result)i1);
         if (!i1) goto l69;
@@ -491,10 +491,10 @@ l51:
         i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 6595))+4);
         i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 6628));
         OOC_X86_SSA__OpndDesc_ReplaceArg((OOC_X86_SSA__Opnd)i2, (OOC_X86_SSA__Result)i1);
-        OOC_X86_SSA__InstrDesc_SetOpcode((OOC_X86_SSA__Instr)i0, 11);
+        OOC_X86_SSA__InstrDesc_SetOpcode((OOC_X86_SSA__Instr)i0, 15);
         OOC_X86_Algebraic__Transform_InspectInstr_AddUsesToWorklist((OOC_X86_SSA__Instr)i0);
         goto l69;
-      case 13:
+      case 17:
         i1 = (OOC_INT32)OOC_X86_SSA__InstrDesc_NthArg((OOC_X86_SSA__Instr)i0, 1);
         i1 = OOC_X86_Algebraic__IsNMinus1((OOC_X86_SSA__Result)i1);
         if (!i1) goto l69;
@@ -508,7 +508,7 @@ l51:
         i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 6880))+4);
         i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 6913));
         OOC_X86_SSA__OpndDesc_ReplaceArg((OOC_X86_SSA__Opnd)i2, (OOC_X86_SSA__Result)i1);
-        OOC_X86_SSA__InstrDesc_SetOpcode((OOC_X86_SSA__Instr)i0, 14);
+        OOC_X86_SSA__InstrDesc_SetOpcode((OOC_X86_SSA__Instr)i0, 18);
         OOC_X86_Algebraic__Transform_InspectInstr_AddUsesToWorklist((OOC_X86_SSA__Instr)i0);
         goto l69;
       default:

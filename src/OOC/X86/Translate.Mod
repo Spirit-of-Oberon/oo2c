@@ -60,6 +60,19 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       ControlCP(instr);
     END FailedCheck;
   
+  PROCEDURE Memcpy(from, to, size: S.Result);
+    VAR
+      instr: S.Instr;
+    BEGIN
+      instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
+      instr.AddOpnd(to);
+      instr.AddOpnd(from);
+      instr.AddOpnd(size);
+      
+      MemoryCP(instr);
+      ControlCP(instr);
+    END Memcpy;
+  
   PROCEDURE StatmSeq(statmSeq: IR.StatementSeq);
   (**Translates the statement sequence @oparam{statmSeq} into a straightforward
      SSA representation.  Instructions are added to the block @ovar{b}.  *)
@@ -72,6 +85,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       loopStart: S.LoopStartInstr;
       irExpr: IR.Expression;
       type: S.Type;
+      oldLoopExits: ArrayList.ArrayList(S.Instr);
       
     PROCEDURE SetCC(res: S.Result): S.Result;
       VAR
@@ -127,7 +141,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           branch: S.BranchInstr;
         BEGIN
           (* case: boolean value *)
-          branch := b.AddBranch(SetCC(bool));
+          branch := b.AddBranch(SetCC(bool), FALSE);
           branch.AddDep(S.depControl, controlCP);
           
           (* first, the "true" path *)
@@ -236,9 +250,23 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         SplitValue();
       END SplitPaths;
     
+    PROCEDURE LoopStart(): S.LoopStartInstr;
+      VAR
+        loopStart: S.LoopStartInstr;
+      BEGIN
+        loopStart := b.AddLoopStart();
+        ControlCP(loopStart); MemoryCP(loopStart);
+
+        oldLoopExits := loopExits;
+        loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
+        
+        RETURN loopStart;
+      END LoopStart;
+        
     PROCEDURE LoopEnd(loopStart: S.LoopStartInstr);
       VAR
-        instr, loopEnd: S.Instr;
+        instr: S.Instr;
+        loopEnd: S.MergeInstr;
       BEGIN
         instr := b.AddLoopBackedge(loopStart);
         instr.AddDep(S.depMemory, memoryCP);
@@ -246,9 +274,10 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         loopStart.SetBackedge(instr);
         
         loopEnd := b.AddMerge(S.loopEnd, loopExits.Elements());
+        loopEnd.AddDep(S.depControl, loopStart);
         loopStart.SetEnd(loopEnd);
         controlCP := loopEnd; memoryCP := loopEnd;
-        loopExits.Clear();
+        loopExits := oldLoopExits;
       END LoopEnd;
         
     PROCEDURE ^ Expression(expr: IR.Expression): S.Result;
@@ -278,29 +307,92 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN instr.AddResultExpr(call.type);
         END;
       END Call;
+
+    PROCEDURE Designator2Address(resultOfGet: S.Result): S.Result;
+      BEGIN
+        ASSERT(resultOfGet.instr.opcode = S.get);
+        memoryCP := resultOfGet.instr.GetBeforeInstr(S.depMemory);
+        RETURN resultOfGet.instr.opndList.arg;
+      END Designator2Address;
+    
+    PROCEDURE TypeTag(design: IR.Expression; 
+                      checkDerefOfNil: BOOLEAN;
+                      derefSym: IR.Symbol): S.Result;
+    (* `design' is the variable designator *)
+      VAR
+        instr: S.Instr;
+        type: Sym.Type;
+        value: S.Result;
+      BEGIN
+        (* Note: expression evaluates to a "get" on the tested variable.
+           For a record, this must be corrected later.  *)
+        value := Expression(design);
+        
+        type := design.type.Deparam();
+        type := type.Bound();  (* for a type variable, continue with bound *)
+        IF checkDerefOfNil & (type IS Sym.Pointer) THEN
+          (*FIXME... check := AddException (pb, derefSym,
+             S.checkPointer, value. subclass);
+             check. AddOpnd (value, Opnd.arg);
+             value := check;*)
+        END;
+        
+        IF (type IS Sym.Pointer) THEN
+          instr := b.AddInstr1(S.typeTag, value);
+          RETURN instr.AddResult(S.address);
+        ELSIF (design IS IR.Var) &
+              design(IR.Var).decl(Sym.VarDecl).isVarParam &
+              TR.IsRecord(design(IR.Var).decl(Sym.VarDecl).type) THEN
+          (* type tag of a VAR parameter *)
+          value := Designator2Address(value);
+          RETURN b.AddGetParamTypeTag(design(IR.Var).decl(Sym.VarDecl), fp);
+        ELSE  (* static type tag; need to get rid of "get" on record *)
+          value := Designator2Address(value);
+          RETURN b.AddAdrTypeDescr(type);
+        END;
+      END TypeTag;
     
     PROCEDURE Copy(copy: IR.Copy);
       VAR
-        size, from, to: S.Result;
-        instr: S.Instr;
+        size, from, to, dynTag, staticTag: S.Result;
+        eql, endTrue, endFalse: S.Instr;
+        branch: S.BranchInstr;
+        pathTrue, pathFalse: S.Block;
+        merge: S.MergeInstr;
       BEGIN
         size := b.AddConstLength(copy.dest.type.size);
-        from := Expression(copy.source);
-        to := Expression(copy.dest);
+        from := Designator2Address(Expression(copy.source));
+        to := Designator2Address(Expression(copy.dest));
         
         IF copy.checkDynamicType THEN
-          (* FIXME... *)
+          dynTag := TypeTag(copy.dest, FALSE, NIL);
+          staticTag := b.AddAdrTypeDescr(copy.dest.type);
+          
+          eql := b.AddInstr2(S.eql, staticTag, dynTag);
+          branch := b.AddBranch(SetCC(eql.AddResultReg(S.noType, S.cc)),
+                                FALSE);
+          branch.AddDep(S.depControl, controlCP);
+          
+          (* first, the "true" path: static and dynamic type match *)
+          pathTrue := b.AddMerge0(S.guard, b.AddConstBool(TRUE));
+          pathTrue.AddDep(S.depControl, branch);
+          endTrue := b.AddInstr0(S.jump);
+          endTrue.AddDep(S.depMemory, memoryCP);
+          endTrue.AddDep(S.depControl, pathTrue);
+          
+          (* second, the "false" path: type mismatch *)
+          pathFalse := b.AddMerge0(S.guard, b.AddConstBool(FALSE));
+          pathFalse.AddDep(S.depControl, branch);
+          controlCP := pathFalse;
+          FailedCheck("RT0__ErrorFailedTypeAssert", copy.sym.pos, NIL);
+          endFalse := AddJump();
+          
+          (* finally, pull all the strings together again *)
+          branch.SetPaths2(pathTrue, pathFalse);
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          controlCP := merge; memoryCP := merge;
         END;
-        
-        instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
-        ASSERT(to.instr.opcode = S.get);
-        instr.AddOpnd(to.instr.opndList.arg);
-        ASSERT(from.instr.opcode = S.get);
-        instr.AddOpnd(from.instr.opndList.arg);
-        instr.AddOpnd(size);
-        
-        MemoryCP(instr);
-        ControlCP(instr);
+        Memcpy(from, to, size);
       END Copy;
 
     PROCEDURE MoveBlock(move: IR.MoveBlock);
@@ -321,37 +413,6 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         ControlCP(instr);
       END MoveBlock;
 
-    PROCEDURE TypeTag (design: IR.Expression; value: S.Result;
-                       checkDerefOfNil: BOOLEAN;
-                       derefSym: IR.Symbol): S.Result;
-    (* `design' is the variable designator, `value' its translation to SSA  *)
-      VAR
-        instr: S.Instr;
-        type: Sym.Type;
-      BEGIN
-        type := design.type.Deparam();
-        type := type.Bound();  (* for a type variable, continue with bound *)
-        IF checkDerefOfNil & (type IS Sym.Pointer) THEN
-          (*FIXME... check := AddException (pb, derefSym,
-             S.checkPointer, value. subclass);
-             check. AddOpnd (value, Opnd.arg);
-             value := check;*)
-        END;
-        
-        IF (type IS Sym.Pointer) THEN
-          instr := b.AddInstr1(S.typeTag, value);
-          RETURN instr.AddResult(S.address);
-        ELSIF (design IS IR.Var) &
-              design(IR.Var).decl(Sym.VarDecl).isVarParam &
-              TR.IsRecord(design(IR.Var).decl(Sym.VarDecl).type) THEN
-          (* type tag of a VAR parameter *)
-          ASSERT(FALSE);
-          (*instr.AddOpnd(value.instr.GetArgClass(Opnd.readDesign), Opnd.arg);*)
-        ELSE                             (* static type tag *)
-          RETURN b.AddAdrTypeDescr(type);
-        END;
-      END TypeTag;
-    
     PROCEDURE Expression(expr: IR.Expression): S.Result;
       VAR
         instr: S.Instr;
@@ -401,7 +462,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             type := type.Deparam();
             WITH type: Sym.Array DO
               IF type.isOpenArray THEN
-                len := pb.AddGetLengthInstr (baseArray.instr, dim+1, type);
+                len := pb.AddGetLengthInstr (baseArray.instr, dim+1, type, fp);
               ELSE
                 len := pb.AddConstLength(type.length);
               END;
@@ -465,10 +526,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN size.AddResult(S.length);
         END CalculateSize;
       
-      PROCEDURE Index (indexOp: IR.Index;
-                       baseArray: S.Result;
-                       elementSize: S.Result;
-                       dim: LONGINT): S.Result;
+      PROCEDURE Index(indexOp: IR.Index; baseArray: S.Result;
+                      elementSize: S.Result; dim: LONGINT): S.Result;
       (* Handles a sequence of index operations on an array.  @oapram{indexOp}
          is the index operation that is to be translated.  @oparam{baseArray}
          holds the (virtual) @oconst{Opcode.get} operation on the array
@@ -485,7 +544,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         BEGIN
           arrayType := indexOp.array.type.Deparam();
           length := b.AddGetLengthInstr(baseArray.instr, dim,
-                                        arrayType(Sym.Array));
+                                        arrayType(Sym.Array), fp);
           instr := b.AddInstr2(S.mul, elementSize, FixAddress(length));
           newSize := instr.AddResult(S.address);
           
@@ -541,7 +600,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           adrOpnd: S.Opnd;
         BEGIN
           (* take the "get" instruction of the record's designator and
-             change it into a "get" for the record field *)
+             change it into a "get" for the record field; memoryCP
+             is not changed and continues to refer to the old "get" *)
           baseResult := Expression(selectOp.record);
           ASSERT (baseResult.instr.opcode = S.get);
           instr := baseResult.instr;
@@ -613,7 +673,75 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             END;
           END;
         END TypeConv;
+
+      PROCEDURE Negate(arg: S.Result; type: Sym.Type): S.Result;
+        BEGIN
+          IF TR.IsRealType(type) THEN  (* convert to `0-x' *)
+            instr := b.AddInstr2(S.sub, b.AddConstZero(type), arg);
+          ELSE
+            instr := b.AddInstr1(S.neg, arg);
+          END;
+          RETURN instr.AddResult(arg.type);
+        END Negate;
       
+      PROCEDURE LeftRight(arg: S.Result; argType: Sym.Type;
+                          x: S.Result; xType: Sym.Type;
+                          ifNeg, ifNotNeg: S.Opcode): S.Result;
+        VAR
+          valueTrue, valueFalse, xNegate: S.Result;
+          branch: S.BranchInstr;
+          merge: S.MergeInstr;
+          gate: S.GateInstr;
+          cmp, endTrue, endFalse: S.Instr;
+          pathTrue, pathFalse: S.Block;
+
+        PROCEDURE Op(opc: S.Opcode; y: S.Result): S.Result;
+          VAR
+            instr: S.Instr;
+          BEGIN
+            IF (opc = -1) THEN
+              RETURN y;
+            ELSE
+              instr := b.AddInstr2(opc, arg, y);
+              RETURN instr.AddResultExpr(argType);
+            END;
+          END Op;
+        
+        BEGIN
+          (* compare the x argument to zero *)
+          cmp := b.AddInstr2(S.lss, x, b.AddConstZero(xType));
+          branch := b.AddBranch(SetCC(cmp.AddResultReg(S.noType, S.cc)),
+                                FALSE);
+          branch.AddDep(S.depControl, controlCP);
+
+          (* first, the "true" path: x<0 *)
+          pathTrue := b.AddMerge0(S.guard, b.AddConstBool(TRUE));
+          pathTrue.AddDep(S.depControl, branch);
+          endTrue := b.AddInstr0(S.jump);
+          endTrue.AddDep(S.depMemory, memoryCP);
+          endTrue.AddDep(S.depControl, pathTrue);
+          xNegate := Negate(x, xType);
+          valueTrue := Op(ifNeg, xNegate);
+          
+          (* second, the "false" path: x>=0 *)
+          pathFalse := b.AddMerge0(S.guard, b.AddConstBool(FALSE));
+          pathFalse.AddDep(S.depControl, branch);
+          endFalse := b.AddInstr0(S.jump);
+          endFalse.AddDep(S.depMemory, memoryCP);
+          endFalse.AddDep(S.depControl, pathFalse);
+          valueFalse := Op(ifNotNeg, x);
+          
+          (* finally, pull all the strings together again *)
+          branch.SetPaths2(pathTrue, pathFalse);
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          gate := merge.AddGate(S.gate);
+          gate.AddOpnd(valueTrue);
+          gate.AddOpnd(valueFalse);
+          controlCP := merge; memoryCP := merge;
+
+          RETURN gate.AddResultExpr(argType);
+        END LeftRight;
+                      
       PROCEDURE NewObject (new: IR.NewObject): S.Result;
         VAR
           instr, get1, get2: S.Instr;
@@ -665,7 +793,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             instr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(varDecl));
             adr := instr.AddResult(S.address);
             
-            IF varDecl.isPassPerReference THEN  (* indirect *)
+            IF varDecl.isPassPerReference &
+               ((*FIXME... need copy fir array*)(varDecl.type IS Sym.Array) OR
+                ~varDecl.hasLocalCopy) THEN  (* indirect *)
               instr := b.AddInstr1(S.get, adr);
               (*MemoryCP(instr);*)
               adr := instr.AddResult(S.address);
@@ -705,13 +835,15 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           instr := b.AddInstr1(S.get, adr);
           instr.SetDesignator(designator);
           MemoryCP(instr);
-          ControlCP(instr);
+          (*ControlCP(instr);
+             FIXME... this is not handled by Designator2Address *)
           RETURN instr.AddResultExpr(expr.type);
           
         | expr: IR.Adr DO
           res := Expression(expr.design);
           IF (res.instr.opcode = S.get) THEN
-            RETURN b.FixType(res.instr.opndList.arg, S.address);
+            res := Designator2Address(res);
+            RETURN b.FixType(res, S.address);
           ELSE
             (* must be a string constant; currently, this is its own address
                FIXME... we should probably introduce an address opcode here *)
@@ -724,20 +856,19 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
                                     value(Boxed.String).value.length+1);
           ELSE
             baseArray := Expression(expr.arrayVariable);
+            memoryCP := baseArray.instr.GetBeforeInstr(S.depMemory);
             type := expr.arrayVariable.type.Deparam();
             type := type(Sym.Array).GetNthElementType(expr.dim);
             RETURN b.AddGetLengthInstr(baseArray.instr, expr.dim,
-                                       type(Sym.Array));
+                                       type(Sym.Array), fp);
           END;
               
         | expr: IR.TypeTag DO
-          RETURN TypeTag(expr.design, Expression(expr.design),
-                         FALSE, expr.sym);
+          RETURN TypeTag(expr.design, FALSE, expr.sym);
               
         | expr: IR.TypeTest DO
           instr := b.AddInstr2(S.call, b.AddAdrRT("RT0__TypeTest"), sp);
-          instr.AddOpnd(TypeTag (expr.expr, Expression(expr.expr),
-                                 expr.checkPointer, expr.sym));
+          instr.AddOpnd(TypeTag (expr.expr, expr.checkPointer, expr.sym));
           instr.AddOpnd(b.AddAdrTypeDescr(expr.referenceType));
           MemoryCP(instr);
           ControlCP(instr);
@@ -748,13 +879,16 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
               
         | expr: IR.TypeConv DO
           RETURN TypeConv(expr);
-              
+        | expr: IR.TypeCast DO
+          instr := b.AddInstr1(S.typeCast, Expression(expr.expr));
+          RETURN instr.AddResultExpr(expr.type);
+          
         | expr: IR.BinaryArith DO
           CASE expr.variant OF
           | IR.arithAdd : opcode := S.add;
           | IR.arithSub : opcode := S.sub;
-            (*| IR.arithMul : opcode := S.multiply;
-                                                    | IR.arithMod : opcode := S.modulo;
+          | IR.arithMul : opcode := S.mul;
+          (*                                          | IR.arithMod : opcode := S.modulo;
                                                                                         | IR.arithDivI: opcode := S.divide;
                                                                                                                             | IR.arithDivR: opcode := S.divide;*)
           END;
@@ -763,9 +897,18 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           instr := b.AddInstr2(opcode, arg1, arg2);
           RETURN instr.AddResultExpr(expr.type);
           
-        | expr: IR.Negate DO
-          instr := b.AddInstr1(S.neg, Expression(expr.operand));
+        | expr: IR.ChangeElement DO
+          CASE expr.variant OF
+          | IR.inclElement: opcode := S.bitTestAndSet;
+          | IR.exclElement: opcode := S.bitTestAndClear;
+          END;
+          arg1 := Expression(expr.set);
+          arg2 := Expression(expr.element);
+          instr := b.AddInstr2(opcode, arg1, arg2);
           RETURN instr.AddResultExpr(expr.type);
+          
+        | expr: IR.Negate DO
+          RETURN Negate(Expression(expr.operand), expr.type);
 
         | expr: IR.Compare DO
           CASE expr.variant OF
@@ -812,6 +955,25 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           instr.AddOpnd(arg2);
           RETURN instr.AddResultExpr(expr.type);
 
+        | expr: IR.Abs DO
+          RETURN LeftRight(NIL, expr.type,
+                           Expression(expr.operand), expr.type, -1, -1);
+        | expr: IR.Ash DO
+          arg1 := Expression(expr.value);
+          arg2 := Expression(expr.exp);
+          RETURN LeftRight(b.FixType(arg1, S.signed32), expr.type,
+                           arg2, expr.exp.type, S.asr, S.asl);
+        | expr: IR.Shift DO
+          arg1 := Expression(expr.value);
+          arg2 := Expression(expr.by);
+          IF expr.rotate THEN
+            RETURN LeftRight(arg1, expr.type,
+                             arg2, expr.by.type, S.rr, S.rl);
+          ELSE
+            RETURN LeftRight(arg1, expr.type,
+                             arg2, expr.by.type, S.lsr, S.lsl);
+          END;
+          
         | expr: IR.Call DO
           RETURN Call(expr);
         | expr: IR.NewObject DO
@@ -821,6 +983,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
 
     PROCEDURE Assign(getInstr: S.Result; newValue: S.Result);
       BEGIN
+        ASSERT(memoryCP = getInstr.instr);
         getInstr.instr.SetOpcode(S.set);
         getInstr.instr.AddOpnd(newValue);
         getInstr.DeleteResult();
@@ -859,8 +1022,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         v := Expression(statm.var);
         Assign(v, Expression(statm.start));
         
-        loopStart := b.AddLoopStart();
-        ControlCP(loopStart); MemoryCP(loopStart);
+        loopStart := LoopStart();
         
         res := Guard(endValue);
         SplitPaths(res, controlCP, memoryCP,
@@ -887,6 +1049,89 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         LoopEnd(loopStart);
       END ForStatm;
         
+    PROCEDURE CaseStatm(statm: IR.CaseStatm);
+      VAR
+        select: S.Result;
+        branch: S.BranchInstr;
+        guard: S.Block;
+        branchMemory, branchControl, jump: S.Instr;
+        i: LONGINT;
+        paths: ArrayList.ArrayList(S.Block);
+        jumps: ArrayList.ArrayList(S.Instr);
+        merge: S.MergeInstr;
+
+      PROCEDURE Labels(guard: S.Instr; labels: IR.CaseLabels);
+        VAR
+          i: LONGINT;
+          value: S.Result;
+          l: IR.Expression;
+        BEGIN
+          FOR i := 0 TO LEN(labels^)-1 DO
+            l := labels[i];
+            WITH l: IR.SetRange DO
+              guard.AddOpnd (Expression(l.from));
+              guard.AddOpnd (Expression(l.to));
+            ELSE
+              value := Expression(l);
+              guard.AddOpnd(value);
+              guard.AddOpnd(value);
+            END;
+          END;
+        END Labels;
+      
+      BEGIN
+        select := Expression(statm.select);
+        jump := b.AddInstr2(S.call, b.AddAdrRT("RT0__ScanCaseRanges"), sp);
+        MemoryCP(jump);
+        
+        branch := b.AddBranch(jump.AddResult(S.address), TRUE);
+        branch.AddDep(S.depControl, controlCP);
+        branchControl := branch; branchMemory := memoryCP;
+
+        jump.AddOpnd(b.AddConstType(NEW(S.Const, branch, Predef.address),
+                                    S.address));
+        jump.AddOpnd(select);
+                     
+        jumps := NEW(ArrayList.ArrayList(S.Instr), 8);
+        paths := NEW(ArrayList.ArrayList(S.Block), 8);
+        FOR i := 0 TO LEN(statm.caseList^)-1 DO
+          IF (LEN(statm.caseList[i].labels^) # 0) THEN
+            (* only default branch may have an empty argument list *)
+            guard := b.AddMerge0(S.guard, NIL);
+            guard.AddDep(S.depControl, branch);
+            Labels(guard, statm.caseList[i].labels);
+            paths.Append(guard);
+            
+            controlCP := guard; memoryCP := branchMemory;
+            StatmSeq(statm.caseList[i].statmSeq);
+            jumps.Append(AddJump());
+          END;
+        END;
+
+        IF (statm.default # NIL) THEN
+          guard := b.AddMerge0(S.guard, NIL);
+          guard.AddDep(S.depControl, branch);
+          paths.Append(guard);
+                 
+          controlCP := guard; memoryCP := branchMemory;
+          StatmSeq(statm.default);
+          jumps.Append(AddJump());
+        ELSIF statm.checkMatch THEN
+          guard := b.AddMerge0(S.guard, NIL);
+          guard.AddDep(S.depControl, branch);
+          paths.Append(guard);
+                 
+          controlCP := guard; memoryCP := branchMemory;
+          FailedCheck("RT0__ErrorFailedCase", statm.sym.pos, select);
+          jumps.Append(AddJump());
+        END;
+        
+        (* finally, pull all the strings together again *)
+        merge := b.AddMerge(S.merge, jumps.Elements());
+        branch.SetPaths(paths.Elements());
+        controlCP := merge; memoryCP := merge;
+      END CaseStatm;
+    
     BEGIN
       FOR statm IN statmSeq^ DO
         WITH statm: IR.Assignment DO
@@ -931,16 +1176,23 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             StatmSeq(statm.pathFalse);
           ELSIF statm.checkMatch THEN
             irExpr := statm.guard(IR.TypeTest).expr;
-            res := TypeTag(irExpr, Expression(irExpr), TRUE, statm.sym);
+            res := TypeTag(irExpr, TRUE, statm.sym);
             FailedCheck("RT0__ErrorFailedWith", statm.sym.pos, res);
           END;
           endFalse := AddJump();
           (* finally, pull all the strings together again *)
           merge := b.AddMerge2(S.merge, endTrue, endFalse);
           controlCP := merge; memoryCP := merge;
+
+        | statm: IR.CaseStatm DO
+          CaseStatm(statm);
           
         | statm: IR.Return DO
-          IF S.IsUnsigned(S.MapType(statm.result.type)) THEN
+          type := S.MapType(statm.result.type);
+          CASE type OF
+          | S.real32, S.real64:
+            (* keep original type *)
+          | S.unsigned8 .. S.unsigned64:
             type := S.unsigned32;
           ELSE
             type := S.signed32;
@@ -950,20 +1202,22 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           ControlCP(instr); MemoryCP(instr);
           res := instr.AddResult(type);
           res.adrMode := S.register;
-          res.register := S.resultRegister;
+          IF (type >= S.real32) THEN
+            res.register := S.resultRegisterFp;
+          ELSE
+            res.register := S.resultRegister;
+          END;
           returns.Append(instr);
 
         | statm: IR.LoopStatm DO
-          loopStart := b.AddLoopStart();
-          ControlCP(loopStart); MemoryCP(loopStart);
+          loopStart := LoopStart();
           StatmSeq(statm.body);
           LoopEnd(loopStart);
           
         | statm: IR.RepeatStatm DO
           (* "REPEAT s UNTIL e"  is translated to
              "LOOP s; IF e THEN EXIT END END" *)
-          loopStart := b.AddLoopStart();
-          ControlCP(loopStart); MemoryCP(loopStart);
+          loopStart := LoopStart();
           StatmSeq(statm.body);
           
           res := Expression(statm.exitCondition);
@@ -988,8 +1242,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         | statm: IR.WhileStatm DO  (* FIXME... change to if & repeat *)
           (* "WHILE e DO s END"  is translated to
              "LOOP IF e THEN EXIT END; s END" *)
-          loopStart := b.AddLoopStart();
-          ControlCP(loopStart); MemoryCP(loopStart);
+          loopStart := LoopStart();
           
           res := Expression(statm.guard);
           SplitPaths(res, controlCP, memoryCP,
@@ -1052,9 +1305,37 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       END;
     END StatmSeq;
   
-  PROCEDURE FctProlog(b: S.FunctionBlock);
+  PROCEDURE FctProlog(b: S.FunctionBlock; statmSeq: IR.StatementSeq);
     VAR
       enter, pushFp, setFp, localVars: S.Instr;
+      i: LONGINT;
+      
+    PROCEDURE CopyParameter(cp: IR.CopyParameter);
+      VAR
+        var: Sym.VarDecl;
+        type: Sym.Type;
+        paramAdr, getAdr, varAdr: S.Instr;
+        from, to, size: S.Result;
+      BEGIN
+        var := cp.param.decl(Sym.VarDecl);
+        type := cp.param.type;
+        WITH type: Sym.Record DO
+          paramAdr := b.AddInstr2(S.add, fp,
+                                  b.AddConstLength(b.Offset(var, -1)));
+          getAdr := b.AddInstr1(S.get, paramAdr.AddResult(S.address));
+          from := getAdr.AddResult(S.address);
+
+          b.AllocateLocalVar(var);  (* overwrite old offset *)
+          varAdr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(var));
+          to := varAdr.AddResult(S.address);
+          
+          size := b.AddConstLength(type.size);
+          Memcpy(from, to, size);
+        | type: Sym.Array DO
+          (* FIXME *)
+        END;
+      END CopyParameter;
+    
     BEGIN
       enter := b.AddInstr0(S.enter);
       sp := enter.AddResultReg(S.address, S.sp);
@@ -1078,7 +1359,12 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       sp := localVars.AddResultReg(S.address, S.sp);
       ASSERT(sp.register = S.sp);
 
-      (* FIXME... deal with CopyParameter *)
+      (* deal with CopyParameter instructions *)
+      i := 0;
+      WHILE (i # LEN(statmSeq^)) & (statmSeq[i] IS IR.CopyParameter) DO
+        CopyParameter(statmSeq[i](IR.CopyParameter));
+        INC(i);
+      END;
     END FctProlog;
   
   PROCEDURE FctEpilog(b: S.FunctionBlock);
@@ -1103,7 +1389,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
   PROCEDURE Procedure(p: IR.Procedure);
     BEGIN
       b := NEW(S.FunctionBlock, p.decl, p.checkFunctionResult);
-      FctProlog(b);
+      FctProlog(b, p.statmSeq);
       StatmSeq(p.statmSeq);
       FctEpilog(b);
 
@@ -1124,7 +1410,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
 
   BEGIN
     returns := NEW(ArrayList.ArrayList(S.Instr), 4);
-    loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
+    loopExits := NIL;
     
     w := NEW(W.Writer, symTab, ch);
     FOR p IN moduleIR.procList^ DO

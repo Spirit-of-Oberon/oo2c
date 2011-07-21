@@ -21,7 +21,7 @@ typedef struct OOC_X86_Debug__StateDesc {
   OOC_X86_SSA__Block block;
   OOC_X86_SSA__Instr instr;
   OOC_X86_SSA__Instr controlCP;
-  OOC_X86_SSA__Result reg[9];
+  OOC_X86_SSA__Result reg[18];
   OOC_INT32 mergeCount;
   OOC_X86_SSA__Instr undef;
   OOC_X86_Debug__State next;
@@ -67,9 +67,9 @@ extern RT0__StructDesc _td_OOC_X86_Debug__OutputDesc;
 extern RT0__StructDesc _td_OOC_X86_Debug__State;
 extern RT0__StructDesc _td_OOC_X86_Debug__StateDesc;
 extern RT0__StructDesc _td_OOC_X86_Debug__508;
-extern RT0__StructDesc _td_OOC_X86_Debug__11553;
-extern RT0__StructDesc _td_OOC_X86_Debug__11657;
-extern RT0__StructDesc _td_OOC_X86_Debug__11709;
+extern RT0__StructDesc _td_OOC_X86_Debug__12596;
+extern RT0__StructDesc _td_OOC_X86_Debug__12700;
+extern RT0__StructDesc _td_OOC_X86_Debug__12752;
 #endif /* _MODULE_OOC_X86_Debug_ */
 
 /* --- */

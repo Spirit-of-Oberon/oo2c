@@ -22,16 +22,18 @@ RT0__StructDesc _td_RT0__ObjectDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc}, (
 RT0__StructDesc _td_RT0__Name = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, "Name", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_RT0__Module = { (RT0__Struct[]){&_td_RT0__ModuleDesc}, NULL, NULL, &_mid, "Module", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_RT0__Struct = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, "Struct", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_RT0__6481 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_RT0__6701 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_RT0__6895 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_RT0__6480 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_RT0__6700 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_RT0__6894 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_RT0__ModuleDesc = { (RT0__Struct[]){&_td_RT0__ModuleDesc}, (void*[]){}, NULL, &_mid, "ModuleDesc", 8, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_RT0__8672 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_RT0__9352 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_RT0__9278 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_RT0__13723 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_RT0__13929 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"RT0", (RT0__Struct[]) { &_td_RT0__Object, &_td_RT0__ObjectDesc, &_td_RT0__Name, &_td_RT0__Module, &_td_RT0__Struct, &_td_RT0__ModuleDesc, NULL } };
+RT0__StructDesc _td_RT0__8671 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_RT0__CaseRange = { (RT0__Struct[]){&_td_RT0__CaseRange}, (void*[]){}, NULL, &_mid, "CaseRange", 12, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_RT0__9434 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_RT0__9360 = { (RT0__Struct[]){NULL}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_RT0__13803 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_RT0__14009 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_RT0__14355 = { (RT0__Struct[]){&_td_RT0__CaseRange}, NULL, NULL, &_mid, NULL, 12, 1, 0, RT0__strOpenArray };
+static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"RT0", (RT0__Struct[]) { &_td_RT0__Object, &_td_RT0__ObjectDesc, &_td_RT0__Name, &_td_RT0__Module, &_td_RT0__Struct, &_td_RT0__ModuleDesc, &_td_RT0__CaseRange, NULL } };
 
 extern void OOC_RT0_init0() {
   OOC_RT0_init();

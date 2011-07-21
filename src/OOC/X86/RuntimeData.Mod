@@ -47,7 +47,7 @@ PROCEDURE (dw: DataWriter) Object(name: STRING; size: LONGINT;
                                   global: BOOLEAN);
   BEGIN
     IF global THEN
-      dw.sb.Append(nl+".globl "+name);
+      dw.sb.Append(nl+".global "+name);
     END;
     dw.sb.Append(nlTab+".type "+name+", @object");
     dw.sb.Append(nlTab+".size "+name+", ");
@@ -203,7 +203,7 @@ PROCEDURE Write*(sb: StringBuffer.StringBuffer; symTab: Sym.Module);
       ELSE
         base := array.elementType;
       END;
-      dw.Object(nameBaseTypes, sizeAddress, FALSE);
+      dw.Object(nameBaseTypes, sizeAddress, TRUE);
       TypeDescrRef(base);
       
       dw.Object(nameTypeDesc, sizeStructDesc, FALSE);
@@ -256,7 +256,7 @@ PROCEDURE Write*(sb: StringBuffer.StringBuffer; symTab: Sym.Module);
       dw.Object(nameBaseTypes, (record.ExtensionLevel()+1)*sizeAddress, FALSE);
       len := BaseTypes(record);
       
-      dw.Object(nameTypeDesc, sizeStructDesc, FALSE);
+      dw.Object(nameTypeDesc, sizeStructDesc, TRUE);
       dw.Adr(nameBaseTypes);
       dw.Null();                         (* tbProcs *)
       dw.Null();                         (* typeArgs *)
@@ -279,7 +279,7 @@ PROCEDURE Write*(sb: StringBuffer.StringBuffer; symTab: Sym.Module);
 
       nameTypeName := WriteName(nameTypeName, pointer);
 
-      dw.Object(nameBaseTypes, sizeAddress, FALSE);
+      dw.Object(nameBaseTypes, sizeAddress, TRUE);
       TypeDescrRef(pointer.baseType);
       
       dw.Object(nameTypeDesc, sizeStructDesc, FALSE);

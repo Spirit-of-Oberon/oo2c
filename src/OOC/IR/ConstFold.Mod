@@ -1,4 +1,4 @@
-(* 	$Id: ConstFold.Mod,v 1.83 2004/05/23 18:26:35 mva Exp $	 *)
+(* 	$Id: ConstFold.Mod,v 1.84 2004/07/25 09:38:58 mva Exp $	 *)
 MODULE OOC:IR:ConstFold;
 (*  Constant folding on IR expressions.
     Copyright (C) 2002, 2003, 2004  Stewart Greenhill, Michael van Acken
@@ -640,6 +640,7 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         
       ELSIF TR.IsCharType(op.type) & TR.IsCharType(op.expr.type) THEN
         (* type conversion between character types is a noop *)
+        c. result := c. builder. NewConst (op. expr. sym, op. type, value);
         
       ELSIF TR.IsStringConst (op. type) THEN
         (* handle conversion of character and string constants to string

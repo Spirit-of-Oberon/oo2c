@@ -1,4 +1,4 @@
-(* 	$Id: IRtoSSA.Mod,v 1.134 2004/06/28 19:17:36 mva Exp $	 *)
+(* 	$Id: IRtoSSA.Mod,v 1.135 2004/07/07 19:14:46 mva Exp $	 *)
 MODULE OOC:SSA:IRtoSSA;
 (*  Converts the IR of a procedure into its SSA representation.
     Copyright (C) 2001-2004  Michael van Acken
@@ -292,10 +292,18 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   
   PROCEDURE Copy (cp: IR.Copy): SSA.Instr;
     VAR
+      expr: IR.Expression;
       instr, dynTag, staticTag, neq, failed, select: SSA.Instr;
       source, dest, okStore: SSA.Result;
     BEGIN
-      source := Expression (cp. source);
+      (* taking the address of a type casted expression fails, but we can
+         always try to take the address of the original value -- if it is
+         a variable *)
+      expr := cp.source;
+      WHILE (expr IS IR.TypeCast) DO
+        expr := expr(IR.TypeCast).expr;
+      END;
+      source := Expression (expr);
       dest := Expression (cp. dest);
 
       IF cp. checkDynamicType THEN

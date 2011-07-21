@@ -21,7 +21,7 @@ TEST_DRIVER_BINARY=$(OOC_DEV_ROOT)/bin/$(TEST_DRIVER)
 # TEST_CREATE_SUMMARY: This command creates a HTML summary of a from an
 # XML report document.
 #TEST_CREATE_SUMMARY=java org.apache.xalan.xslt.Process -in $(TEST_REPORT) -xsl $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl -out $(TEST_SUMMARY)
-TEST_CREATE_SUMMARY=$(XSLTPROC) -o $(TEST_SUMMARY) $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl $(TEST_REPORT)
+TEST_CREATE_SUMMARY=if test "$(XSLTPROC)" = no; then true; else $(XSLTPROC) -o $(TEST_SUMMARY) $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl $(TEST_REPORT); fi
 
 
 

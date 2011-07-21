@@ -232,7 +232,7 @@ ADT_StringBuffer__CharsUTF16 ADT_StringBuffer__StringBufferDesc_CharsUTF16(ADT_S
   i0 = (OOC_INT32)b;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5522))+12);
   i1 = i1!=(OOC_INT32)0;
-  if (!i1) goto l3;
+  if (!i1) goto l4;
   i1 = *(OOC_INT32*)((_check_pointer(i0, 5566))+4);
   ADT_StringBuffer__StringBufferDesc_EnsureCapacity((ADT_StringBuffer__StringBuffer)i0, (i1+1));
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5585))+12);
@@ -240,7 +240,7 @@ ADT_StringBuffer__CharsUTF16 ADT_StringBuffer__StringBufferDesc_CharsUTF16(ADT_S
   i2 = OOC_ARRAY_LENGTH(i1, 0);
   i3 = *(OOC_INT32*)((_check_pointer(i0, 5594))+4);
   *(OOC_UINT16*)(i1+(_check_index(i3, i2, OOC_UINT32, 5592))*2) = 0u;
-l3:
+l4:
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5631))+12);
   return (ADT_StringBuffer__CharsUTF16)i0;
   ;

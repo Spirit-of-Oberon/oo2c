@@ -1,7 +1,7 @@
 MODULE OOC:X86:ConstProp;
 
 IMPORT
-  Object:Boxed, Object:BigInt, S := OOC:X86:SSA;
+  Object, Object:Boxed, Object:BigInt, S := OOC:X86:SSA;
   
 (* FIXME... check for overflows, and don't do folding if an overflow
    happens *)
@@ -19,14 +19,15 @@ CONST
 VAR
   notConstant: S.Result;
 
-PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
+PROCEDURE ComputeConst(pb: S.FunctionBlock; instr: S.Instr): S.Result;
   VAR
     arg1, arg2: S.Result;
-    val1, val2, v: Boxed.Object;
+    val1, val2, v: Object.Object;
     i1, i2: BigInt.BigInt;
   BEGIN
     IF (instr.opcode = S.typeConv) THEN
-      v := instr.opndList.arg.instr.designator[0](S.Const).value;
+      arg1 := instr.opndList.arg.info(S.Result);
+      v := arg1.instr.designator[0](S.Const).value;
       IF (v IS BigInt.BigInt) & (instr.resultList.type < S.real32) THEN
         (* FIXME... check for overflow *)
         RETURN pb.AddConstType(NEW(S.Const, v, -1), instr.resultList.type);
@@ -52,6 +53,9 @@ PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
           | S.add: v := i1.Add(i2);
           | S.sub: v := i1.Sub(i2);
           | S.mul: v := i1.Mul(i2);
+            
+          | S.asr, S.asl, S.lsr, S.lsl, S.rl, S.rr:
+            v := NIL;  (* FIXME... add shift operations *)
             
           | S.eql: v := Boxed.NewBoolean(i1.Cmp(i2)  = 0);
           | S.neq: v := Boxed.NewBoolean(i1.Cmp(i2)  # 0);

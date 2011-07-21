@@ -33,6 +33,15 @@ TYPE
     b : LONGREAL;
   END;
 
+PROCEDURE Diff(x: SYSTEM.ADDRESS);
+  BEGIN
+<*IF TARGET_ADDRESS=64 THEN*>
+    Out.Int(SHORT(x), 0);
+<*ELSE*>
+    Out.Int(x, 0);
+<*END*>
+  END Diff;
+
 PROCEDURE Test*;
 VAR
   t : T;
@@ -41,13 +50,13 @@ VAR
   t2 : T2;
   t4 : T4;
   t8 : T8;
-BEGIN  (* note: Out.Int() does not work with 64 bit addresses *)
-  Out.Int(SYSTEM.ADR(t.b) - SYSTEM.ADR(t.a), 0); Out.Ln;
-  Out.Int(SYSTEM.ADR(tUnion.b) - SYSTEM.ADR(tUnion.a), 0); Out.Ln;
-  Out.Int(SYSTEM.ADR(t1.b) - SYSTEM.ADR(t1.a), 0); Out.Ln;
-  Out.Int(SYSTEM.ADR(t2.b) - SYSTEM.ADR(t2.a), 0); Out.Ln;
-  Out.Int(SYSTEM.ADR(t4.b) - SYSTEM.ADR(t4.a), 0); Out.Ln;
-  Out.Int(SYSTEM.ADR(t8.b) - SYSTEM.ADR(t8.a), 0); Out.Ln;
+BEGIN
+  Diff(SYSTEM.ADR(t.b) - SYSTEM.ADR(t.a)); Out.Ln;
+  Diff(SYSTEM.ADR(tUnion.b) - SYSTEM.ADR(tUnion.a)); Out.Ln;
+  Diff(SYSTEM.ADR(t1.b) - SYSTEM.ADR(t1.a)); Out.Ln;
+  Diff(SYSTEM.ADR(t2.b) - SYSTEM.ADR(t2.a)); Out.Ln;
+  Diff(SYSTEM.ADR(t4.b) - SYSTEM.ADR(t4.a)); Out.Ln;
+  Diff(SYSTEM.ADR(t8.b) - SYSTEM.ADR(t8.a)); Out.Ln;
 END Test;
 
 END Align1.

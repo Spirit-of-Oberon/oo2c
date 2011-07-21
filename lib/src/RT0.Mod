@@ -1,4 +1,4 @@
-(* 	$Id: RT0.Mod,v 1.46 2004/01/12 05:49:18 sgreenhill Exp $	 *)
+(* 	$Id: RT0.Mod,v 1.47 2004/07/19 22:40:04 mva Exp $	 *)
 MODULE RT0 [
   FOREIGN "C";
   LINK
@@ -14,7 +14,7 @@ MODULE RT0 [
     <*IF HAVE_LIB_M THEN*>LIB "m";<*END*>
   END ];
 (*  Proxy module for the run-time system of C back-ends of OOC2
-    Copyright (C) 2001, 2002, 2003  Michael van Acken
+    Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -245,6 +245,12 @@ TYPE
        defined on the top level.  Descriptors are listed in no particular
        order.  The last element of the array has the value @code{NIL}.  *)
   END;
+
+TYPE
+  CaseRange* = RECORD
+    low-, high-: LONGINT;
+    jmp-: SYSTEM.PTR;
+  END;
   
 VAR
   boolean-: StructDesc;
@@ -320,14 +326,14 @@ PROCEDURE FreeBlock* (ptr: SYSTEM.PTR);
 PROCEDURE CollectGarbage*;
 (**Explicitly trigger a full, world-stop garbage collection.  *)
 
-PROCEDURE RegisterDisappearingLink* (VAR ptr : SYSTEM.PTR);
+PROCEDURE RegisterDisappearingLink* (VAR ptr: SYSTEM.PTR);
 (**Register the pointer @oparam{ptr} to be cleared when the object that it
    references is collected by the garbage collector. Note: it is only safe
    to register pointers from heap objects, or global module variables. NEVER
    use this procedure for a pointer allocated on the stack (ie. a local
    variable or procedure parameter). *)
 
-PROCEDURE UnregisterDisappearingLink* (VAR ptr : SYSTEM.PTR);
+PROCEDURE UnregisterDisappearingLink* (VAR ptr: SYSTEM.PTR);
 (**Undoes a registration of pointer @oparam{ptr} created by
    @oproc{RegisterDisappearingLink}. *)
 
@@ -351,8 +357,11 @@ PROCEDURE ThisModule* (name: ARRAY OF CHAR): Module;
   
 PROCEDURE ThisType* (mid: Module; name: ARRAY OF CHAR): Struct;
 (**Returns the type descriptor for the type @oparam{name} of module
-   @oparam{mid}.  If @oparam{name} defines a qualified type and there is not
+   @oparam{mid}.  If @oparam{name} defines a qualified type and there is no
    match in @oparam{mid}, then @emph{all} modules of the program are searched.
    Result is @code{NIL} if there is no such type descriptor.  *)
 
+PROCEDURE ScanCaseRanges*(table: ARRAY [NO_LENGTH_INFO] OF CaseRange;
+                          value: LONGINT): SYSTEM.PTR;
+  
 END RT0.

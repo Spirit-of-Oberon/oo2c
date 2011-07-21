@@ -15,8 +15,8 @@ extern void OOC_OOC_X86_Translate_init(void);
 extern void OOC_OOC_X86_Translate_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_X86_Translate__8708;
-extern RT0__StructDesc _td_OOC_X86_Translate__8697;
+extern RT0__StructDesc _td_OOC_X86_Translate__9498;
+extern RT0__StructDesc _td_OOC_X86_Translate__9487;
 #endif /* _MODULE_OOC_X86_Translate_ */
 
 /* --- */

@@ -132,13 +132,13 @@ extern RT0__StructDesc _td_OOC_SSA_WriteC__Visitor;
 extern RT0__StructDesc _td_OOC_SSA_WriteC__VisitorDesc;
 extern RT0__StructDesc _td_OOC_SSA_WriteC__6084;
 extern RT0__StructDesc _td_OOC_SSA_WriteC__7124;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__22686;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__24284;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__24487;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__25498;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__25791;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__40703;
-extern RT0__StructDesc _td_OOC_SSA_WriteC__53421;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__23025;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__24623;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__24826;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__25837;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__26130;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__41042;
+extern RT0__StructDesc _td_OOC_SSA_WriteC__53760;
 #endif /* _MODULE_OOC_SSA_WriteC_ */
 
 /* --- */

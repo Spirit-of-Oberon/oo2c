@@ -131,7 +131,8 @@ PROCEDURE IdentifyResults (b: S.FunctionBlock): RegisterFiles;
          Registers that are hot managed by the allocator, like stack pointer
          and frame pointer, are ignored.  *)
       BEGIN
-        RETURN (res.register # S.cc) OR (res.adrMode # S.register);
+        RETURN ((res.register # S.cc) OR (res.adrMode # S.register)) &
+            (res.register # S.st0);
       END Relevant;
     
     BEGIN
@@ -334,6 +335,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
     merge: S.MergeInstr;
     block, branchBlock: S.Block;
     addedCopies: LONGINT;
+    coloring: IGraph.ColorArray;
     
   PROCEDURE AddResToLive (res: S.Result; live: IGraph.Vector);
     BEGIN
@@ -341,13 +343,43 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
         rf.iGraph.AddToLive(res.marker, live);
       END;
     END AddResToLive;
+
+  PROCEDURE AddIncomingResults(loop: S.LoopStartInstr; live: IGraph.Vector);
+    PROCEDURE InspectBlock(b: S.Block);
+      VAR
+        instr: S.Instr;
+        opnd: S.Opnd;
+      BEGIN
+        (* FIXME... this kind of dependency may be readily available
+           from the instruction sorting in module Block *)
+        instr := b.instrList;
+        WHILE (instr # NIL) DO
+          IF instr.IsLive() THEN
+            FOR opnd IN instr.Operands() DO
+              IF ~loop.Dominates(opnd.arg.instr.block) THEN
+                AddResToLive(opnd.arg, live);
+              END;
+            END;
+            
+            WITH instr: S.Block DO
+              InspectBlock(instr);
+            ELSE
+            END;
+          END;
+          instr := instr.nextInstr;
+        END;
+      END InspectBlock;
+    
+    BEGIN
+      InspectBlock(loop);
+    END AddIncomingResults;
   
   PROCEDURE AssignRegisterNames (rf: RegisterFile; colors: IGraph.ColorArray);
     VAR
       i, j: LONGINT;
       c, maxColor: IGraph.Color;
       colorToRegister: ARRAY S.lastRegister+1 OF S.Register;
-      reg: S.Register;
+      reg, first, last: S.Register;
       res: S.Result;
 
     PROCEDURE IsFreeRegister(reg: S.Register): BOOLEAN;
@@ -397,6 +429,12 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       END;*)
       
       (* create mapping of color to register id *)
+      CASE rf.registerType OF
+      | gpRegisters:
+        first := S.gp0; last := S.gp5;
+      | fpRegisters:
+        first := S.fp0; last := S.fp7;
+      END;
       FOR i := 0 TO S.lastRegister DO
         colorToRegister[i] := -1;
       END;
@@ -406,7 +444,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
               rf.prelocatedRep[i].register;
         END;
       END;
-      reg := S.gp0-1;
+      reg := first-1;
       FOR i := 0 TO maxColor DO
         IF (colorToRegister[i] < 0) THEN
           REPEAT
@@ -456,7 +494,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       END;
     END AddJumpsToReady;
 
-(*  PROCEDURE DumpMatrix(rf: RegisterFile);
+(*  PROCEDURE DumpMatrix();
     VAR
       i, j: LONGINT;
     BEGIN
@@ -501,10 +539,12 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
           AddJumpsToReady(block(S.MergeInstr), ld);
           instr := block.prevInstr;
           ASSERT(instr(S.LoopStartInstr).end = block);
+          (* all ranges live after the loop must not be clobbered by it *)
           ld := NEW(LiveData, instr(S.LoopStartInstr),
                     instr(S.LoopStartInstr).instrTail, 0,
-                    rf.iGraph.NewVector());
-          (* this ld stays empty until the loopBackedge instr fills it *)
+                    rf.iGraph.CopyVector(ld.live));
+          (* as well as any outside results used within the loop *)
+          AddIncomingResults(instr(S.LoopStartInstr), ld.live);
           AddToReady(ld);
           
         | S.branch, S.loopStart:
@@ -565,7 +605,11 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
     IF (addedCopies = 0) THEN
       (* calculate a coloring for the resulting graph; use the coloring to
          assign register ids to results *)
-      AssignRegisterNames(rf, rf.iGraph.ColorGraphCombinatorial());
+      coloring := rf.iGraph.ColorGraphCombinatorial();
+      IF (coloring = NIL) THEN
+        coloring := rf.iGraph.ColorGraphSimple();
+      END;
+      AssignRegisterNames(rf, coloring);
     END;
 
     RETURN addedCopies;
