@@ -363,7 +363,9 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               
             ELSE
               Err (illegalFactor, sym);  (* factor starts with illegal sym *)
-              NextSym
+              IF (sym.next # NIL) THEN
+                NextSym
+              END
             END
           END Factor;
         
