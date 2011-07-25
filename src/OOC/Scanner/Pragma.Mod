@@ -134,6 +134,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Undefined pragma variable"
     | invalidOperands:
       t := "Invalid operands"
+    | illegalFactor:
+      t := "Factor starts with illegal symbol"
     | expectBooleanExpr:
       t := "Expected boolean expression"
     | noOpenIf:
