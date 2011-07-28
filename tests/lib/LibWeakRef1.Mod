@@ -19,7 +19,7 @@ VAR
   r : ARRAY count OF T;
   wr : ARRAY count OF WeakRef.WeakRef(T);
 
-PROCEDURE (t : T) INIT(i : LONGINT);
+PROCEDURE (t : T) INIT*(i : LONGINT);
 BEGIN
   t.i := i;
 END INIT;
