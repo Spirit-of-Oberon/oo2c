@@ -1,0 +1,16 @@
+In file not-wf/032.txt: 
+Undefined pragma variable
+column=2
+line=0
+pos=2
+
+Expected symbol `:='
+column=20
+line=0
+pos=20
+sym_name=:=
+
+Factor starts with illegal symbol
+column=20
+line=0
+pos=20
