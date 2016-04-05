@@ -28,7 +28,7 @@ The flexible nature of the GSA code representation allows for efficient code imp
 
 OO2C is the generic OOC compiler for the Unix platform. It is an Oberon-2 to ANSI-C translator and runs on any 32 bit Unix system with an ANSI-C compiler (including Linux, HP-UX, SunOS, and Solaris). Installation is based on GNU autoconf, which guarantees smooth and convenient installation across all supported systems. An experimental compiler for 64 bit systems exists. Get the one of the *oo2c\_32* tar files for 32 bit systems, and *oo2c\_64* for 64 bit systems like the DEC Alpha.
 
-OO2C can use two add-on packages to expand its own capabilities: Hans-J. Boehm's conservative garbage collector [gc](http://www.hpl.hp.com/personal/Hans_Boehm/gc/) and GNU [libtool](ftp://ftp.gnu.org/pub/gnu/libtool). The garbage collector extends OO2C's run-time system with the ability to free unused heap objects. With the help of libtool, OO2C can create shared and static libraries from a set of modules. Please refer to the chapter "Installing OO2C" in Part II of the [OOC Reference Manual](OOCref/OOCref_toc.html) for information on how to use these packages.
+OO2C can use two add-on packages to expand its own capabilities: Hans-J. Boehm's conservative garbage collector [gc](http://www.hboehm.info/gc/) and GNU [libtool](ftp://ftp.gnu.org/pub/gnu/libtool). The garbage collector extends OO2C's run-time system with the ability to free unused heap objects. With the help of libtool, OO2C can create shared and static libraries from a set of modules. Please refer to the chapter "Installing OO2C" in Part II of the [OOC Reference Manual](http://ooc.sourceforge.net/OOCref/OOCref_toc.html) for information on how to use these packages.
 
 The OO2C distribution is available [here](http://sourceforge.net/project/showfiles.php?group_id=3539).
 
@@ -46,7 +46,7 @@ For questions, comments, or suggestions regarding the manual you can contact the
 
 Please note: Most chapters (about 90%) of the reference manual are finished, but it is still a work in progress.
 
-The HTML version of the manual is [here](OOCref/OOCref_toc.html). The OO2C distribution includes the manual's \`texinfo' source and the derived \`info' files. The sources and additional output formats (including Postscript) are also available separately in the [OOCref tar file](http://prdownloads.sourceforge.net/ooc/).
+The HTML version of the manual is [here](http://ooc.sourceforge.net/OOCref/OOCref_toc.html). The OO2C distribution includes the manual's \`texinfo' source and the derived \`info' files. The sources and additional output formats (including Postscript) are also available separately in the [OOCref tar file](http://prdownloads.sourceforge.net/ooc/).
 
 [<a id="misc"></a>Miscellaneous]()
 -----------------
