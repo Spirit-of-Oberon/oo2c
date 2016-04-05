@@ -1,0 +1,17 @@
+ENV
+Makefile.config
+obj
+bin
+sym
+stage0/*
+config.log
+config.status
+lib/pkginfo.xml
+lib/src/__config.h
+rsrc/OOC/TestFramework/config.xml
+rsrc/OOC/oo2crc.xml
+rsrc/OOC/oo2crc.xml.mk
+rsrc/OOC/oobacktrace
+src/OOC/Config/Autoconf.Mod
+oo2crc-install.xml
+test-output
